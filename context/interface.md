@@ -51,7 +51,7 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 | `Secao({ titulo, acao?, children })` | Bloco de conteúdo sem caixa: título pequeno e conteúdo |
 | `Lista` / `Linha({ href?, children })` | Lista em caixa branca; com `href`, a linha inteira é link (hover + setinha) |
 | `Paginacao({ ...paginar(itens, pagina), href })` | "11–20 de 83" e botões de página; some com uma página só |
-| `Busca({ valor, placeholder, manter, limpar })` | Caixa de busca na URL (`?q=`), acima da lista; filtre com `combina(q, ...textos)` (`src/lib/buscar.ts`, ignora acento e maiúscula). Buscar volta para a página 1 |
+| `Busca({ valor, placeholder, manter, limpar })` | Caixa de busca na URL (`?q=`), acima da lista; filtre com `combina(q, ...textos)` (`src/lib/buscar.ts`: ignora acento e maiúscula; cada palavra buscada tem de ser o começo de uma palavra do texto, então "lumen" não acha "emolumentos"; para achar CNPJ sem pontuação, passe também `documento.replace(/\D/g, '')`). Buscar volta para a página 1 |
 | `Situacao({ tom, children })` | Status: ponto + texto |
 | `Badge({ tom })` | Etiqueta neutra (tipo, origem) |
 | `Abas({ abas, ativa })` | Abas por URL (`?aba=`), sublinhadas |
