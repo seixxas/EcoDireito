@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "db:push": "drizzle-kit push",
-    "db:seed": "tsx --env-file=.env.local src/db/seed.ts && tsx --env-file=.env.local src/db/usuarios.ts",
+    "db:seed": "tsx --env-file=.env.local src/db/seed.mts && tsx --env-file=.env.local src/db/usuarios.mts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
