@@ -1,14 +1,27 @@
 'use client'
 
 import { ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 import { useState } from 'react'
-import type { LinhaDre } from '@/domain/financeiro/dre'
+import type { LinhaDre, Regime } from '@/domain/financeiro/dre'
 import { cn } from '@/lib/cn'
 import { somar } from '@/lib/dinheiro'
 import { brlInteiro, formatarMes, formatarPercentual } from '@/lib/formatar'
 
 /** Grupos longos começam fechados, para a DRE caber na tela: só o total de cada um aparece. */
 const FECHADOS_NO_INICIO = ['secao-custo', 'secao-despesa', 'secao-fora']
+
+/** Mês de `?mes=` para o histórico inteiro (o mesmo de `TODOS_OS_MESES`). */
+const TODOS = 'todos'
+
+/**
+ * De onde vem o valor de uma conta num mês (ou no total): os lançamentos daquela conta.
+ * Na competência, a receita vem das notas emitidas no mês, então o link vai para o Faturamento.
+ */
+function origem(conta: string, regime: Regime, mes = TODOS) {
+  if (regime === 'competencia' && conta === 'receita_servicos') return `/financeiro?mes=${mes}`
+  return `/financeiro/lancamentos?mes=${mes}&conta=${conta}${regime === 'competencia' ? '&regime=competencia' : ''}`
+}
 
 /** Cada conta pertence à seção acima dela; um subtotal fecha a seção. */
 function comSecao(linhas: LinhaDre[]) {
@@ -20,7 +33,7 @@ function comSecao(linhas: LinhaDre[]) {
   })
 }
 
-export function TabelaDre({ meses, linhas, receitaLiquida }: { meses: string[]; linhas: LinhaDre[]; receitaLiquida: number }) {
+export function TabelaDre({ meses, linhas, receitaLiquida, regime }: { meses: string[]; linhas: LinhaDre[]; receitaLiquida: number; regime: Regime }) {
   const [fechadas, setFechadas] = useState(() => new Set(FECHADOS_NO_INICIO))
   const itens = comSecao(linhas)
   const contasDa = (secao: string) => itens.filter((item) => item.secao === secao).map((item) => item.linha)
@@ -31,14 +44,27 @@ export function TabelaDre({ meses, linhas, receitaLiquida }: { meses: string[]; 
       return novas
     })
 
-  const valoresDaLinha = (valores: number[], total: number, destaque: boolean) => (
+  /** Com `conta`, cada valor diferente de zero abre os lançamentos que o formam. */
+  const valor = (centavos: number, conta?: string, mes?: string) =>
+    conta && centavos !== 0 ? (
+      <Link
+        href={origem(conta, regime, mes)}
+        className="underline decoration-line decoration-dotted underline-offset-4 hover:text-brand-700 hover:decoration-brand-700"
+      >
+        {brlInteiro(centavos)}
+      </Link>
+    ) : (
+      brlInteiro(centavos)
+    )
+
+  const valoresDaLinha = (valores: number[], total: number, destaque: boolean, conta?: string) => (
     <>
-      {valores.map((valor, i) => (
-        <td key={meses[i]} className={cn('num', valor < 0 && destaque && 'text-danger', valor === 0 && 'text-subtle')}>
-          {brlInteiro(valor)}
+      {valores.map((centavos, i) => (
+        <td key={meses[i]} className={cn('num', centavos < 0 && destaque && 'text-danger', centavos === 0 && 'text-subtle')}>
+          {valor(centavos, conta, meses[i])}
         </td>
       ))}
-      <td className={cn('num font-semibold', total < 0 && destaque && 'text-danger')}>{brlInteiro(total)}</td>
+      <td className={cn('num font-semibold', total < 0 && destaque && 'text-danger')}>{valor(total, conta)}</td>
       <td className="num text-muted">{receitaLiquida ? formatarPercentual(total / receitaLiquida) : '—'}</td>
     </>
   )
@@ -89,7 +115,7 @@ export function TabelaDre({ meses, linhas, receitaLiquida }: { meses: string[]; 
                 {/* O recuo fica no span: o padding da primeira coluna vem do CSS da .tabela e ganha de classe. */}
                 <span className={cn(secao && 'ml-6 inline-block text-muted')}>{linha.nome}</span>
               </td>
-              {valoresDaLinha(linha.valores, linha.total, subtotal)}
+              {valoresDaLinha(linha.valores, linha.total, subtotal, linha.tipo === 'conta' ? linha.id : undefined)}
             </tr>
           )
         })}

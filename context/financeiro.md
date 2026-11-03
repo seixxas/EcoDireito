@@ -21,7 +21,7 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 - Faturamento e Lançamentos abrem no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`). Faturamento: parcelas prontas para faturar em lista e abas "Notas do mês" · "Faturado × recebido no ano" (`?aba=grafico`).
 - Contas a receber: atraso numa barra só; notas em aberto das mais atrasadas para as menos.
 - Tabelas e listas paginadas de 10 em 10 (`paginar` + `Paginacao`, `?pagina=`, mantendo mês, situação e aba): notas do Faturamento, Contas a receber, Lançamentos, Contratos e as três abas do Extrato. Linha que abre detalhe tem setinha no fim (`AbrirLinha`); link no meio do texto usa a classe `link`.
-- DRE: custos, despesas e "fora da DRE" começam recolhidos (só o total do grupo).
+- DRE: custos, despesas e "fora da DRE" começam recolhidos (só o total do grupo). Cada valor de conta (mês ou total) abre os lançamentos que o formam: `/financeiro/lancamentos?mes=&conta=` (+ `regime=competencia` na DRE por competência, que filtra pela competência). Na competência, a receita vem das notas emitidas e o link vai para o Faturamento do mês.
 - Fluxo: abas "Próximas 8 semanas" · "Realizado por mês" (`?aba=realizado`); movimentos da semana recolhidos.
 - Extrato: importação compacta e abas "A classificar" · "Regras" · "Ignoradas" (`?aba=`).
 - Situação da nota é ponto + texto (`SituacaoDaNota`, em `components/financeiro/situacao-nota.tsx`).

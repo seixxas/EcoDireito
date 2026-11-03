@@ -40,8 +40,9 @@ export default async function PaginaDre({ searchParams }: { searchParams: Promis
           />
         }
       />
+      <p className="mb-3 text-sm text-muted">Clique num valor para ver os lançamentos que o formam.</p>
       <Card flush>
-        <TabelaDre meses={meses} linhas={linhas} receitaLiquida={receitaLiquida} />
+        <TabelaDre meses={meses} linhas={linhas} receitaLiquida={receitaLiquida} regime={regime} />
       </Card>
     </>
   )

@@ -52,7 +52,8 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
   const filtrados = lancamentos
     .filter(
       (l) =>
-        (mes === TODOS_OS_MESES || mesDoLancamento(l, regime) === mes) &&
+        // "Todos" são os meses do histórico, como na DRE (o DAS de dezembro pago em janeiro fica fora pela competência).
+        (mes === TODOS_OS_MESES ? meses.includes(mesDoLancamento(l, regime)) : mesDoLancamento(l, regime) === mes) &&
         (!conta || l.contaId === conta) &&
         combina(q, l.descricao, l.observacao, nomeDaConta(l.contaId), nomeDoProcesso(l.processoId), brl(l.valor)),
     )
