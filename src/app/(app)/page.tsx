@@ -10,7 +10,7 @@ import { Secao } from '@/components/ui/secao'
 import { Situacao } from '@/components/ui/situacao'
 import { projecaoDeCaixa, listarNotas } from '@/data/financeiro'
 import { hoje } from '@/data/hoje'
-import { listarParcelasLiberadas, listarPrazos, type PrazoComProcesso } from '@/data/processos'
+import { listarParcelasLiberadas, listarPrazos, listarPropostas, type PrazoComProcesso } from '@/data/processos'
 import { listarPublicacoes } from '@/data/publicacoes'
 import { exigirUsuario } from '@/data/sessao'
 import { resumoNotas, situacaoNota } from '@/domain/financeiro/notas'
@@ -69,13 +69,14 @@ export default async function Hoje() {
   if (!pode(usuario.papel, 'prazos')) redirect(inicioDoPapel(usuario.papel))
   const verFinanceiro = pode(usuario.papel, 'financeiro')
 
-  const [dia, prazos, publicacoes, { notas }, parcelas, caixa] = await Promise.all([
+  const [dia, prazos, publicacoes, { notas }, parcelas, caixa, propostas] = await Promise.all([
     hoje(),
     listarPrazos(),
     listarPublicacoes(),
     listarNotas(),
     listarParcelasLiberadas(),
     projecaoDeCaixa(),
+    listarPropostas(),
   ])
 
   // Só as obrigações da Eco Direito; o que depende da SVMA fica na tela de prazos.
@@ -85,6 +86,8 @@ export default async function Hoje() {
   const semana = abertos.filter((p) => p.vencimento > dia && p.vencimento <= somarDias(dia, 7))
   const novas = publicacoes.itens.filter((item) => item.ato.status === 'nova')
   const aFaturar = verFinanceiro ? parcelas : []
+  // Quem não vê o Comercial recebe a lista de propostas vazia.
+  const retornos = propostas.filter((item) => item.situacao.pedeRetorno)
 
   const todas = notas.map(({ nota }) => nota)
   const geral = resumoNotas(todas, dia)
@@ -101,11 +104,12 @@ export default async function Hoje() {
     semana.length && `${contar(semana.length, 'prazo', 'prazos')} nos próximos 7 dias`,
     novas.length && contar(novas.length, 'publicação para revisar', 'publicações para revisar'),
     aFaturar.length && contar(aFaturar.length, 'parcela para faturar', 'parcelas para faturar'),
+    retornos.length && contar(retornos.length, 'proposta sem resposta', 'propostas sem resposta'),
   ].filter((parte): parte is string => Boolean(parte))
   const data = formatarDataLonga(dia)
 
   const temAtrasado = vencidos.length > 0 || atrasadas.length > 0
-  const temHoje = deHoje.length + novas.length + aFaturar.length > 0
+  const temHoje = deHoje.length + novas.length + aFaturar.length + retornos.length > 0
   const { edicao } = publicacoes
 
   return (
@@ -162,6 +166,16 @@ export default async function Hoje() {
                     titulo={processo.empreendimento}
                     contexto={`${parcela.descricao} · ${cliente.nome}`}
                     direita={<span className="font-semibold text-ink">{brl(parcela.valor)}</span>}
+                  />
+                ))}
+                {retornos.map(({ processo, cliente, situacao }) => (
+                  <Item
+                    key={processo.id}
+                    href={`/processos/${processo.id}?aba=proposta`}
+                    situacao={<Situacao tom="warn">{`Sem resposta há ${contar(situacao.diasSemResposta ?? 0, 'dia', 'dias')}`}</Situacao>}
+                    titulo="Pedir retorno da proposta"
+                    contexto={`${processo.empreendimento} · ${cliente.nome}`}
+                    direita="Proposta"
                   />
                 ))}
               </Lista>

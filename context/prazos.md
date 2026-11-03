@@ -16,7 +16,7 @@ Cada fase é um checklist de etapas (`EVENTOS` e `etapasDaFase` em `src/domain/p
 
 | Fase | Etapas (★ = etapa final) | Quem faz |
 |---|---|---|
-| 1 Proposta | Proposta enviada · ★ Orçamento aprovado | Eco Direito; cliente |
+| 1 Proposta | Proposta enviada · ★ Orçamento aprovado · Proposta recusada (só se o cliente recusar; motivo na observação) | Eco Direito; cliente |
 | 2 Documentação | Projeto ambiental elaborado · Documentação do cliente recebida · ★ Processo aberto na SVMA (autuação, gera o nº SEI) | Eco Direito; cliente |
 | 3 Análise | Guia de vistoria emitida · Guia paga e comprovante enviado · ★ Vistoria realizada | SVMA; cliente e Eco Direito |
 | 4 Resposta | Comunique-se publicado (Diário, só se houver pendência, repete) · Resposta protocolada (repete) · ★ LAA e parecer técnico emitidos | SVMA; Eco Direito |
@@ -31,6 +31,14 @@ Cada fase é um checklist de etapas (`EVENTOS` e `etapasDaFase` em `src/domain/p
 - a etapa final da fase leva o processo para a fase seguinte;
 - uma etapa de fase mais adiante leva o processo até ela (quando a etapa final de antes não foi registrada);
 - data marcada para a frente não muda a fase, e o processo nunca volta de fase sozinho (corrija em "Editar").
+
+## Proposta (fase 1)
+
+- Começa em Comercial > "Nova proposta" (`/comercial/nova`): numa transação, cria o processo na fase 1 (sem nº SEI), o texto da proposta (tabela `propostas`: escopo, validade, data) e o contrato com as parcelas do serviço (`parcelasDaProposta`, `src/domain/propostas.ts`: licenciamento 30/30/40 no aceite/LAA/TCA, manejo 50/50 no aceite/corte).
+- A situação sai das etapas (`situacaoDaProposta`): em elaboração → enviada (`proposta_enviada`) → aprovada (`aceite_proposta`, leva à fase 2 e libera a 1ª parcela) ou recusada (`proposta_recusada`). Enviada há mais de 7 dias sem resposta pede retorno e aparece no Hoje.
+- Aba "Proposta" do processo (abre primeiro na fase 1): o documento para imprimir ou salvar em PDF, os botões "Marcar como enviada", "Cliente aprovou", "Cliente recusou" e "Editar o texto".
+- Recusada sai de `listarProcessos` e da contagem por cliente; continua no Comercial e no endereço do processo. Contratos (financeiro) só contam proposta aceita.
+- Quem vê: o perfil com `comercial` (sócia edita; financeiro e equipe veem). A equipe marca as etapas porque edita prazos.
 
 ## Tela do processo
 

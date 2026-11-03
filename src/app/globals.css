@@ -89,6 +89,17 @@ body {
   font-size: 0.9375rem;
 }
 
+/* Impressão (proposta em PDF): papel branco e texto escuro, mesmo no modo escuro. */
+@media print {
+  :root {
+    color-scheme: light;
+  }
+  body {
+    background: #fff;
+    color: #1d2420;
+  }
+}
+
 @layer components {
   /* Link dentro de texto ou de tabela: sublinhado para ficar claro que abre outra tela. */
   .link {

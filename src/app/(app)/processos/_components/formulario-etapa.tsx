@@ -15,10 +15,12 @@ type Props = {
   prazoPadrao?: number
   /** Autuação de processo ainda sem nº SEI. */
   pedirSei?: boolean
+  rotuloBotao?: string
+  rotuloObservacao?: string
 }
 
 /** Marca uma etapa da fase: só os campos que fazem sentido para ela. */
-export function FormularioEtapa({ processoId, tipo, info, dia, prazoPadrao, pedirSei }: Props) {
+export function FormularioEtapa({ processoId, tipo, info, dia, prazoPadrao, pedirSei, rotuloBotao, rotuloObservacao = 'Observação' }: Props) {
   const [estado, acao] = useActionState(lancarEvento, {})
   const erros = estado.erros ?? {}
   return (
@@ -44,11 +46,11 @@ export function FormularioEtapa({ processoId, tipo, info, dia, prazoPadrao, pedi
           </Campo>
         )}
       </div>
-      <Campo rotulo="Observação" erro={erros.observacao} dica="Opcional. Aparece na linha do tempo.">
+      <Campo rotulo={rotuloObservacao} erro={erros.observacao} dica="Opcional. Aparece na linha do tempo.">
         <AreaTexto name="observacao" defaultValue={estado.valores?.observacao} rows={2} className="min-h-16" placeholder="Ex.: protocolo nº, o que a SVMA pediu, com quem falou" />
       </Campo>
       <MensagemFormulario estado={estado} />
-      <BotaoEnviar>{info.planejada ? 'Marcar a data' : 'Marcar como feita'}</BotaoEnviar>
+      <BotaoEnviar>{rotuloBotao ?? (info.planejada ? 'Marcar a data' : 'Marcar como feita')}</BotaoEnviar>
     </form>
   )
 }

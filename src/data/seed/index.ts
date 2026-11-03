@@ -6,11 +6,12 @@ import { gerarAtos } from './publicacoes'
 
 /** Gera toda a base fictícia a partir da data de hoje. */
 export function gerarBase(hoje: DataISO) {
-  const { processos, contratos } = gerarProcessos(hoje)
+  const { processos, contratos, propostas } = gerarProcessos(hoje)
   return {
     clientes: CLIENTES.map(({ id, nome, documento, grupo }) => ({ id, nome, documento, grupo })),
     processos,
     contratos,
+    propostas,
     publicacoes: gerarAtos(hoje),
     financeiro: gerarFinanceiro(hoje, processos, contratos),
   }

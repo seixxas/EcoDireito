@@ -77,6 +77,7 @@ Texto de resumo: `contar(n, 'prazo', 'prazos')`, `juntar(['a', 'b', 'c'])` → "
 | Processos / processo | Lista compacta. No processo: barra das 8 fases clicável, dados em uma linha e abas Etapas (checklist da fase) · Prazos · Linha do tempo · Cobrança |
 | Diário Oficial | Linhas compactas (série, cliente/processo, como achou, prazo sugerido, ações); texto do ato em `Expansivel` (B) |
 | Faturamento e financeiro | Mês atual por padrão com navegação de mês; `Resumo` no topo; gráfico menor ou atrás de aba; DRE com grupos recolhíveis (C) |
+| Comercial | Funil em 4 colunas de cartões (o único lugar com cartões: é um quadro de etapas). A proposta abre na aba Proposta do processo, com o documento que imprime limpo (`print:hidden` no resto) |
 | Portal, login, usuários | Feito. Portal: fase atual e próximo prazo numa caixa, etapas numa linha do tempo vertical. Usuários: lista com o que cada perfil pode, formulário recolhido. Login: fundo papel, sem sombra (A) |
 
 ## Textos

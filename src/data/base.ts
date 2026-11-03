@@ -23,10 +23,11 @@ function daMemoria(dia: DataISO) {
 }
 
 async function doBanco(dia: DataISO): Promise<Base> {
-  const [clientes, processos, eventos, contratos, parcelas, notas, lancamentos, atos, edicoes, contas] = await Promise.all([
+  const [clientes, processos, eventos, propostas, contratos, parcelas, notas, lancamentos, atos, edicoes, contas] = await Promise.all([
     db.select().from(schema.clientes).orderBy(asc(schema.clientes.nome)),
     db.select().from(schema.processos).orderBy(asc(schema.processos.id)),
     db.select().from(schema.eventos).orderBy(asc(schema.eventos.data)),
+    db.select().from(schema.propostas),
     db.select().from(schema.contratos),
     db.select().from(schema.parcelas).orderBy(asc(schema.parcelas.ordem)),
     db.select().from(schema.notasFiscais).orderBy(asc(schema.notasFiscais.emissao), asc(schema.notasFiscais.numero)),
@@ -87,6 +88,7 @@ async function doBanco(dia: DataISO): Promise<Base> {
           .map((pc) => ({ id: pc.id, contratoId: pc.contratoId, descricao: pc.descricao, valor: pc.valor, gatilho: pc.gatilho as TipoEvento })),
       }),
     ),
+    propostas,
     publicacoes: {
       atos: atos.map((a) => ({ ...a, status: a.status as StatusPublicacao, motivo: a.motivo ?? undefined, link: a.link ?? undefined })),
       edicao: edicoes[0]
@@ -133,6 +135,7 @@ function recortarPorPerfil(base: Base, usuario: Usuario): Base {
       clientes: base.clientes.filter((c) => c.id === usuario.clienteId),
       processos: base.processos.filter((p) => p.clienteId === usuario.clienteId),
       contratos: [],
+      propostas: [],
       publicacoes: semAtos,
       financeiro: semFinanceiro,
     }
@@ -141,6 +144,7 @@ function recortarPorPerfil(base: Base, usuario: Usuario): Base {
   return {
     ...base,
     contratos: financeiro ? base.contratos : [],
+    propostas: pode(usuario.papel, 'comercial') ? base.propostas : [],
     financeiro: financeiro ? base.financeiro : semFinanceiro,
     publicacoes: pode(usuario.papel, 'prazos') ? base.publicacoes : semAtos,
   }

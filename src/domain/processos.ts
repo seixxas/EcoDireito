@@ -37,6 +37,13 @@ export type InfoEvento = {
 const DEFINICAO = {
   proposta_enviada: { nome: 'Proposta enviada ao cliente', fase: 1, quem: 'Eco Direito' },
   aceite_proposta: { nome: 'Orçamento aprovado pelo cliente', fase: 1, quem: 'Cliente', fecha: true },
+  proposta_recusada: {
+    nome: 'Proposta recusada pelo cliente',
+    fase: 1,
+    quem: 'Cliente',
+    quando: 'só se o cliente recusar',
+    ajuda: 'Escreva o motivo na observação. A proposta sai da lista de processos e fica no Comercial, entre as recusadas.',
+  },
   projeto_elaborado: { nome: 'Projeto ambiental elaborado', fase: 2, quem: 'Eco Direito' },
   documentacao_recebida: { nome: 'Documentação do cliente recebida', fase: 2, quem: 'Cliente' },
   autuacao: { nome: 'Processo aberto na SVMA (autuação)', fase: 2, quem: 'Eco Direito', fecha: true, ajuda: 'A SVMA gera o nº SEI, que o robô usa para achar o processo no Diário Oficial.' },

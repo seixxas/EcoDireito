@@ -11,8 +11,8 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/` | Hoje | Lista por urgência (atrasado, hoje, próximos 7 dias): prazos, publicações a revisar, parcelas a faturar, notas atrasadas; ao lado, saldo e Diário |
 | `/prazos` | Prazos | Prazos em aberto por período (vencidos, esta semana, próximas semanas, mais adiante), cálculo recolhido; `?filtro=orgao` e `?filtro=cumpridos`; busca (`?q=`) e filtro por responsável; 10 por página |
 | `/processos` | Processos | Lista com fase e próximo prazo; busca (`?q=`) e filtro por fase (`?fase=`); cadastrar processo (`/processos/novo`) |
-| `/processos/[id]` | Processo | Barra das 8 fases clicável (`?fase=`) e abas: Etapas (checklist da fase, "Marcar como feita" com observação), Prazos, Linha do tempo (apagar evento) e Cobrança (parcelas, "Emitir nota"); editar em `/processos/[id]/editar` |
-| `/comercial` | Comercial | Em desenvolvimento: prévia do funil de propostas com dados de exemplo |
+| `/processos/[id]` | Processo | Barra das 8 fases clicável (`?aba=etapas&fase=`) e abas: Proposta (documento para imprimir; enviada, aprovada, recusada), Etapas (checklist da fase, "Marcar como feita" com observação), Prazos, Linha do tempo (apagar evento) e Cobrança (parcelas, "Emitir nota"); editar em `/processos/[id]/editar` |
+| `/comercial` | Comercial | Funil de propostas (em elaboração, enviadas, aprovadas, recusadas) com valor em aberto, conversão e quem pede retorno; "Nova proposta" em `/comercial/nova` |
 | `/processos/clientes` | Clientes | Lista com busca por nome, CNPJ e grupo; cadastro e edição de clientes |
 | `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; busca no texto, empresa e nº SEI; confirmar cria o evento, descartar pede motivo, cadastrar processo a partir do ato |
 | `/financeiro` | Faturamento | Notas do mês (ou todos) com busca e situação, faturado × recebido, parcelas prontas para faturar |
@@ -41,7 +41,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 - Antes da reunião: `npm run db:seed` refaz a base com as datas do dia (apaga o que foi editado e recria os usuários).
 - Roteiro testado em 03/11 no site e de novo no visual novo (navegador real, gravando no Neon): confirmar o Extrato do TCA do Jequitibá Campo Belo em `/publicacoes` → prazo da cláusula 9.3 em `/processos/p11` e parcela 3 "pronta para faturar" na aba Cobrança → "Emitir nota" → registrar recebimento → em `/financeiro/extrato`, "baixar extrato de exemplo" e importar o arquivo (2 linhas "já lançado", o PIX recebido sugere a NF em aberto do mesmo valor, o PIX enviado e a tarifa ficam a classificar). O exemplo é montado da base do dia, então bate com qualquer seed.
 - Login em produção: no máximo 3 tentativas a cada 10 s por IP (proteção do Better Auth).
-- Bons exemplos: `/processos/p06` (fase Resposta: Comunique-se vencido, LAA depois da resposta), `/processos/p15` (ainda na Proposta, sem nº SEI), `/processos/p08` (Documentação, falta autuar), `/processos/p02` (TCA publicado, parcela pronta para faturar), `/processos/p13` (processo antigo com nº SIMPROC) e o portal com o usuário cliente.
+- Bons exemplos: `/processos/p06` (fase Resposta: Comunique-se vencido, LAA depois da resposta), `/processos/p15` (proposta enviada, sem nº SEI), `/processos/p16` (proposta em elaboração), `/processos/p17` (sem resposta há 12 dias, aparece no Hoje), `/processos/p18` (recusada), `/processos/p08` (Documentação, falta autuar), `/processos/p02` (TCA publicado, parcela pronta para faturar), `/processos/p13` (processo antigo com nº SIMPROC) e o portal com o usuário cliente.
 
 ## Próximos passos
 
