@@ -4,6 +4,9 @@ Registro curto, do mais novo para o mais antigo. Mudou uma decisão? Acrescente 
 
 | Data | Decisão | Por quê |
 |---|---|---|
+| 2026-11-02 | Login com Better Auth (e-mail e senha, sem cadastro aberto), perfis em `src/lib/permissoes.ts` | Roda no nosso Postgres e vai junto para a hospedagem oficial; sem serviço externo |
+| 2026-11-02 | Recorte por perfil em `carregar()`, não só no layout | Layout e página renderizam em paralelo: a guarda do layout não impede a página de mandar dados |
+| 2026-11-02 | `BETTER_AUTH_URL` só na Vercel; no local, o endereço vem da requisição | Cada sessão roda numa porta diferente |
 | 2026-11-02 | Drizzle com driver HTTP do Neon; `drizzle-kit push` sem arquivos de migração por enquanto | Três sessões em paralelo: migrações numeradas iam conflitar. Adotar migrações antes da produção |
 | 2026-11-02 | `carregar()` lê a base inteira do banco a cada requisição (com `cache` do React) | Volume pequeno; mantém todas as funções de `src/data` iguais. Otimizar por consulta quando crescer |
 | 2026-11-02 | Zod para validar formulários | Validação e tipos num lugar só, padrão com Server Actions |

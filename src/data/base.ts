@@ -8,7 +8,9 @@ import type { ContaId } from '@/domain/financeiro/plano-de-contas'
 import type { Evento, NumeroFase, Processo, Servico, TipoEvento } from '@/domain/processos'
 import { mesDe, mesesEntre, type DataISO } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
+import { pode } from '@/lib/permissoes'
 import { hoje } from './hoje'
+import { exigirUsuario, type Usuario } from './sessao'
 import { gerarBase, type Base } from './seed'
 import type { StatusPublicacao } from './seed/publicacoes'
 
@@ -105,8 +107,34 @@ async function doBanco(dia: DataISO): Promise<Base> {
   }
 }
 
-/** Toda a base do dia, uma leitura por requisição. As funções de src/data partem daqui. */
+/**
+ * Corta o que o perfil não pode ver. Fica aqui, e não só no layout, porque o Next
+ * renderiza layout e página em paralelo: a página manda os dados mesmo se o layout redirecionar.
+ */
+function recortarPorPerfil(base: Base, usuario: Usuario): Base {
+  const semFinanceiro = { ...base.financeiro, notas: [], lancamentos: [], saldoInicial: 0, aplicado: 0 }
+  const semAtos = { ...base.publicacoes, atos: [] }
+  if (usuario.papel === 'cliente') {
+    return {
+      ...base,
+      clientes: base.clientes.filter((c) => c.id === usuario.clienteId),
+      processos: base.processos.filter((p) => p.clienteId === usuario.clienteId),
+      contratos: [],
+      publicacoes: semAtos,
+      financeiro: semFinanceiro,
+    }
+  }
+  const financeiro = pode(usuario.papel, 'financeiro')
+  return {
+    ...base,
+    contratos: financeiro ? base.contratos : [],
+    financeiro: financeiro ? base.financeiro : semFinanceiro,
+    publicacoes: pode(usuario.papel, 'prazos') ? base.publicacoes : semAtos,
+  }
+}
+
+/** Toda a base do dia que o usuário pode ver, uma leitura por requisição. As funções de src/data partem daqui. */
 export const carregar = cache(async () => {
-  const dia = await hoje()
-  return { hoje: dia, ...(temBanco ? await doBanco(dia) : daMemoria(dia)) }
+  const [dia, usuario] = await Promise.all([hoje(), exigirUsuario()])
+  return { hoje: dia, usuario, ...recortarPorPerfil(temBanco ? await doBanco(dia) : daMemoria(dia), usuario) }
 })
