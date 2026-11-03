@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { montarDre } from './dre'
-import { movimentosPrevistos, projetarSemanas } from './fluxo'
+import { diasDaSemana, movimentosPrevistos, projetarSemanas } from './fluxo'
 import type { Processo } from '../processos'
 import { alteracoesDoLancamento, errosDoLancamento, mesDoLancamento, type Lancamento } from './lancamentos'
 import { errosDaNota, errosDoRecebimento, montarNota, motivoParaNaoCancelar, resumoNotas, situacaoNota, type NotaFiscal } from './notas'
@@ -141,5 +141,22 @@ describe('edição do lançamento', () => {
     const das = { ...pix, data: '2026-11-20', competencia: '2026-10' }
     expect(mesDoLancamento(das, 'caixa')).toBe('2026-11')
     expect(mesDoLancamento(das, 'competencia')).toBe('2026-10')
+  })
+})
+
+describe('semana dia a dia', () => {
+  const movimentos = [
+    { data: '2026-11-03', descricao: 'NF 1', valor: 50_000, origem: 'nota' as const },
+    { data: '2026-11-05', descricao: 'Aluguel', valor: -20_000, origem: 'recorrente' as const },
+    { data: '2026-11-05', descricao: 'NF 2', valor: 10_000, origem: 'nota' as const },
+  ]
+  const [semana] = projetarSemanas(100_000, '2026-11-03', movimentos, 1)
+
+  it('reparte os movimentos pelos 7 dias e termina no saldo da semana', () => {
+    const dias = diasDaSemana(semana)
+    expect(dias.map((d) => d.data)).toEqual(['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06', '2026-11-07', '2026-11-08'])
+    expect(dias.map((d) => d.saldoFinal)).toEqual([100_000, 150_000, 150_000, 140_000, 140_000, 140_000, 140_000])
+    expect(dias[3]).toMatchObject({ entradas: 10_000, saidas: -20_000 })
+    expect(dias.at(-1)!.saldoFinal).toBe(semana.saldoFinal)
   })
 })

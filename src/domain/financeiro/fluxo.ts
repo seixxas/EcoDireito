@@ -75,6 +75,21 @@ export function projetarSemanas(saldoInicial: Centavos, hoje: DataISO, movimento
   return resultado
 }
 
+export type DiaFluxo = Omit<SemanaFluxo, 'inicio' | 'fim'> & { data: DataISO }
+
+/** A semana dia a dia: parte do saldo com que ela começa e termina no mesmo saldo da projeção por semana. */
+export function diasDaSemana(semana: SemanaFluxo): DiaFluxo[] {
+  let saldo = semana.saldoFinal - semana.entradas - semana.saidas
+  return Array.from({ length: 7 }, (_, i) => {
+    const data = somarDias(semana.inicio, i)
+    const movimentos = semana.movimentos.filter((m) => m.data === data)
+    const entradas = somar(movimentos.filter((m) => m.valor > 0).map((m) => m.valor))
+    const saidas = somar(movimentos.filter((m) => m.valor < 0).map((m) => m.valor))
+    saldo += entradas + saidas
+    return { data, entradas, saidas, saldoFinal: saldo, movimentos }
+  })
+}
+
 export function fluxoMensal(lancamentos: Lancamento[], meses: string[], saldoInicial: Centavos) {
   let saldo = saldoInicial
   return meses.map((mes) => {

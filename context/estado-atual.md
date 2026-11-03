@@ -14,13 +14,13 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/processos/[id]` | Processo | Barra de fases e abas `?aba=` Prazos, Linha do tempo (lançar e apagar evento) e Cobrança (parcelas, "Emitir nota"); editar em `/processos/[id]/editar` |
 | `/processos/clientes` | Clientes | Lista, cadastro e edição de clientes |
 | `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; confirmar cria o evento, descartar pede motivo, cadastrar processo a partir do ato |
-| `/financeiro` | Faturamento | Notas, situação, faturado × recebido, parcelas prontas para faturar |
+| `/financeiro` | Faturamento | Notas do mês (ou todos) com busca e situação, faturado × recebido, parcelas prontas para faturar |
 | `/financeiro/receber` | Contas a receber | Notas em aberto com busca e filtros de situação e faixa de atraso; maiores saldos por empresa ou grupo |
-| `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`) |
-| `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas e realizado por mês |
+| `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`); cada valor abre os lançamentos da conta no mês |
+| `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas (clicar numa semana mostra dia a dia, `?semana=`) e realizado por mês |
 | `/financeiro/notas/nova` | Registrar nota | Nota avulsa ou a partir de parcela liberada (`?parcela=`) |
 | `/financeiro/notas/[id]` | Nota fiscal | Detalhe, registrar ou corrigir recebimento, cancelar |
-| `/financeiro/lancamentos` | Lançamentos | Lista por mês e lançamento manual com conta, competência e processo |
+| `/financeiro/lancamentos` | Lançamentos | Lista por mês (ou todos) com busca e filtro de conta; lançamento manual; `/[id]` edita descrição, conta, competência, processo e observação |
 | `/financeiro/contratos` | Contratos | Parcelas por processo; `/[processoId]` inclui, edita e apaga |
 | `/financeiro/extrato` | Extrato bancário | Importa OFX/CSV; fila a classificar com sugestão (já lançado, recebimento de nota, regra); regras |
 | `/usuarios` | Usuários | Sócias criam e removem acessos (equipe, contador, cliente) |
