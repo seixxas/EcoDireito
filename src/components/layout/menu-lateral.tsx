@@ -11,6 +11,7 @@ import {
   LogOut,
   Newspaper,
   Receipt,
+  Users,
   type LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -40,6 +41,10 @@ const GRUPOS: { titulo?: string; itens: Item[] }[] = [
       { href: '/financeiro/dre', rotulo: 'DRE', icone: ChartColumn, area: 'financeiro' },
       { href: '/financeiro/fluxo', rotulo: 'Fluxo de caixa', icone: ChartLine, area: 'financeiro' },
     ],
+  },
+  {
+    titulo: 'Administração',
+    itens: [{ href: '/usuarios', rotulo: 'Usuários', icone: Users, area: 'usuarios' }],
   },
 ]
 

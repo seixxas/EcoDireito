@@ -1,13 +1,13 @@
 export const PAPEIS = {
-  socia: { nome: 'Sócia', prazos: 'editar', financeiro: 'editar' },
-  financeiro: { nome: 'Financeiro', prazos: 'ver', financeiro: 'editar' },
-  equipe: { nome: 'Equipe técnica', prazos: 'editar', financeiro: 'nada' },
-  contador: { nome: 'Contador', prazos: 'nada', financeiro: 'ver' },
-  cliente: { nome: 'Cliente', prazos: 'nada', financeiro: 'nada' },
+  socia: { nome: 'Sócia', prazos: 'editar', financeiro: 'editar', usuarios: 'editar' },
+  financeiro: { nome: 'Financeiro', prazos: 'ver', financeiro: 'editar', usuarios: 'nada' },
+  equipe: { nome: 'Equipe técnica', prazos: 'editar', financeiro: 'nada', usuarios: 'nada' },
+  contador: { nome: 'Contador', prazos: 'nada', financeiro: 'ver', usuarios: 'nada' },
+  cliente: { nome: 'Cliente', prazos: 'nada', financeiro: 'nada', usuarios: 'nada' },
 } as const
 
 export type Papel = keyof typeof PAPEIS
-export type Area = 'prazos' | 'financeiro'
+export type Area = 'prazos' | 'financeiro' | 'usuarios'
 export type Acesso = 'ver' | 'editar'
 
 export function ehPapel(valor: unknown): valor is Papel {
