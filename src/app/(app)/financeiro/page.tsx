@@ -25,11 +25,12 @@ import { brl, contar, formatarData, formatarDataCurta, formatarMes } from '@/lib
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { AbrirLinha } from './_components/abrir-linha'
+import { AbaLucratividade } from './_components/lucratividade'
 import { NavegacaoMes, TODOS_OS_MESES } from './_components/navegacao-mes'
 
 export const metadata: Metadata = { title: 'Faturamento' }
 
-type Filtros = { mes?: string; situacao?: string; aba?: string; q?: string; pagina?: string }
+type Filtros = { mes?: string; situacao?: string; aba?: string; q?: string; margem?: string; pagina?: string }
 
 export default async function PaginaFaturamento({ searchParams }: { searchParams: Promise<Filtros> }) {
   const [filtros, { hoje: dia, meses, notas }, parcelas, usuario] = await Promise.all([searchParams, listarNotas(), listarParcelasLiberadas(), exigirArea('financeiro')])
@@ -37,7 +38,7 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
   const atual = mesDe(dia)
   const mes = filtros.mes === TODOS_OS_MESES || meses.includes(filtros.mes ?? '') ? filtros.mes! : atual
   const situacao = filtros.situacao ?? 'todos'
-  const aba = filtros.aba === 'grafico' ? 'grafico' : 'notas'
+  const aba = filtros.aba === 'grafico' || filtros.aba === 'lucratividade' ? filtros.aba : 'notas'
   const q = filtros.q?.trim() || undefined
   /** Link com os filtros de agora trocando só o que vier em `novos` (a página volta para a 1). */
   const link = (novos: Filtros) => {
@@ -47,6 +48,7 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
     if (f.situacao && f.situacao !== 'todos') params.set('situacao', f.situacao)
     if (f.aba && f.aba !== 'notas') params.set('aba', f.aba)
     if (f.q) params.set('q', f.q)
+    if (f.margem && f.aba === 'lucratividade') params.set('margem', f.margem)
     if (f.pagina && f.pagina !== '1') params.set('pagina', f.pagina)
     return params.size ? `/financeiro?${params}` : '/financeiro'
   }
@@ -136,11 +138,18 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
         ativa={aba}
         abas={[
           { valor: 'notas', rotulo: todosOsMeses ? 'Notas de todos os meses' : `Notas de ${formatarMes(mes)}`, href: link({ aba: 'notas' }), contagem: doMes.length },
-          { valor: 'grafico', rotulo: 'Faturado × recebido no ano', href: link({ aba: 'grafico' }) },
+          { valor: 'grafico', rotulo: 'Faturado × recebido', href: link({ aba: 'grafico' }) },
+          { valor: 'lucratividade', rotulo: 'Lucratividade por projeto', href: link({ aba: 'lucratividade' }) },
         ]}
       />
 
-      {aba === 'grafico' ? (
+      {aba === 'lucratividade' ? (
+        <AbaLucratividade
+          filtros={{ q, margem: filtros.margem, pagina: filtros.pagina }}
+          link={(novos) => link({ aba: 'lucratividade', ...novos })}
+          manter={{ aba, mes: mes === atual ? undefined : mes, situacao: situacao === 'todos' ? undefined : situacao }}
+        />
+      ) : aba === 'grafico' ? (
         <GraficoBarras
           dados={grafico}
           series={[
