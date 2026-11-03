@@ -4,6 +4,7 @@ import { refresh } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { gravarCliente, gravarEvento, gravarProcesso, obterProcesso, removerEvento, seiEmUso } from '@/data/processos'
+import { hoje } from '@/data/hoje'
 import { exigirArea } from '@/data/sessao'
 import { EVENTOS, FASES, TIPOS_EVENTO, type NumeroFase } from '@/domain/processos'
 import { campo, lerFormulario, valoresDoFormulario, type EstadoFormulario } from '@/lib/formulario'
@@ -28,6 +29,9 @@ export async function salvarCliente(_: EstadoFormulario, formData: FormData): Pr
   redirect(destino(voltar, '/processos/clientes'))
 }
 
+const FORMATO_SEI = /^\d{4}\.\d{4}\/\d{7}-\d$/
+const numeroSei = () => campo.opcional().refine((v) => !v || FORMATO_SEI.test(v), 'Use o formato 6027.2026/0000021-3')
+
 const esquemaProcesso = z.object({
   id: campo.opcional(),
   clienteId: campo.texto('Escolha o cliente'),
@@ -35,7 +39,7 @@ const esquemaProcesso = z.object({
   endereco: z.string().trim(),
   responsavel: z.string().trim(),
   servico: z.enum(['licenciamento', 'manejo']),
-  numeroSei: campo.texto().regex(/^\d{4}\.\d{4}\/\d{7}-\d$/, 'Use o formato 6027.2026/0000021-3'),
+  numeroSei: numeroSei(),
   numeroSimproc: campo.opcional().refine((v) => !v || /^\d{4}-0\.\d{3}\.\d{3}-\d$/.test(v), 'Use o formato 2016-0.084.512-3'),
   numeroTca: campo.opcional(),
   faseAtual: z.coerce
@@ -61,24 +65,38 @@ export async function salvarProcesso(_: EstadoFormulario, formData: FormData): P
 
 const esquemaEvento = z.object({
   processoId: campo.texto(),
-  tipo: z.enum(TIPOS_EVENTO, { error: 'Escolha o evento' }),
+  tipo: z.enum(TIPOS_EVENTO, { error: 'Escolha a etapa' }),
   data: campo.data(),
   diasNoAto: campo
     .opcional()
     .refine((v) => !v || /^\d+$/.test(v), 'Use um número de dias')
     .transform((v) => (v ? Number(v) : undefined)),
+  observacao: campo.opcional(),
+  numeroSei: numeroSei(),
 })
 
+/** Marca uma etapa do processo (lança o evento à mão). */
 export async function lancarEvento(_: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   await exigirArea('prazos', 'editar')
   const lido = lerFormulario(esquemaEvento, formData)
   if ('estado' in lido) return lido.estado
-  const { processoId, ...evento } = lido.dados
-  const dados = await obterProcesso(processoId)
+  const { processoId, numeroSei, ...evento } = lido.dados
+  const info = EVENTOS[evento.tipo]
+  const recusar = (nome: string, mensagem: string) => ({ erro: 'Confira os campos destacados.', erros: { [nome]: mensagem }, valores: valoresDoFormulario(formData) })
+
+  const [dados, dia] = await Promise.all([obterProcesso(processoId), hoje()])
   if (!dados) return { erro: 'Processo não encontrado.' }
-  await gravarEvento(dados.processo, { ...evento, origem: 'manual' })
+  if (evento.data > dia && !info.planejada) return recusar('data', 'Marque a etapa depois que ela acontecer, com a data em que aconteceu.')
+  const seiNovo = evento.tipo === 'autuacao' && !dados.processo.numeroSei ? numeroSei : undefined
+  if (await seiEmUso(seiNovo, processoId)) return recusar('numeroSei', 'Já existe um processo com este nº SEI')
+
+  await gravarEvento(
+    dados.processo,
+    { ...evento, diasNoAto: info.prazoNoAto ? evento.diasNoAto : undefined, observacao: evento.observacao, origem: 'manual' },
+    seiNovo,
+  )
   refresh()
-  return { ok: `${EVENTOS[evento.tipo].nome}: lançado.` }
+  return { ok: `${info.nome}: marcado.` }
 }
 
 export async function apagarEvento(id: string) {

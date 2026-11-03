@@ -15,7 +15,7 @@ export function FaseProgresso({ fase, legenda = true }: { fase: NumeroFase; lege
       </div>
       {legenda && (
         <p className="mt-1.5 text-xs font-medium text-muted">
-          Fase {fase} de 7 · {FASES[fase - 1].nome}
+          Fase {fase} de {FASES.length} · {FASES[fase - 1].nome}
         </p>
       )}
     </div>

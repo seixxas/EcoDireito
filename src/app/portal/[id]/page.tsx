@@ -9,7 +9,7 @@ import { obterProcesso } from '@/data/processos'
 import { exigirUsuario } from '@/data/sessao'
 import { pode } from '@/lib/permissoes'
 import { proximoPrazo } from '@/domain/prazos'
-import { FASES } from '@/domain/processos'
+import { conclusaoDaFase, FASES, type NumeroFase } from '@/domain/processos'
 import { cn } from '@/lib/cn'
 import { diasEntre } from '@/lib/datas'
 import { formatarData } from '@/lib/formatar'
@@ -35,6 +35,10 @@ export default async function Portal({ params }: { params: Promise<{ id: string 
   const fase = FASES[processo.faseAtual - 1]
   const proximo = proximoPrazo(prazos, dia)
   const conta = proximo && contagem(diasEntre(dia, proximo.vencimento))
+  const concluida = (numero: NumeroFase) => {
+    const data = conclusaoDaFase(processo, numero, dia)
+    return data ? `Concluída em ${formatarData(data)}` : 'Concluída'
+  }
 
   return (
     <>
@@ -95,7 +99,7 @@ export default async function Portal({ params }: { params: Promise<{ id: string 
                     {estado === 'atual' ? (
                       <p className="mt-0.5 text-sm text-muted">{f.descricao}</p>
                     ) : (
-                      <p className="text-xs text-subtle">{estado === 'feita' ? 'Concluída' : 'A iniciar'}</p>
+                      <p className="text-xs text-subtle">{estado === 'feita' ? concluida(f.numero) : 'A iniciar'}</p>
                     )}
                   </div>
                 </li>

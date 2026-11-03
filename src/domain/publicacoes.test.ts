@@ -44,6 +44,11 @@ describe('vincularAto', () => {
     expect(vinculo).toEqual({ comoAchou: 'cnpj', clienteId: 'c1' })
   })
 
+  it('ato sem nº de processo não casa com processo sem nº SEI', () => {
+    const semSei = { ...processos[0], id: 'p2', numeroSei: '', numeroSimproc: undefined }
+    expect(vincularAto(ato({ processo: '' }), [semSei], clientes)).toBeUndefined()
+  })
+
   it('ignora outros órgãos', () => {
     expect(vincularAto(ato({ orgao: 'Secretaria da Fazenda', processo: '6027.2025/0001234-5' }), processos, clientes)).toBeUndefined()
   })

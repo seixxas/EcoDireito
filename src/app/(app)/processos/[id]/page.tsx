@@ -7,7 +7,6 @@ import { descreverSituacao } from '@/components/prazos/situacao-prazo'
 import { Abas } from '@/components/ui/abas'
 import { Badge, type Tom } from '@/components/ui/badge'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
-import { Card } from '@/components/ui/card'
 import { Expansivel, Vazio } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
 import { Linha, Lista } from '@/components/ui/lista'
@@ -20,12 +19,12 @@ import { obterProcesso } from '@/data/processos'
 import { exigirArea } from '@/data/sessao'
 import type { SituacaoParcela } from '@/domain/financeiro/parcelas'
 import { estaAberto, proximoPrazo } from '@/domain/prazos'
-import { EVENTOS, FASES } from '@/domain/processos'
+import { EVENTOS, FASES, situacaoDaFase } from '@/domain/processos'
 import { cn } from '@/lib/cn'
 import { brl, formatarData } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
-import { FormularioEvento } from '../_components/formulario-evento'
+import { EtapasDaFase } from '../_components/etapas-da-fase'
 import { LinkVoltar } from '../_components/link-voltar'
 import { apagarEvento } from '../actions'
 
@@ -38,8 +37,14 @@ const PARCELA: Record<SituacaoParcela, { rotulo: string; tom: Tom }> = {
   recebida: { rotulo: 'Recebida', tom: 'ok' },
 }
 
-export default async function PaginaProcesso({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ aba?: string; pagina?: string }> }) {
-  const [{ id }, { aba: pedida, pagina }] = await Promise.all([params, searchParams])
+export default async function PaginaProcesso({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ aba?: string; pagina?: string; fase?: string }>
+}) {
+  const [{ id }, { aba: pedida, pagina, fase: fasePedida }] = await Promise.all([params, searchParams])
   const [dia, dados, usuario] = await Promise.all([hoje(), obterProcesso(id), exigirArea('prazos')])
   if (!dados) notFound()
   const { processo, cliente, prazos, parcelas } = dados
@@ -51,18 +56,20 @@ export default async function PaginaProcesso({ params, searchParams }: { params:
   const proximo = proximoPrazo(prazos, dia)
   const eventos = paginar([...processo.eventos].sort((a, b) => b.data.localeCompare(a.data)), pagina)
   const fase = FASES[processo.faseAtual - 1]
+  const faseVista = (FASES.find((f) => String(f.numero) === fasePedida) ?? fase).numero
 
   const abas = [
+    { valor: 'etapas', rotulo: 'Etapas' },
     { valor: 'prazos', rotulo: 'Prazos', contagem: abertos.length },
     { valor: 'linha-do-tempo', rotulo: 'Linha do tempo', contagem: eventos.total },
     ...(pode(usuario.papel, 'financeiro') ? [{ valor: 'cobranca', rotulo: 'Cobrança', contagem: parcelas.length }] : []),
-  ].map((a) => ({ ...a, href: a.valor === 'prazos' ? `/processos/${id}` : `/processos/${id}?aba=${a.valor}` }))
-  const aba = abas.find((a) => a.valor === pedida)?.valor ?? 'prazos'
+  ].map((a) => ({ ...a, href: a.valor === 'etapas' ? `/processos/${id}` : `/processos/${id}?aba=${a.valor}` }))
+  const aba = abas.find((a) => a.valor === pedida)?.valor ?? 'etapas'
 
   const dadosDoProcesso = [
     cliente.nome,
     processo.endereco,
-    `SEI ${processo.numeroSei}`,
+    processo.numeroSei ? `SEI ${processo.numeroSei}` : 'Sem nº SEI (ainda não aberto na SVMA)',
     processo.numeroSimproc && `SIMPROC ${processo.numeroSimproc}`,
     processo.numeroTca && `TCA ${processo.numeroTca}`,
     processo.servico === 'manejo' ? 'Manejo' : 'Licenciamento',
@@ -74,7 +81,7 @@ export default async function PaginaProcesso({ params, searchParams }: { params:
       <LinkVoltar href="/processos">Processos</LinkVoltar>
       <PageHeader
         titulo={processo.empreendimento}
-        resumo={`Fase ${fase.numero}, ${fase.nome}. ${proximo ? `Próximo prazo: ${proximo.regra.titulo} (${descreverSituacao(proximo, dia).rotulo.toLowerCase()}).` : 'Nenhum prazo em aberto.'}`}
+        resumo={`Fase ${fase.numero} de ${FASES.length}, ${fase.nome}. ${proximo ? `Próximo prazo: ${proximo.regra.titulo} (${descreverSituacao(proximo, dia).rotulo.toLowerCase()}).` : 'Nenhum prazo em aberto.'}`}
         acoes={
           <>
             {editar && (
@@ -91,18 +98,38 @@ export default async function PaginaProcesso({ params, searchParams }: { params:
 
       <p className="-mt-3 mb-5 text-sm text-muted">{dadosDoProcesso.join(' · ')}</p>
 
-      <ol className="mb-6 grid grid-cols-7 gap-1" aria-label="Fases do processo">
-        {FASES.map((f) => (
-          <li key={f.numero} title={f.descricao}>
-            <span className={cn('block h-1.5 rounded-full', f.numero < fase.numero ? 'bg-ok' : f.numero === fase.numero ? 'bg-accent' : 'bg-line')} />
-            <span className={cn('mt-1.5 block text-xs leading-tight', f.numero === fase.numero ? 'font-medium text-ink' : 'hidden text-subtle sm:block')}>
-              {f.numero}. {f.nome}
-            </span>
-          </li>
-        ))}
+      <ol className="mb-1 grid grid-cols-8 gap-1" aria-label="Fases do processo">
+        {FASES.map((f) => {
+          const situacao = situacaoDaFase(processo, f.numero, dia)
+          const vista = aba === 'etapas' && f.numero === faseVista
+          return (
+            <li key={f.numero}>
+              <Link
+                href={`/processos/${id}?fase=${f.numero}`}
+                scroll={false}
+                title={`Ver as etapas: ${f.descricao}`}
+                aria-current={vista ? 'step' : undefined}
+                className={cn('group block rounded-md px-1 pb-1.5 pt-1 transition-colors hover:bg-brand-50', vista && 'bg-brand-50')}
+              >
+                <span className={cn('block h-1.5 rounded-full', situacao === 'concluida' ? 'bg-ok' : situacao === 'atual' ? 'bg-accent' : 'bg-line')} />
+                <span
+                  className={cn(
+                    'mt-1.5 block text-xs leading-tight group-hover:text-brand-700',
+                    vista ? 'font-semibold text-brand-700' : f.numero === fase.numero ? 'font-medium text-ink' : 'hidden text-subtle sm:block',
+                  )}
+                >
+                  {f.numero}. {f.nome}
+                </span>
+              </Link>
+            </li>
+          )
+        })}
       </ol>
+      <p className="mb-5 px-1 text-xs text-subtle">Clique numa fase para ver as etapas dela.</p>
 
       <Abas abas={abas} ativa={aba} />
+
+      {aba === 'etapas' && <EtapasDaFase processo={processo} fase={faseVista} dia={dia} prazos={prazos} editar={editar} />}
 
       {aba === 'prazos' && (
         <>
@@ -129,17 +156,31 @@ export default async function PaginaProcesso({ params, searchParams }: { params:
       {aba === 'linha-do-tempo' && (
         <>
           {editar && (
-            <Expansivel resumo="Lançar evento" className="mb-4">
-              <Card className="max-w-xl">
-                <FormularioEvento processoId={processo.id} dia={dia} />
-              </Card>
-            </Expansivel>
+            <p className="mb-3 text-sm text-muted">
+              Para lançar um evento, marque a etapa na{' '}
+              <Link href={`/processos/${id}?fase=${fase.numero}`} className="link">
+                fase {fase.nome}
+              </Link>{' '}
+              (ou em outra fase, clicando nela na barra acima).
+            </p>
           )}
           <Lista>
-            {eventos.itens.map((evento) => (
+            {eventos.itens.map((evento) => {
+              const info = EVENTOS[evento.tipo]
+              const seguinte = FASES.find((f) => f.numero === info.fase + 1)
+              return (
               <Linha key={evento.id} className="group">
                 <span className="w-24 shrink-0 tabular-nums text-muted">{formatarData(evento.data)}</span>
-                <span className="min-w-0 flex-1 text-ink">{EVENTOS[evento.tipo].nome}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-ink">{info.nome}</span>
+                  {evento.observacao && <span className="block whitespace-pre-line text-sm text-muted">{evento.observacao}</span>}
+                  {info.fecha && evento.data <= dia && (
+                    <span className="block text-xs text-ok">{seguinte ? `Fechou a fase ${FASES[info.fase - 1].nome}; o processo passou para ${seguinte.nome}` : 'Encerrou o processo'}</span>
+                  )}
+                </span>
+                <span className="hidden w-44 shrink-0 truncate text-xs text-subtle md:block">
+                  Fase {info.fase} · {FASES[info.fase - 1].nome}
+                </span>
                 {evento.data > dia && <Situacao tom="warn">planejado</Situacao>}
                 <Badge>{evento.origem === 'diario' ? 'Diário Oficial' : 'Equipe'}</Badge>
                 {editar && (
@@ -151,6 +192,7 @@ export default async function PaginaProcesso({ params, searchParams }: { params:
                       <p className="mb-2 text-xs text-muted">
                         Os prazos gerados por ele somem, e os que ele cumpriu voltam a ficar em aberto.
                         {evento.origem === 'diario' && ' O ato volta para a caixa de entrada do Diário Oficial.'}
+                        {info.fecha && ' A fase não volta sozinha: se precisar, corrija em Editar.'}
                       </p>
                       <BotaoEnviar variante="perigo" className="w-full">
                         Apagar evento
@@ -159,7 +201,8 @@ export default async function PaginaProcesso({ params, searchParams }: { params:
                   </details>
                 )}
               </Linha>
-            ))}
+              )
+            })}
           </Lista>
           {eventos.total === 0 && <Vazio>Nenhum evento ainda.</Vazio>}
           <Paginacao {...eventos} href={(n) => `/processos/${id}?aba=linha-do-tempo${n > 1 ? `&pagina=${n}` : ''}`} />

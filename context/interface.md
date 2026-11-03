@@ -38,7 +38,7 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 
 ## Layout
 
-- Menu lateral verde escuro (`nav`), estreito, com os grupos Processos, Financeiro e Administração. Usuário, tema e "Sair" no pé.
+- Menu lateral verde escuro (`nav`), estreito, com os grupos Comercial, Processos, Financeiro e Administração. Item ainda em desenvolvimento leva a etiqueta "em breve" (`emBreve`). Usuário, tema e "Sair" no pé.
 - Área de conteúdo com `max-w-6xl`. Tabela larga pode usar a largura toda.
 - `PageHeader`: título + frase-resumo (`resumo`) + ações à direita. A `descricao` longa sai; se for essencial, use uma frase curta.
 
@@ -74,7 +74,7 @@ Texto de resumo: `contar(n, 'prazo', 'prazos')`, `juntar(['a', 'b', 'c'])` → "
 |---|---|
 | Hoje (`/`) | Feito. Uma lista em três grupos (Atrasado, Hoje, Próximos 7 dias) com os prazos da Eco Direito, publicações a revisar, parcelas a faturar e uma linha só para as notas atrasadas. Ao lado, o dinheiro em linhas e a edição do Diário. Os prazos da SVMA ficam em /prazos (A) |
 | Prazos | Agrupar por período (Vencidos, Esta semana, Próximas semanas, Mais adiante) em linhas compactas; cálculo e base legal em `Expansivel` (B) |
-| Processos / processo | Lista compacta. No processo: fases numa barra fina, dados em uma linha e abas Prazos · Linha do tempo · Cobrança (B) |
+| Processos / processo | Lista compacta. No processo: barra das 8 fases clicável, dados em uma linha e abas Etapas (checklist da fase) · Prazos · Linha do tempo · Cobrança |
 | Diário Oficial | Linhas compactas (série, cliente/processo, como achou, prazo sugerido, ações); texto do ato em `Expansivel` (B) |
 | Faturamento e financeiro | Mês atual por padrão com navegação de mês; `Resumo` no topo; gráfico menor ou atrás de aba; DRE com grupos recolhíveis (C) |
 | Portal, login, usuários | Feito. Portal: fase atual e próximo prazo numa caixa, etapas numa linha do tempo vertical. Usuários: lista com o que cada perfil pode, formulário recolhido. Login: fundo papel, sem sombra (A) |

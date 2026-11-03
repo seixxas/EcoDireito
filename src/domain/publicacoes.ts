@@ -57,7 +57,8 @@ const soDigitos = (texto: string) => texto.replace(/\D/g, '')
 export function vincularAto(ato: Ato, processos: Processo[], clientes: Cliente[]): Vinculo | undefined {
   if (ato.orgao !== ORGAO_SVMA) return
 
-  const porSei = processos.find((p) => p.numeroSei === ato.processo)
+  // Ato sem nº de processo não pode casar com processo ainda sem nº SEI.
+  const porSei = ato.processo ? processos.find((p) => p.numeroSei === ato.processo) : undefined
   if (porSei) return { comoAchou: 'sei', clienteId: porSei.clienteId, processoId: porSei.id }
 
   const simprocs: string[] = ato.texto.match(SIMPROC) ?? []

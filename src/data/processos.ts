@@ -21,8 +21,9 @@ export async function obterCliente(id: string) {
   return clientes.find((c) => c.id === id)
 }
 
-/** O vínculo com o Diário Oficial procura o processo pelo nº SEI, então ele não pode se repetir. */
-export async function seiEmUso(numeroSei: string, exceto?: string) {
+/** O vínculo com o Diário Oficial procura o processo pelo nº SEI, então ele não pode se repetir. Sem SEI (antes da autuação) não conflita. */
+export async function seiEmUso(numeroSei: string | undefined, exceto?: string) {
+  if (!numeroSei) return false
   const { processos } = await carregar()
   return processos.some((p) => p.numeroSei === numeroSei && p.id !== exceto)
 }
@@ -81,7 +82,7 @@ export async function gravarCliente(dados: DadosCliente, id?: string) {
 /** Devolve o id do processo gravado. */
 export async function gravarProcesso(dados: DadosProcesso, id?: string) {
   exigirBanco()
-  const valores = { ...dados, numeroSimproc: dados.numeroSimproc ?? null, numeroTca: dados.numeroTca ?? null }
+  const valores = { ...dados, numeroSei: dados.numeroSei ?? null, numeroSimproc: dados.numeroSimproc ?? null, numeroTca: dados.numeroTca ?? null }
   if (id) {
     await db.update(schema.processos).set(valores).where(eq(schema.processos.id, id))
     return id
@@ -99,7 +100,7 @@ export function gravacoesDoEvento(processo: Processo, evento: Evento, dia: DataI
   return [
     db
       .insert(schema.eventos)
-      .values({ ...evento, processoId: processo.id, diasNoAto: evento.diasNoAto ?? null })
+      .values({ ...evento, processoId: processo.id, diasNoAto: evento.diasNoAto ?? null, observacao: evento.observacao ?? null })
       .onConflictDoNothing(),
     db
       .update(schema.processos)
@@ -108,9 +109,12 @@ export function gravacoesDoEvento(processo: Processo, evento: Evento, dia: DataI
   ] as const
 }
 
-export async function gravarEvento(processo: Processo, evento: Omit<Evento, 'id'>) {
+/** `numeroSei` vem junto com a autuação, quando o processo ainda não tinha. */
+export async function gravarEvento(processo: Processo, evento: Omit<Evento, 'id'>, numeroSei?: string) {
   exigirBanco()
-  await db.batch(gravacoesDoEvento(processo, { id: crypto.randomUUID(), ...evento }, await hoje()))
+  const gravacoes = gravacoesDoEvento(processo, { id: crypto.randomUUID(), ...evento }, await hoje())
+  if (!numeroSei) return void (await db.batch(gravacoes))
+  await db.batch([...gravacoes, db.update(schema.processos).set({ numeroSei }).where(eq(schema.processos.id, processo.id))])
 }
 
 /** Apaga um evento lançado por engano. Se ele veio do Diário Oficial, o ato volta para a caixa de entrada. */

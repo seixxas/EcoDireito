@@ -8,6 +8,7 @@ import {
   FileSignature,
   FolderKanban,
   HandCoins,
+  Handshake,
   Landmark,
   Leaf,
   ListTodo,
@@ -25,11 +26,12 @@ import { cn } from '@/lib/cn'
 import { BotaoTema } from './botao-tema'
 import { PAPEIS, pode, type Area, type Papel } from '@/lib/permissoes'
 
-type Item = { href: string; rotulo: string; icone: LucideIcon; area: Area }
+type Item = { href: string; rotulo: string; icone: LucideIcon; area: Area; emBreve?: true }
 export type UsuarioDoMenu = { nome: string; papel: Papel }
 
 const GRUPOS: { titulo?: string; itens: Item[] }[] = [
   { itens: [{ href: '/', rotulo: 'Hoje', icone: ListTodo, area: 'prazos' }] },
+  { titulo: 'Comercial', itens: [{ href: '/comercial', rotulo: 'Propostas', icone: Handshake, area: 'comercial', emBreve: true }] },
   {
     titulo: 'Processos',
     itens: [
@@ -104,7 +106,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
             <div key={i}>
               {grupo.titulo && <p className="mb-1 px-2 text-xs text-nav-muted">{grupo.titulo}</p>}
               <ul className="flex flex-col gap-px">
-                {grupo.itens.map(({ href, rotulo, icone: Icone }) => (
+                {grupo.itens.map(({ href, rotulo, icone: Icone, emBreve }) => (
                   <li key={href}>
                     <Link
                       href={href}
@@ -115,6 +117,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
                     >
                       <Icone className={cn('size-4', ativo(pathname, href) ? 'text-white' : 'text-nav-muted')} />
                       {rotulo}
+                      {emBreve && <span className="ml-auto rounded bg-accent/20 px-1.5 py-px text-[0.6875rem] font-medium text-accent">em breve</span>}
                     </Link>
                   </li>
                 ))}

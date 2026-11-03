@@ -40,7 +40,7 @@ A caixa de entrada mostra o que está na tabela `publicacoes` (ou os atos fictí
 ## Como o robô acha os atos (ordem)
 
 1. Filtra os atos da Secretaria do Verde.
-2. **Nº SEI** da coluna Processo bate com um processo cadastrado.
+2. **Nº SEI** da coluna Processo bate com um processo cadastrado. Ato com a coluna vazia pula este passo (não casa com processo ainda sem SEI).
 3. **Nº SIMPROC** no texto do ato (processos antigos: a coluna traz outro número SEI).
 4. **CNPJ ou nome** de um cliente cadastrado no texto: processo ainda não cadastrado.
 
