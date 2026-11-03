@@ -35,6 +35,8 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 - Local: `npm run dev` e abrir http://localhost:3000.
 - Usuários de demonstração (senha em `SENHA_DEMO` do `.env.local`): `elaine@`, `karim@`, `cissa@` (sócias), `juliana@` (equipe), `contador@` e `cliente@` (portal da Altavista Pinheiros), todos `@demo.ecodireito.com.br`.
 - Antes da reunião: `npm run db:seed` refaz a base com as datas do dia (apaga o que foi editado e recria os usuários).
+- Roteiro testado no site em 03/11 (navegador real, gravando no Neon): confirmar o Extrato do TCA do Jequitibá Campo Belo em `/publicacoes` → prazo da cláusula 9.3 e parcela 3 "pronta para faturar" em `/processos/p11` → "Emitir nota" → registrar recebimento → importar `docs/demo/extrato-demo.ofx` em `/financeiro/extrato` (2 linhas "já lançado", o PIX sugere a NF 729, 2 a classificar). O extrato de exemplo vale para a base gerada em 03/11.
+- Login em produção: no máximo 3 tentativas a cada 10 s por IP (proteção do Better Auth).
 - Bons exemplos: `/processos/p02` (TCA publicado, parcela pronta para faturar), `/processos/p13` (processo antigo com nº SIMPROC) e o portal com o usuário cliente.
 
 ## Próximos passos
