@@ -29,10 +29,12 @@ export function lerFormulario<T extends z.ZodType>(esquema: T, formData: FormDat
 /** Campos comuns. */
 export const campo = {
   texto: (mensagem = 'Preencha este campo') => z.string().trim().min(1, mensagem),
+  /** Vazio ou ausente do formulário (campo condicional, checkbox desmarcado) vira undefined. */
   opcional: () =>
     z
       .string()
       .trim()
+      .optional()
       .transform((valor) => valor || undefined),
   data: () => z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
   /** "1.234,56" ou "1234.56" → centavos. */

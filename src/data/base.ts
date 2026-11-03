@@ -77,8 +77,10 @@ async function doBanco(dia: DataISO): Promise<Base> {
       }),
     ),
     publicacoes: {
-      atos: atos.map((a) => ({ ...a, status: a.status as StatusPublicacao, motivo: a.motivo ?? undefined })),
-      edicao: edicoes[0] ?? { data: dia, totalAtos: 0, atosSvma: 0 },
+      atos: atos.map((a) => ({ ...a, status: a.status as StatusPublicacao, motivo: a.motivo ?? undefined, link: a.link ?? undefined })),
+      edicao: edicoes[0]
+        ? { ...edicoes[0], erro: edicoes[0].erro ?? undefined, processadaEm: edicoes[0].processadaEm.toISOString() }
+        : { data: dia, totalAtos: 0, atosSvma: 0 },
     },
     financeiro: {
       inicio: conta.saldoEm,

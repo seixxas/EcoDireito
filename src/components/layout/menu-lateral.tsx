@@ -8,6 +8,7 @@ import {
   FileSignature,
   FolderKanban,
   HandCoins,
+  Landmark,
   LayoutDashboard,
   Leaf,
   LogOut,
@@ -43,6 +44,7 @@ const GRUPOS: { titulo?: string; itens: Item[] }[] = [
       { href: '/financeiro/dre', rotulo: 'DRE', icone: ChartColumn, area: 'financeiro' },
       { href: '/financeiro/fluxo', rotulo: 'Fluxo de caixa', icone: ChartLine, area: 'financeiro' },
       { href: '/financeiro/lancamentos', rotulo: 'Lançamentos', icone: ArrowLeftRight, area: 'financeiro' },
+      { href: '/financeiro/extrato', rotulo: 'Extrato', icone: Landmark, area: 'financeiro' },
       { href: '/financeiro/contratos', rotulo: 'Contratos', icone: FileSignature, area: 'financeiro' },
     ],
   },
@@ -88,7 +90,8 @@ function MenuNaRota({ usuario }: { usuario?: UsuarioDoMenu }) {
 }
 
 function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu }) {
-  const visivel = (item: Item) => !usuario || pode(usuario.papel, item.area)
+  // Enquanto o usuário carrega, nenhum link: ninguém vê, nem por um instante, o que o perfil não pode abrir.
+  const visivel = (item: Item) => Boolean(usuario && pode(usuario.papel, item.area))
   const grupos = GRUPOS.map((g) => ({ ...g, itens: g.itens.filter(visivel) })).filter((g) => g.itens.length)
 
   return (

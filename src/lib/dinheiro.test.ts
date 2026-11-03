@@ -6,6 +6,8 @@ describe('centavosDoTexto', () => {
     expect(centavosDoTexto('1.234,56')).toBe(123_456)
     expect(centavosDoTexto('R$ 48.000')).toBe(4_800_000)
     expect(centavosDoTexto('1234.5')).toBe(123_450)
+    expect(centavosDoTexto('-48.000')).toBe(-4_800_000)
+    expect(centavosDoTexto('-1.234,56')).toBe(-123_456)
     expect(centavosDoTexto('abc')).toBeUndefined()
     expect(centavosDoTexto('')).toBeUndefined()
   })
