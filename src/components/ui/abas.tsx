@@ -13,7 +13,7 @@ export function Abas({ abas, ativa, className }: { abas: Aba[]; ativa: string; c
           href={aba.href}
           scroll={false}
           className={cn(
-            '-mb-px whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors',
+            'whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors',
             aba.valor === ativa ? 'border-brand-700 text-ink' : 'border-transparent text-muted hover:text-ink',
           )}
         >
