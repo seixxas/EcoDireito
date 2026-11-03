@@ -9,7 +9,7 @@ import { gerarOfx, linhasDeExemplo } from '@/domain/financeiro/extrato-exemplo'
 import { fluxoMensal, movimentosPrevistos, projetarSemanas, type Recorrente } from '@/domain/financeiro/fluxo'
 import type { EdicaoLancamento, Lancamento } from '@/domain/financeiro/lancamentos'
 import { ALIQUOTA_ISS, resumoNotas, type NotaFiscal } from '@/domain/financeiro/notas'
-import { situacaoParcela, type Parcela } from '@/domain/financeiro/parcelas'
+import { situacaoDoContrato, situacaoParcela, type Parcela } from '@/domain/financeiro/parcelas'
 import type { ContaId } from '@/domain/financeiro/plano-de-contas'
 import type { Cliente } from '@/domain/processos'
 import { carregar } from './base'
@@ -133,11 +133,12 @@ export async function obterLancamento(id: string) {
   }
 }
 
-/** Todo processo, com as parcelas do contrato (vazio se ainda não tem contrato). */
+/** Todo processo, com as parcelas do contrato (vazio se ainda não tem contrato) e se a proposta já foi aceita. */
 export async function listarContratos() {
   const { hoje, clientes, processos, contratos, financeiro } = await carregar()
   return processos.map((processo) => ({
     processo,
+    situacao: situacaoDoContrato(processo, hoje),
     cliente: clientes.find((c) => c.id === processo.clienteId)!,
     parcelas: (contratos.find((c) => c.processoId === processo.id)?.parcelas ?? []).map((parcela) => ({
       parcela,

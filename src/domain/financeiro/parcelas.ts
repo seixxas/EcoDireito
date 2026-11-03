@@ -18,6 +18,18 @@ export type Contrato = {
   parcelas: Parcela[]
 }
 
+/**
+ * O contrato nasce com a proposta (as parcelas são o preço dela), mas só conta como contratado depois do aceite.
+ * Recusada: o evento `proposta_recusada` vem com a tela de Propostas; até lá, a comparação é por texto.
+ */
+export type SituacaoDoContrato = 'fechado' | 'proposta' | 'recusada'
+
+export function situacaoDoContrato(processo: Processo, hoje: DataISO): SituacaoDoContrato {
+  const aconteceram = processo.eventos.filter((e) => e.data <= hoje).map((e): string => e.tipo)
+  if (aconteceram.includes('aceite_proposta')) return 'fechado'
+  return aconteceram.includes('proposta_recusada') ? 'recusada' : 'proposta'
+}
+
 export type SituacaoParcela = 'aguardando' | 'liberada' | 'faturada' | 'recebida'
 
 export function situacaoParcela(parcela: Parcela, processo: Processo, notas: NotaFiscal[], hoje: DataISO) {
