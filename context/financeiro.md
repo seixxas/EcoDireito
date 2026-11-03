@@ -16,6 +16,25 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 - Nota: `cancelada` · `recebida` · `parcial` · `atrasada` (previsão passou) · `a_receber`.
 - Parcela: `aguardando` (evento não aconteceu) · `liberada` (evento aconteceu, sem nota) · `faturada` · `recebida`.
 
+## Edição
+
+| Tela | O que faz |
+|---|---|
+| `/financeiro/notas/nova` | Registra a nota já emitida no site da Prefeitura. Com `?parcela=<id>` (botão "Registrar nota" da parcela liberada), já liga cliente, processo e parcela. |
+| `/financeiro/notas/[id]` | Detalhe da nota; registrar ou corrigir o recebimento; cancelar. |
+| `/financeiro/lancamentos` | Lançamentos do mês e lançamento manual (despesa ou receita) com conta, competência e processo. |
+| `/financeiro/contratos` | Contratado, faturado e a faturar por processo. `/financeiro/contratos/[processoId]` inclui, edita e apaga parcelas. |
+
+Regras (em `src/domain/financeiro/notas.ts` e `lancamentos.ts`, com teste):
+
+- ISS de 5% sobre o valor; retenção na fonte de 5,5% quando marcada. A previsão sugerida é a emissão + 15 dias.
+- O número da NF não se repete. A previsão não pode ser antes da emissão. O processo tem de ser do mesmo cliente. Cada parcela tem uma nota só (nota cancelada não conta).
+- Um recebimento por nota, com data entre a emissão e hoje. Registrar o recebimento cria o lançamento de receita (`receita_servicos`, com `notaId`); registrar de novo substitui os dois.
+- Só se cancela nota sem recebimento.
+- Lançamento manual: valor diferente de zero e data até hoje (o previsto vem da projeção do fluxo). Competência vazia = mês da data. O lançamento de uma nota não se apaga pela lista; muda pela nota.
+- Parcela já faturada não se apaga.
+- Gravar exige banco (`exigirBanco()`). Quem edita: sócia e financeiro; o contador só vê (os formulários somem).
+
 ## DRE (estrutura que a Eco Direito já usa)
 
 Receita bruta → (−) Simples Nacional → Receita líquida → (−) Custos (ART, serviços de terceiros, equipamentos)

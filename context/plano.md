@@ -18,9 +18,9 @@ Atualizado em 2026-11-02. Vale para todas as sessões. Ao terminar uma etapa, ma
 | Diário Oficial | Robô agendado todo dia útil às 6h, com alerta de falha; DJEN se houver processo judicial | Depois |
 | Portal | Construtora entra com login e vê só os próprios processos | **Hoje** (E2) |
 | Financeiro | Notas, contas a receber, DRE e fluxo (leitura) | Pronto |
-| Financeiro | Registrar nota (inclusive a partir de parcela liberada), cancelar, registrar recebimento | **Hoje** (E4) |
-| Financeiro | Lançamentos manuais (despesas e receitas) com conta, competência e processo | **Hoje** (E4) |
-| Financeiro | Editar contrato e parcelas do processo | **Hoje** (E4) |
+| Financeiro | Registrar nota (inclusive a partir de parcela liberada), cancelar, registrar recebimento | Pronto (E4) |
+| Financeiro | Lançamentos manuais (despesas e receitas) com conta, competência e processo | Pronto (E4) |
+| Financeiro | Editar contrato e parcelas do processo | Pronto (E4) |
 | Financeiro | Importar extrato (OFX/CSV), regras de classificação, fila "a classificar", conciliação nota × crédito | **Hoje se der** (E6) |
 | Financeiro | Fatura do cartão item a item, fechamento do mês, margem por projeto, monitor do Simples | Depois (E8) |
 | Financeiro | Importar o histórico real das planilhas; exportar Excel/PDF para o contador | Depois (E9) |
@@ -32,7 +32,7 @@ Atualizado em 2026-11-02. Vale para todas as sessões. Ao terminar uma etapa, ma
 | E1 Fundação de dados ✅ | Schema Drizzle, conexão Neon, seed fictício no banco, `src/data/*` lendo do banco, kit de formulário (`src/components/ui/form.tsx`) | — | A |
 | E2 Login e perfis ✅ | Login por e-mail e senha, perfis, menu e rotas por perfil, portal com usuário cliente, tela de usuários | E1 | A |
 | E3 Edição de prazos | Clientes, processos, eventos, caixa de entrada gravada | E1 | B |
-| E4 Edição financeira | Notas, recebimentos, lançamentos, contratos | E1 | C |
+| E4 Edição financeira ✅ | Notas, recebimentos, lançamentos, contratos | E1 | C |
 | E5 Robô do Diário Oficial | Coletor real do DOC-SP + botão "buscar agora" gravando na caixa de entrada | lógica: nada; gravação: E1 | B |
 | E6 Extrato bancário | Importar OFX/CSV, regras de classificação, conciliação | lógica: nada; telas: E1 | C |
 | E7 Alertas por e-mail | Resend, resumo diário e lembretes | E2 | depois |
@@ -79,4 +79,5 @@ Pode mexer em: `src/domain/financeiro/**`, `src/data/financeiro.ts`, `src/app/(a
 
 | De | Para | Pedido | Feito |
 |---|---|---|---|
+| C | B | Em `/processos/[id]`, no card de parcelas, para quem edita o financeiro: link "Editar parcelas" para `/financeiro/contratos/[id]` e, na parcela pronta para faturar, "Registrar nota" para `/financeiro/notas/nova?parcela=<id>`. | |
 | B | A | `publicacoes.link`, `edicoes_diario.erro` e unique (data, documento) para o robô não duplicar | sim (feat/fundacao) |

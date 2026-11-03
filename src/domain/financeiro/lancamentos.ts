@@ -16,3 +16,11 @@ export type Lancamento = {
   processoId?: string
   notaId?: string
 }
+
+/** Só o realizado entra como lançamento; o previsto vem da projeção do fluxo. */
+export function errosDoLancamento(lancamento: Omit<Lancamento, 'id'>, hoje: DataISO): Record<string, string> {
+  const erros: Record<string, string> = {}
+  if (lancamento.valor === 0) erros.valor = 'Informe um valor maior que zero'
+  if (lancamento.data > hoje) erros.data = 'Lance só o que já aconteceu'
+  return erros
+}

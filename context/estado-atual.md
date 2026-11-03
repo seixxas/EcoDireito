@@ -17,6 +17,10 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/financeiro/receber` | Contas a receber | Atraso por faixa e por grupo econômico |
 | `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`) |
 | `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas e realizado por mês |
+| `/financeiro/notas/nova` | Registrar nota | Nota avulsa ou a partir de parcela liberada (`?parcela=`) |
+| `/financeiro/notas/[id]` | Nota fiscal | Detalhe, registrar ou corrigir recebimento, cancelar |
+| `/financeiro/lancamentos` | Lançamentos | Lista por mês e lançamento manual com conta, competência e processo |
+| `/financeiro/contratos` | Contratos | Parcelas por processo; `/[processoId]` inclui, edita e apaga |
 | `/usuarios` | Usuários | Sócias criam e removem acessos (equipe, contador, cliente) |
 | `/portal` e `/portal/[id]` | Portal do cliente | O cliente entra e vê só os próprios processos |
 
