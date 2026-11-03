@@ -25,8 +25,10 @@ export async function salvarCliente(_: EstadoFormulario, formData: FormData): Pr
   const lido = lerFormulario(esquemaCliente, formData)
   if ('estado' in lido) return lido.estado
   const { id, voltar, ...dados } = lido.dados
-  await gravarCliente(dados, id)
-  redirect(destino(voltar, '/processos/clientes'))
+  const gravado = await gravarCliente(dados, id)
+  // Cliente novo criado no meio de uma proposta (ou processo): volta para lá com ele já escolhido.
+  const volta = destino(voltar, '/processos/clientes')
+  redirect(!id && voltar && volta === voltar ? `${volta}${volta.includes('?') ? '&' : '?'}cliente=${gravado}` : volta)
 }
 
 const FORMATO_SEI = /^\d{4}\.\d{4}\/\d{7}-\d$/

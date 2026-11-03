@@ -12,7 +12,8 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/prazos` | Prazos | Prazos em aberto por período (vencidos, esta semana, próximas semanas, mais adiante), cálculo recolhido; `?filtro=orgao` e `?filtro=cumpridos`; busca (`?q=`) e filtro por responsável; 10 por página |
 | `/processos` | Processos | Lista com fase e próximo prazo; busca (`?q=`) e filtro por fase (`?fase=`); cadastrar processo (`/processos/novo`) |
 | `/processos/[id]` | Processo | Barra das 8 fases clicável (`?aba=etapas&fase=`) e abas: Proposta (documento para imprimir; enviada, aprovada, recusada), Etapas (checklist da fase, "Marcar como feita" com observação), Prazos, Linha do tempo (apagar evento) e Cobrança (parcelas, "Emitir nota"); editar em `/processos/[id]/editar` |
-| `/comercial` | Comercial | Funil de propostas (em elaboração, enviadas, aprovadas, recusadas) com valor em aberto, conversão e quem pede retorno; "Nova proposta" em `/comercial/nova` |
+| `/comercial` | Comercial | Funil de propostas (em elaboração, enviadas, aprovadas, recusadas) com valor em aberto, conversão e quem pede retorno; "Nova proposta" em `/comercial/nova` (o "Cliente novo" volta para a proposta com o cliente escolhido) |
+| `/comercial/prospeccao` | Prospecção | Em desenvolvimento: prévia com oportunidades de exemplo (alvarás novos, SPEs de grupos clientes, terrenos com vegetação) |
 | `/processos/clientes` | Clientes | Lista com busca por nome, CNPJ e grupo; cadastro e edição de clientes |
 | `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; busca no texto, empresa e nº SEI; confirmar cria o evento, descartar pede motivo, cadastrar processo a partir do ato |
 | `/financeiro` | Faturamento | Notas do mês (ou todos) com busca e situação, faturado × recebido, parcelas prontas para faturar |

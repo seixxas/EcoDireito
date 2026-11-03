@@ -120,11 +120,17 @@ export async function listarParcelasLiberadas() {
   })
 }
 
+/** Devolve o id do cliente gravado. */
 export async function gravarCliente(dados: DadosCliente, id?: string) {
   exigirBanco()
   const valores = { ...dados, grupo: dados.grupo ?? null }
-  if (id) await db.update(schema.clientes).set(valores).where(eq(schema.clientes.id, id))
-  else await db.insert(schema.clientes).values({ id: crypto.randomUUID(), ...valores })
+  if (id) {
+    await db.update(schema.clientes).set(valores).where(eq(schema.clientes.id, id))
+    return id
+  }
+  const novo = crypto.randomUUID()
+  await db.insert(schema.clientes).values({ id: novo, ...valores })
+  return novo
 }
 
 /** Devolve o id do processo gravado. */
