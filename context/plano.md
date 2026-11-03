@@ -69,7 +69,8 @@ Pode mexer em: `src/domain/financeiro/**`, `src/data/financeiro.ts`, `src/app/(a
 
 - **Cada sessão no seu worktree**, dentro de `.claude/worktrees/` (ignorado pelo git). A pasta principal fica sempre na `main`, só para merge e push. Para começar: `git worktree add .claude/worktrees/sessao-b -b feat/robo-doc-sp main`, entrar nele (ferramenta EnterWorktree com `path`), `npm install` e copiar o `.env.local` da pasta principal.
 - **Só mexa nos arquivos da sua sessão.** Precisa de um arquivo de outra sessão? Anote em "Pedidos entre sessões", abaixo, e siga com outra tarefa.
-- **Schema e banco são da sessão A.** B e C não rodam `db:push` nem `db:seed`. Precisa de tabela ou coluna nova? Peça abaixo.
+- **Schema e banco:** B e C podem **acrescentar tabelas novas** no schema da sua área (B: `src/db/schema/publicacoes.ts`; C: `src/db/schema/financeiro.ts`). Para mudar uma tabela que já existe, peça à A por mensagem. Só a A roda `db:push` e `db:seed`, depois do merge na `main`.
+- **Comunicação:** as sessões conversam por mensagem (ecodireito-2a = C, ecodireito-32 = B). Avise ao fazer merge na `main` e ao pedir algo de outra sessão.
 - **Merge:** com a etapa pronta, `git merge main` na sua branch, rode as checagens e depois `git -C <pasta principal> merge --no-ff <sua-branch>`. O usuário faz o push (o push é bloqueado para o Claude).
 - **Contexto:** cada sessão atualiza o arquivo de `context/` da sua área e a sua linha da tabela "Etapas" deste arquivo.
 
@@ -77,3 +78,4 @@ Pode mexer em: `src/domain/financeiro/**`, `src/data/financeiro.ts`, `src/app/(a
 
 | De | Para | Pedido | Feito |
 |---|---|---|---|
+| B | A | `publicacoes.link`, `edicoes_diario.erro` e unique (data, documento) para o robô não duplicar | sim (feat/fundacao) |
