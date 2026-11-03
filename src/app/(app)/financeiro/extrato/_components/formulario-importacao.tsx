@@ -23,7 +23,13 @@ export function FormularioImportacao() {
         />
         <BotaoEnviar>Importar</BotaoEnviar>
       </div>
-      <p className="text-xs text-subtle">OFX (recomendado) ou CSV do banco. Importar o mesmo período de novo não duplica nada.</p>
+      <p className="text-xs text-subtle">
+        OFX (recomendado) ou CSV do banco. Importar o mesmo período de novo não duplica nada. Para testar:{' '}
+        <a href="/financeiro/extrato/exemplo" download className="link">
+          baixar extrato de exemplo
+        </a>{' '}
+        (montado com as notas e os lançamentos de hoje).
+      </p>
       <MensagemFormulario estado={estado} />
     </form>
   )

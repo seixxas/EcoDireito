@@ -63,6 +63,7 @@ Fluxo: importar o arquivo → as linhas vão para a fila "a classificar" → cad
 - Na mão: escolher a conta (e o processo) ou a nota, e opcionalmente criar a regra com o trecho sugerido (a descrição sem números nem "PIX ENVIADO").
 - "Ignorar" tira da fila sem lançar (ex.: transferência entre contas da empresa), com volta. Apagar o lançamento devolve a linha para a fila.
 - Tabelas: `extrato_linhas` (com `lancamento_id`) e `regras_classificacao`.
+- Extrato de exemplo (`/financeiro/extrato/exemplo`, link na caixa de importação): OFX montado da base do dia por `extrato-exemplo.ts` (duas saídas já lançadas, um PIX recebido com o valor único de uma nota em aberto, um PIX enviado e uma tarifa sem lançamento). O teste confere em várias datas que a conciliação sugere exatamente isso; baixar de novo no mesmo dia não duplica.
 - Limites conhecidos: a nota tem um recebimento só (a paga em duas vezes não se concilia pelo segundo crédito; precisa de mudança no schema); o CSV não traz a conta, então duas contas com a mesma linha no mesmo dia colidem; a projeção do fluxo ainda usa as despesas fixas da base fictícia.
 
 ## DRE (estrutura que a Eco Direito já usa)

@@ -5,6 +5,7 @@ import { inicioDaSemana, mesDe, somarDias, somarMeses, type DataISO } from '@/li
 import { reais, somar, type Centavos } from '@/lib/dinheiro'
 import { palavrasDe, sugerirParaTodas, type Regra, type Sugestao } from '@/domain/financeiro/classificacao'
 import type { LinhaExtrato } from '@/domain/financeiro/extrato'
+import { gerarOfx, linhasDeExemplo } from '@/domain/financeiro/extrato-exemplo'
 import { fluxoMensal, movimentosPrevistos, projetarSemanas, type Recorrente } from '@/domain/financeiro/fluxo'
 import type { EdicaoLancamento, Lancamento } from '@/domain/financeiro/lancamentos'
 import { ALIQUOTA_ISS, resumoNotas, type NotaFiscal } from '@/domain/financeiro/notas'
@@ -304,6 +305,18 @@ export async function filaDoExtrato() {
     pendentes,
     ignoradas: linhas.filter((l) => l.ignorada && !l.lancamentoId),
     lancadas: linhas.filter((l) => l.lancamentoId).length,
+  }
+}
+
+/** O extrato de exemplo (OFX) montado da base de hoje: sempre bate com as notas e os lançamentos que estão lá. */
+export async function extratoDeExemplo() {
+  const [{ hoje, clientes, financeiro }, { linhas }] = await Promise.all([carregar(), extratoERegras()])
+  const vinculados = new Set(linhas.map((l) => l.lancamentoId))
+  return {
+    hoje,
+    ofx: gerarOfx(
+      linhasDeExemplo({ hoje, lancamentosSemExtrato: financeiro.lancamentos.filter((l) => !vinculados.has(l.id)), notas: financeiro.notas, clientes }),
+    ),
   }
 }
 
