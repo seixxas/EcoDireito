@@ -7,8 +7,9 @@ contas a receber, DRE, fluxo de caixa). Hoje roda com dados fictícios em memór
 ## Antes de qualquer alteração, leia nesta ordem
 
 1. `context/estado-atual.md`: o que já existe e o que vem a seguir.
-2. `context/padroes-de-codigo.md`: regras de código (obrigatório).
-3. Só o contexto da área que a tarefa toca:
+2. `context/plano.md`: etapas, qual sessão faz o quê e as regras para trabalhar em paralelo.
+3. `context/padroes-de-codigo.md`: regras de código (obrigatório).
+4. Só o contexto da área que a tarefa toca:
 
 | Área | Arquivo | Leia quando mexer em |
 |---|---|---|

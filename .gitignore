@@ -44,3 +44,6 @@ next-env.d.ts
 /dados-reais/
 *.xlsx
 *.ofx
+
+# worktrees das sessões paralelas
+/.claude/worktrees/
