@@ -44,6 +44,9 @@ export function FormularioLancamento({ hoje, processos }: { hoje: string; proces
           ))}
         </Selecao>
       </Campo>
+      <Campo rotulo="Observação" dica="Opcional. O que a descrição não diz; entra na busca." className="sm:col-span-2 lg:col-span-4">
+        <Entrada name="observacao" defaultValue={valores.observacao} />
+      </Campo>
       <div className="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-4">
         <BotaoEnviar>Lançar</BotaoEnviar>
         <MensagemFormulario estado={estado} />

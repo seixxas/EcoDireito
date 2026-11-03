@@ -46,6 +46,7 @@ async function doBanco(dia: DataISO): Promise<Base> {
     valor: l.valor,
     processoId: l.processoId ?? undefined,
     notaId: l.notaId ?? undefined,
+    observacao: l.observacao ?? undefined,
   }))
 
   return {

@@ -6,7 +6,7 @@ import { reais, somar, type Centavos } from '@/lib/dinheiro'
 import { palavrasDe, sugerirParaTodas, type Regra, type Sugestao } from '@/domain/financeiro/classificacao'
 import type { LinhaExtrato } from '@/domain/financeiro/extrato'
 import { fluxoMensal, movimentosPrevistos, projetarSemanas, type Recorrente } from '@/domain/financeiro/fluxo'
-import type { Lancamento } from '@/domain/financeiro/lancamentos'
+import type { EdicaoLancamento, Lancamento } from '@/domain/financeiro/lancamentos'
 import { ALIQUOTA_ISS, resumoNotas, type NotaFiscal } from '@/domain/financeiro/notas'
 import { situacaoParcela, type Parcela } from '@/domain/financeiro/parcelas'
 import type { ContaId } from '@/domain/financeiro/plano-de-contas'
@@ -115,6 +115,23 @@ export async function listarLancamentos() {
   return { hoje, meses: financeiro.meses, lancamentos: financeiro.lancamentos, processos }
 }
 
+/** O lançamento com a nota e a linha do extrato de onde veio (a descrição original do banco). */
+export async function obterLancamento(id: string) {
+  const { hoje, processos, financeiro } = await carregar()
+  const lancamento = financeiro.lancamentos.find((l) => l.id === id)
+  if (!lancamento) return undefined
+  // Leitura direta no banco, fora de carregar(): a guarda tem de estar aqui.
+  await exigirArea('financeiro')
+  const [linhaExtrato] = temBanco ? await db.select().from(schema.extratoLinhas).where(eq(schema.extratoLinhas.lancamentoId, id)).limit(1) : []
+  return {
+    hoje,
+    lancamento,
+    processos,
+    nota: financeiro.notas.find((n) => n.id === lancamento.notaId),
+    linhaExtrato: linhaExtrato as LinhaDoExtrato | undefined,
+  }
+}
+
 /** Todo processo, com as parcelas do contrato (vazio se ainda não tem contrato). */
 export async function listarContratos() {
   const { hoje, clientes, processos, contratos, financeiro } = await carregar()
@@ -215,6 +232,16 @@ export async function gravarRecebimento(nota: NotaFiscal, cliente: Cliente, rece
 export async function gravarLancamento(lancamento: Omit<Lancamento, 'id'>) {
   exigirBanco()
   await db.insert(schema.lancamentos).values({ id: crypto.randomUUID(), ...lancamento })
+}
+
+/** Grava o que `alteracoesDoLancamento` deixou mudar. Campo ausente fica como está; vazio vira null. */
+export async function alterarLancamento(id: string, alteracoes: Partial<EdicaoLancamento>) {
+  exigirBanco()
+  const { processoId, observacao, ...resto } = alteracoes
+  await db
+    .update(schema.lancamentos)
+    .set({ ...resto, observacao: observacao ?? null, ...('processoId' in alteracoes && { processoId: processoId ?? null }) })
+    .where(eq(schema.lancamentos.id, id))
 }
 
 /** O lançamento de receita de uma nota muda pela nota (registrando o recebimento de novo), não por aqui. */

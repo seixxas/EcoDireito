@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { montarDre } from './dre'
 import { movimentosPrevistos, projetarSemanas } from './fluxo'
 import type { Processo } from '../processos'
-import { errosDoLancamento, type Lancamento } from './lancamentos'
+import { alteracoesDoLancamento, errosDoLancamento, mesDoLancamento, type Lancamento } from './lancamentos'
 import { errosDaNota, errosDoRecebimento, montarNota, motivoParaNaoCancelar, resumoNotas, situacaoNota, type NotaFiscal } from './notas'
 
 const nota = (parcial: Partial<NotaFiscal>): NotaFiscal => ({
@@ -115,5 +115,31 @@ describe('lançamento manual', () => {
   it('aceita o que já aconteceu, com valor', () => {
     expect(errosDoLancamento(lancamento, '2026-11-02')).toEqual({})
     expect(errosDoLancamento({ ...lancamento, data: '2026-11-03', valor: 0 }, '2026-11-02')).toEqual({ data: expect.any(String), valor: expect.any(String) })
+  })
+})
+
+describe('edição do lançamento', () => {
+  const pix: Lancamento = { id: 'l1', data: '2026-10-14', competencia: '2026-10', descricao: 'PIX ENVIADO GUILHERME', contaId: 'gerais', valor: -85_000 }
+  const edicao = { descricao: 'Festa de fim de ano', contaId: 'eventos', competencia: '', processoId: undefined, observacao: '  festa X  ' } as const
+
+  it('muda descrição, conta, competência, processo e observação; competência vazia volta a ser o mês da data', () => {
+    expect(alteracoesDoLancamento(pix, edicao)).toEqual({
+      descricao: 'Festa de fim de ano',
+      contaId: 'eventos',
+      competencia: '2026-10',
+      processoId: undefined,
+      observacao: 'festa X',
+    })
+  })
+
+  it('no lançamento de uma nota, só a observação', () => {
+    expect(alteracoesDoLancamento({ ...pix, notaId: 'n1' }, edicao)).toEqual({ observacao: 'festa X' })
+    expect(alteracoesDoLancamento({ ...pix, notaId: 'n1' }, { ...edicao, observacao: '   ' })).toEqual({ observacao: undefined })
+  })
+
+  it('cai no mês da data (caixa) ou da competência', () => {
+    const das = { ...pix, data: '2026-11-20', competencia: '2026-10' }
+    expect(mesDoLancamento(das, 'caixa')).toBe('2026-11')
+    expect(mesDoLancamento(das, 'competencia')).toBe('2026-10')
   })
 })

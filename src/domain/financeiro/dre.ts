@@ -1,6 +1,6 @@
 import { mesDe } from '@/lib/datas'
 import { somar, type Centavos } from '@/lib/dinheiro'
-import type { Lancamento } from './lancamentos'
+import { mesDoLancamento, type Lancamento } from './lancamentos'
 import type { NotaFiscal } from './notas'
 import { CONTAS, type ContaId, type GrupoDre } from './plano-de-contas'
 
@@ -49,7 +49,7 @@ export function montarDre(entrada: {
 
   for (const lancamento of lancamentos) {
     if (regime === 'competencia' && lancamento.contaId === 'receita_servicos') continue
-    somarEm(lancamento.contaId, regime === 'caixa' ? mesDe(lancamento.data) : lancamento.competencia, lancamento.valor)
+    somarEm(lancamento.contaId, mesDoLancamento(lancamento, regime), lancamento.valor)
   }
   if (regime === 'competencia') {
     for (const nota of notas) if (!nota.cancelada) somarEm('receita_servicos', mesDe(nota.emissao), nota.valor)

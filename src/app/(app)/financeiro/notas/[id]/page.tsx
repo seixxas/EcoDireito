@@ -82,11 +82,12 @@ export default async function PaginaNota({ params }: { params: Promise<{ id: str
             <Secao titulo="No caixa">
               <Lista>
                 {lancamentos.map((lancamento) => (
-                  <Linha key={lancamento.id}>
+                  <Linha key={lancamento.id} href={`/financeiro/lancamentos/${lancamento.id}`}>
                     <span className="w-24 text-muted">{formatarData(lancamento.data)}</span>
                     <span className="min-w-0 flex-1">
                       {lancamento.descricao}
                       <span className="block text-sm text-muted">{nomeDaConta(lancamento.contaId)}</span>
+                      {lancamento.observacao && <span className="block text-sm text-muted">Obs.: {lancamento.observacao}</span>}
                     </span>
                     <span className="font-medium tabular-nums">{brl(lancamento.valor)}</span>
                   </Linha>
