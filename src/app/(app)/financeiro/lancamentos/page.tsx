@@ -26,8 +26,8 @@ import { FormularioLancamento } from './_components/formulario-lancamento'
 
 export const metadata: Metadata = { title: 'Lançamentos' }
 
-/** `regime=competencia` filtra o mês pela competência (é o link da DRE por competência). */
-type Filtros = { mes?: string; q?: string; conta?: string; regime?: string; pagina?: string }
+/** `regime=competencia` filtra o mês pela competência (é o link da DRE por competência); `processo`, o link da lucratividade. */
+type Filtros = { mes?: string; q?: string; conta?: string; regime?: string; processo?: string; pagina?: string }
 
 export default async function PaginaLancamentos({ searchParams }: { searchParams: Promise<Filtros> }) {
   const [filtros, usuario, { hoje: dia, meses, lancamentos, processos }] = await Promise.all([searchParams, exigirArea('financeiro'), listarLancamentos()])
@@ -38,11 +38,13 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
   const conta = CONTAS.find((c) => c.id === filtros.conta)?.id
   const q = filtros.q?.trim() || undefined
   const nomeDoProcesso = (id?: string) => processos.find((p) => p.id === id)?.empreendimento
+  const processo = processos.find((p) => p.id === filtros.processo)
 
   const link = (novos: Partial<Filtros>) => {
-    const f = { mes, q, conta, regime, ...novos }
+    const f = { mes, q, conta, regime, processo: processo?.id, ...novos }
     const params = new URLSearchParams()
     if (f.mes && f.mes !== atual) params.set('mes', f.mes)
+    if (f.processo) params.set('processo', f.processo)
     if (f.conta) params.set('conta', f.conta)
     if (f.regime === 'competencia') params.set('regime', f.regime)
     if (f.q) params.set('q', f.q)
@@ -56,6 +58,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
         // "Todos" são os meses do histórico, como na DRE (o DAS de dezembro pago em janeiro fica fora pela competência).
         (mes === TODOS_OS_MESES ? meses.includes(mesDoLancamento(l, regime)) : mesDoLancamento(l, regime) === mes) &&
         (!conta || l.contaId === conta) &&
+        (!processo || l.processoId === processo.id) &&
         combina(q, l.descricao, l.observacao, nomeDaConta(l.contaId), nomeDoProcesso(l.processoId), brl(l.valor)),
     )
     .sort((a, b) => b.data.localeCompare(a.data))
@@ -64,7 +67,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
   const saidas = somar(filtrados.filter((l) => l.valor < 0).map((l) => l.valor))
 
   const periodo = mes === TODOS_OS_MESES ? 'em todos os meses' : regime === 'competencia' ? `com competência ${formatarMes(mes)}` : `em ${formatarMes(mes)}`
-  const filtrado = Boolean(q || conta || regime === 'competencia')
+  const filtrado = Boolean(q || conta || processo || regime === 'competencia')
   // Filtrado por uma conta de despesa, "entraram R$ 0,00" só atrapalha.
   const movimento = juntar([entradas ? `entraram ${brl(entradas)}` : '', saidas ? `saíram ${brl(-saidas)}` : ''].filter(Boolean))
 
@@ -72,7 +75,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
     <>
       <PageHeader
         titulo="Lançamentos"
-        resumo={`${contar(filtrados.length, 'lançamento', 'lançamentos')} ${periodo}${conta ? ` em ${nomeDaConta(conta)}` : ''}${movimento ? `: ${movimento}` : ''}.${filtrado ? '' : ' A receita das notas entra sozinha com o recebimento.'}`}
+        resumo={`${contar(filtrados.length, 'lançamento', 'lançamentos')} ${periodo}${conta ? ` em ${nomeDaConta(conta)}` : ''}${processo ? ` do ${processo.empreendimento}` : ''}${movimento ? `: ${movimento}` : ''}.${filtrado ? '' : ' A receita das notas entra sozinha com o recebimento.'}`}
         acoes={<NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m })} todos />}
       />
 
@@ -88,11 +91,20 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
         <Busca
           valor={q}
           placeholder="Buscar na descrição, observação ou processo"
-          manter={{ mes: mes === atual ? undefined : mes, conta, regime: regime === 'competencia' ? regime : undefined }}
+          manter={{ mes: mes === atual ? undefined : mes, conta, regime: regime === 'competencia' ? regime : undefined, processo: processo?.id }}
           limpar={link({ q: undefined })}
           className="min-w-60"
         />
-        <FiltroConta valor={conta} manter={{ mes: mes === atual ? undefined : mes, regime: regime === 'competencia' ? regime : undefined, q }} />
+        <FiltroConta valor={conta} manter={{ mes: mes === atual ? undefined : mes, regime: regime === 'competencia' ? regime : undefined, processo: processo?.id, q }} />
+        {processo && (
+          <Link
+            href={link({ processo: undefined })}
+            title="Tirar o filtro de processo"
+            className="inline-flex h-9 max-w-full items-center gap-1 rounded-md border border-line bg-surface px-2.5 text-sm text-ink hover:bg-brand-50"
+          >
+            <span className="truncate">{processo.empreendimento}</span> <X className="size-3.5 shrink-0 text-muted" />
+          </Link>
+        )}
         {regime === 'competencia' && (
           <Link
             href={link({ regime: undefined })}

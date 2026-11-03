@@ -3,6 +3,7 @@ import { montarDre } from './dre'
 import { diasDaSemana, movimentosPrevistos, projetarSemanas } from './fluxo'
 import type { Processo } from '../processos'
 import { alteracoesDoLancamento, errosDoLancamento, mesDoLancamento, mesesDaCompetencia, type Lancamento } from './lancamentos'
+import { horasEstimadas, lucratividade, porMargem, resumoDaLucratividade, situacaoDaMargem } from './lucratividade'
 import { situacaoDoContrato } from './parcelas'
 import { errosDaNota, errosDoRecebimento, montarNota, motivoParaNaoCancelar, resumoNotas, situacaoNota, type NotaFiscal } from './notas'
 
@@ -180,5 +181,61 @@ describe('contrato fechado', () => {
     expect(situacaoDoContrato(comEventos(['proposta_recusada', '2026-10-30']), '2026-11-03')).toBe('recusada')
     // Como no Comercial: com aceite e recusa, vale a recusa.
     expect(situacaoDoContrato(comEventos(['aceite_proposta', '2026-10-01'], ['proposta_recusada', '2026-10-30']), '2026-11-03')).toBe('recusada')
+  })
+})
+
+describe('lucratividade por projeto', () => {
+  const processo = { id: 'p07', servico: 'licenciamento' } as const
+  const notas = [
+    nota({ id: 'a', processoId: 'p07', valor: 60_000_00, recebimento: { data: '2026-10-10', valor: 60_000_00 } }),
+    nota({ id: 'b', processoId: 'p07', valor: 40_000_00 }),
+    nota({ id: 'c', processoId: 'p07', valor: 9_999_00, cancelada: true }),
+    nota({ id: 'd', processoId: 'p01', valor: 1_000_00 }),
+  ]
+  const lancamentos: Lancamento[] = [
+    { id: 'l1', data: '2026-09-01', competencia: '2026-09', descricao: 'Viveiro', contaId: 'servicos_terceiros', valor: -20_000_00, processoId: 'p07' },
+    { id: 'l2', data: '2026-09-02', competencia: '2026-09', descricao: 'ART', contaId: 'art', valor: -108_40, processoId: 'p07' },
+    { id: 'l3', data: '2026-09-03', competencia: '2026-09', descricao: 'Viveiro', contaId: 'servicos_terceiros', valor: -5_000_00, processoId: 'p07' },
+    { id: 'l4', data: '2026-10-10', competencia: '2026-10', descricao: 'NF', contaId: 'receita_servicos', valor: 60_000_00, processoId: 'p07' },
+    { id: 'l5', data: '2026-09-04', competencia: '2026-09', descricao: 'Outro', contaId: 'art', valor: -999_00, processoId: 'p01' },
+  ]
+  const lucro = lucratividade({ processo, contratado: 120_000_00, notas, lancamentos, hoje: '2026-11-03' })
+
+  it('soma o faturado sem nota cancelada, o recebido e os custos do processo por conta', () => {
+    expect(lucro).toMatchObject({ contratado: 120_000_00, faturado: 100_000_00, recebido: 60_000_00, custosDiretos: 25_108_40 })
+    expect(lucro.custosPorConta).toEqual([
+      { contaId: 'servicos_terceiros', valor: 25_000_00 },
+      { contaId: 'art', valor: 108_40 },
+    ])
+  })
+
+  it('estima a equipe e calcula a margem sobre o faturado', () => {
+    expect(lucro.horas).toBe(horasEstimadas(processo, 100_000_00))
+    expect(lucro.custoEquipe).toBe(lucro.horas * 95_00)
+    expect(lucro.margem).toBe(100_000_00 - 25_108_40 - lucro.custoEquipe)
+    expect(lucro.margemPct).toBeCloseTo(lucro.margem! / 100_000_00)
+  })
+
+  it('a equipe fica entre 10% e 20% do faturado no licenciamento, e as horas não mudam entre chamadas', () => {
+    for (const id of ['p01', 'p02', 'p13', 'x']) {
+      const horas = horasEstimadas({ id, servico: 'licenciamento' }, 100_000_00)
+      expect(horas * 95_00).toBeGreaterThanOrEqual(10_000_00)
+      expect(horas * 95_00).toBeLessThanOrEqual(20_000_00)
+      expect(horasEstimadas({ id, servico: 'licenciamento' }, 100_000_00)).toBe(horas)
+    }
+  })
+
+  it('classifica a margem: boa a partir de 40%, atenção de 20% a 40%, ruim abaixo', () => {
+    expect([0.55, 0.4, 0.3, 0.2, 0.1, -0.5].map(situacaoDaMargem)).toEqual(['boa', 'boa', 'atencao', 'atencao', 'ruim', 'ruim'])
+  })
+
+  it('ordena pela margem e deixa quem não faturou por último; o resumo pondera pelo faturado', () => {
+    const semFaturar = lucratividade({ processo: { id: 'p20', servico: 'manejo' }, contratado: 50_000_00, notas: [], lancamentos: [], hoje: '2026-11-03' })
+    const fraco = { ...lucro, margemPct: 0.1, faturado: 10_000_00, custoTotal: 9_000_00 }
+    const lista = [semFaturar, fraco, lucro].sort(porMargem)
+    expect(lista).toEqual([lucro, fraco, semFaturar])
+    expect(semFaturar.margem).toBeUndefined()
+    const resumo = resumoDaLucratividade([semFaturar, fraco, lucro])
+    expect(resumo).toMatchObject({ receita: 110_000_00, custo: lucro.custoTotal + 9_000_00, melhor: lucro, pior: fraco })
   })
 })

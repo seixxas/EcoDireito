@@ -16,7 +16,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/comercial/prospeccao` | Prospecção | Em desenvolvimento: prévia com oportunidades de exemplo (alvarás novos, SPEs de grupos clientes, terrenos com vegetação) |
 | `/processos/clientes` | Clientes | Lista com busca por nome, CNPJ e grupo; cadastro e edição de clientes |
 | `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; busca no texto, empresa e nº SEI; separa atos de processos acompanhados e de clientes sem processo, diz por que cada ato está ali; "Lançar no processo" marca a etapa, "Cadastrar o processo e lançar" cria o processo e já lança, "Ignorar" pede motivo; abas Para revisar, Lançados e Ignorados |
-| `/financeiro` | Faturamento | Notas do mês (ou todos) com busca e situação, faturado × recebido, parcelas prontas para faturar |
+| `/financeiro` | Faturamento | Notas do mês (ou todos) com busca e situação, faturado × recebido, parcelas prontas para faturar; aba "Lucratividade por projeto" (simulação, detalhe em `/financeiro/lucratividade/[processoId]`) |
 | `/financeiro/receber` | Contas a receber | Notas em aberto com busca e filtros de situação e faixa de atraso; maiores saldos por empresa ou grupo |
 | `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`); cada valor abre os lançamentos da conta no mês |
 | `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas (clicar numa semana mostra dia a dia, `?semana=`) e realizado por mês |
