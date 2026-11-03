@@ -1,10 +1,10 @@
-import { and, asc, desc, eq, isNull, max } from 'drizzle-orm'
+import { and, asc, desc, eq, isNull, max, sql } from 'drizzle-orm'
 import type { BatchItem } from 'drizzle-orm/batch'
 import { db, exigirBanco, schema, temBanco } from '@/db'
 import { inicioDaSemana, mesDe, somarDias, somarMeses, type DataISO } from '@/lib/datas'
 import { reais, somar, type Centavos } from '@/lib/dinheiro'
-import { sugerirParaTodas, type Regra, type Sugestao } from '@/domain/financeiro/classificacao'
-import { normalizar, type LinhaExtrato } from '@/domain/financeiro/extrato'
+import { palavrasDe, sugerirParaTodas, type Regra, type Sugestao } from '@/domain/financeiro/classificacao'
+import type { LinhaExtrato } from '@/domain/financeiro/extrato'
 import { fluxoMensal, movimentosPrevistos, projetarSemanas, type Recorrente } from '@/domain/financeiro/fluxo'
 import type { Lancamento } from '@/domain/financeiro/lancamentos'
 import { ALIQUOTA_ISS, resumoNotas, type NotaFiscal } from '@/domain/financeiro/notas'
@@ -140,29 +140,50 @@ export async function gravarCancelamento(notaId: string) {
 
 type Comando = BatchItem<'pg'>
 
-/** Um recebimento por nota: registrar de novo substitui o anterior e o lançamento de receita dele. */
-function comandosDoRecebimento(nota: NotaFiscal, cliente: Cliente, recebimento: { data: DataISO; valor: Centavos }, linhaExtratoId?: string): Comando[] {
+/**
+ * Um recebimento por nota. Corrigir atualiza o lançamento de receita que já existe, em vez de trocar por outro:
+ * assim ele continua ligado à linha do extrato que o conciliou.
+ */
+async function comandosDoRecebimento(nota: NotaFiscal, cliente: Cliente, recebimento: { data: DataISO; valor: Centavos }, linhaExtratoId?: string) {
   const { notasFiscais, lancamentos } = schema
-  const lancamentoId = crypto.randomUUID()
-  return [
+  const [anterior] = await db
+    .select({ id: lancamentos.id })
+    .from(lancamentos)
+    .where(and(eq(lancamentos.notaId, nota.id), eq(lancamentos.contaId, 'receita_servicos')))
+    .limit(1)
+  const lancamentoId = anterior?.id ?? crypto.randomUUID()
+  const receita = {
+    data: recebimento.data,
+    competencia: mesDe(recebimento.data),
+    descricao: `${cliente.nome.split(' ').slice(0, 3).join(' ')} · NF ${nota.numero}`,
+    contaId: 'receita_servicos',
+    valor: recebimento.valor,
+    processoId: nota.processoId,
+    notaId: nota.id,
+  }
+  const comandos: Comando[] = [
     db.update(notasFiscais).set({ recebimentoData: recebimento.data, recebimentoValor: recebimento.valor }).where(eq(notasFiscais.id, nota.id)),
-    db.delete(lancamentos).where(and(eq(lancamentos.notaId, nota.id), eq(lancamentos.contaId, 'receita_servicos'))),
-    db.insert(lancamentos).values({
-      id: lancamentoId,
-      data: recebimento.data,
-      competencia: mesDe(recebimento.data),
-      descricao: `${cliente.nome.split(' ').slice(0, 3).join(' ')} · NF ${nota.numero}`,
-      contaId: 'receita_servicos',
-      valor: recebimento.valor,
-      processoId: nota.processoId,
-      notaId: nota.id,
-    }),
-    ...(linhaExtratoId ? [comandoDeVinculo(linhaExtratoId, lancamentoId)] : []),
+    anterior ? db.update(lancamentos).set(receita).where(eq(lancamentos.id, lancamentoId)) : db.insert(lancamentos).values({ id: lancamentoId, ...receita }),
   ]
+  return linhaExtratoId ? [...comandos, comandoDeVinculo(linhaExtratoId, lancamentoId)] : comandos
 }
 
+/** Código do Postgres para divisão por zero: é o sinal de "linha já lançada" em comandoDeVinculo. */
+const LINHA_JA_LANCADA = '22012'
+
+/**
+ * Liga a linha do extrato ao lançamento só se ela ainda estiver livre. Se outra confirmação chegou antes
+ * (clique duplo, duas abas), a divisão por zero derruba o lote inteiro (o batch do Neon é uma transação) e nada é gravado em dobro.
+ */
 function comandoDeVinculo(linhaExtratoId: string, lancamentoId: string) {
-  return db.update(schema.extratoLinhas).set({ lancamentoId }).where(eq(schema.extratoLinhas.id, linhaExtratoId))
+  return db.execute(sql`
+    with ligada as (
+      update extrato_linhas set lancamento_id = ${lancamentoId}
+      where id = ${linhaExtratoId} and lancamento_id is null
+      returning 1
+    )
+    select 1 / (select count(*) from ligada)::int
+  `)
 }
 
 function comandosDoLancamento(linha: LinhaDoExtrato, conta: { contaId: ContaId; processoId?: string }): Comando[] {
@@ -173,13 +194,22 @@ function comandosDoLancamento(linha: LinhaDoExtrato, conta: { contaId: ContaId; 
   ]
 }
 
+/** Devolve false se alguma linha do extrato já tinha sido lançada (nesse caso nada foi gravado). */
 async function executar(comandos: Comando[]) {
-  if (comandos.length) await db.batch(comandos as [Comando, ...Comando[]])
+  if (!comandos.length) return true
+  try {
+    await db.batch(comandos as [Comando, ...Comando[]])
+    return true
+  } catch (erro) {
+    const { code, cause } = erro as { code?: string; cause?: { code?: string } }
+    if ((code ?? cause?.code) === LINHA_JA_LANCADA) return false
+    throw erro
+  }
 }
 
 export async function gravarRecebimento(nota: NotaFiscal, cliente: Cliente, recebimento: { data: DataISO; valor: Centavos }) {
   exigirBanco()
-  await executar(comandosDoRecebimento(nota, cliente, recebimento))
+  await executar(await comandosDoRecebimento(nota, cliente, recebimento))
 }
 
 export async function gravarLancamento(lancamento: Omit<Lancamento, 'id'>) {
@@ -261,11 +291,11 @@ export async function gravarLinhasExtrato(linhas: LinhaExtrato[], arquivo: strin
   return novas.length
 }
 
-/** Confirma as sugestões numa ida só ao banco. */
+/** Confirma as sugestões numa ida só ao banco. Devolve false se alguma linha já tinha sido lançada (nada é gravado). */
 export async function aplicarSugestoes(itens: { linha: LinhaDoExtrato; sugestao: Sugestao }[], clientes: Cliente[]) {
   exigirBanco()
-  await executar(
-    itens.flatMap(({ linha, sugestao }) => {
+  const comandos = await Promise.all(
+    itens.map(({ linha, sugestao }) => {
       if (sugestao.tipo === 'lancamento') return [comandoDeVinculo(linha.id, sugestao.lancamento.id)]
       if (sugestao.tipo === 'nota') {
         const cliente = clientes.find((c) => c.id === sugestao.nota.clienteId)!
@@ -274,16 +304,19 @@ export async function aplicarSugestoes(itens: { linha: LinhaDoExtrato; sugestao:
       return comandosDoLancamento(linha, { contaId: sugestao.regra.contaId, processoId: sugestao.regra.processoId })
     }),
   )
+  return executar(comandos.flat())
 }
 
+/** Devolve false se a linha já tinha sido lançada. */
 export async function lancarLinhaExtrato(linha: LinhaDoExtrato, conta: { contaId: ContaId; processoId?: string }) {
   exigirBanco()
-  await executar(comandosDoLancamento(linha, conta))
+  return executar(comandosDoLancamento(linha, conta))
 }
 
+/** Devolve false se a linha já tinha sido lançada. */
 export async function receberPelaLinhaExtrato(linha: LinhaDoExtrato, nota: NotaFiscal, cliente: Cliente) {
   exigirBanco()
-  await executar(comandosDoRecebimento(nota, cliente, { data: linha.data, valor: linha.valor }, linha.id))
+  return executar(await comandosDoRecebimento(nota, cliente, { data: linha.data, valor: linha.valor }, linha.id))
 }
 
 export async function ignorarLinhaExtrato(id: string, ignorada: boolean) {
@@ -294,7 +327,7 @@ export async function ignorarLinhaExtrato(id: string, ignorada: boolean) {
 /** Uma regra por trecho: gravar o mesmo trecho de novo troca a conta. */
 export async function gravarRegra(regra: Omit<Regra, 'id'>) {
   exigirBanco()
-  const contem = normalizar(regra.contem)
+  const contem = palavrasDe(regra.contem).join(' ')
   await db
     .insert(schema.regrasClassificacao)
     .values({ id: crypto.randomUUID(), ...regra, contem })
