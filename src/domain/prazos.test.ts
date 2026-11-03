@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { somarMeses } from '@/lib/datas'
 import { somarDiasUteis } from './feriados'
-import { REGRAS_SVMA, calcularVencimento, gerarPrazos, situacaoPrazo } from './prazos'
+import { REGRAS_SVMA, calcularVencimento, gerarPrazos, periodoDoPrazo, situacaoPrazo } from './prazos'
 import type { Processo } from './processos'
 
 const regra = (id: string) => REGRAS_SVMA.find((r) => r.id === id)!
@@ -74,5 +74,23 @@ describe('gerarPrazos', () => {
       ],
     })
     expect(aviso.cumpridoEm).toBe('2026-10-01')
+  })
+})
+
+describe('periodoDoPrazo', () => {
+  const hoje = '2026-11-03' // terça; a semana vai até domingo, 08/11
+
+  it('separa vencido, esta semana, próximas 4 semanas e mais adiante', () => {
+    expect(periodoDoPrazo('2026-11-02', hoje)).toBe('vencidos')
+    expect(periodoDoPrazo('2026-11-03', hoje)).toBe('semana')
+    expect(periodoDoPrazo('2026-11-08', hoje)).toBe('semana')
+    expect(periodoDoPrazo('2026-11-09', hoje)).toBe('proximas')
+    expect(periodoDoPrazo('2026-12-06', hoje)).toBe('proximas')
+    expect(periodoDoPrazo('2026-12-07', hoje)).toBe('adiante')
+  })
+
+  it('no domingo, a semana é só o próprio dia', () => {
+    expect(periodoDoPrazo('2026-11-08', '2026-11-08')).toBe('semana')
+    expect(periodoDoPrazo('2026-11-09', '2026-11-08')).toBe('proximas')
   })
 })
