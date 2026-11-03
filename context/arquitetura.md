@@ -24,8 +24,9 @@ src/
       financeiro/dre/          DRE caixa e competência
       financeiro/fluxo/        fluxo de caixa realizado e projetado
     portal/[id]/               portal do cliente (sem menu interno)
+    (cada rota tem seu loading.tsx)
   components/
-    ui/                        Card, Badge, Stat, PageHeader, SegmentedLinks
+    ui/                        Card, Badge, Stat, PageHeader, SegmentedLinks, Carregando
     layout/                    menu lateral
     charts/                    gráficos (cliente)
     prazos/ financeiro/ processos/   componentes de domínio compartilhados

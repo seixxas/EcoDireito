@@ -27,7 +27,15 @@
 - `Stat`: número grande de KPI, com legenda e tom.
 - `PageHeader`: título, descrição e ações da página.
 - `SegmentedLinks`: abas de filtro por URL.
-- Tabelas: `<table className="tabela">`.
+- `Carregando`: esqueleto usado por todos os `loading.tsx`.
+- Tabelas: `<table className="tabela">` (com `num` nas colunas de valor).
+
+## Componentes de domínio
+
+- `components/prazos/situacao-prazo.tsx`: etiqueta do prazo. Prazo do órgão atrasado fica âmbar ("SVMA atrasada"), não vermelho.
+- `components/processos/fase-progresso.tsx`: barra das 7 fases.
+- `components/financeiro/situacao-nota.tsx`: etiqueta da nota e os rótulos de cada situação.
+- `components/charts/*`: Recharts com a prop `responsive` (não use `ResponsiveContainer`). Recebem centavos e formatam sozinhos.
 
 ## Textos
 

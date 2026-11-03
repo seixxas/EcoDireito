@@ -1,20 +1,38 @@
 # Estado atual
 
-Atualizado em 2026-11-02.
+Atualizado em 2026-11-02. Tudo roda com dados fictícios em memória (`src/data/seed`) e é só leitura.
 
 ## Pronto
 
-- Projeto criado (Next.js 16, TypeScript, Tailwind 4) e a pasta de contexto.
+| Rota | Tela | O que mostra |
+|---|---|---|
+| `/` | Painel | Prazos vencidos e próximos, Diário Oficial, parcelas a faturar, notas atrasadas, saldo |
+| `/prazos` | Prazos | Todos os prazos com cálculo explicado; filtros na URL (`?filtro=vencidos`) |
+| `/processos` | Processos | Lista com fase e próximo prazo |
+| `/processos/[id]` | Processo | 7 fases, prazos, linha do tempo e parcelas do contrato |
+| `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; confirmar só na tela |
+| `/financeiro` | Faturamento | Notas, situação, faturado × recebido, parcelas prontas para faturar |
+| `/financeiro/receber` | Contas a receber | Atraso por faixa e por grupo econômico |
+| `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`) |
+| `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas e realizado por mês |
+| `/portal/[id]` | Portal do cliente | O mockup original, agora com dados do processo |
 
-## Em construção (demonstração de 03/11)
+- Domínio com testes: motor de prazos, feriados, notas, DRE, fluxo e vínculo de publicações (`npm test`).
+- Build de produção passando (`npm run build`).
 
-- Telas de prazos e de faturamento com dados fictícios.
+## Para apresentar
+
+- `npm run dev` e abrir http://localhost:3000.
+- Para congelar a data, crie `.env.local` com `DATA_DEMO=AAAA-MM-DD` (os dados são gerados a partir dela).
+- Bons exemplos: `/processos/p02` (TCA publicado, parcela pronta para faturar), `/processos/p13` (processo antigo com nº SIMPROC) e `/portal/p01`.
 
 ## Próximos passos
 
-- Banco (Supabase + Drizzle) e login.
-- Robô do Diário Oficial (coletor diário do DOC-SP).
-- Lançar e editar dados pela tela (hoje tudo é só leitura).
+1. Banco (Supabase + Drizzle) e login com perfis (sócias, financeiro, equipe, contador, cliente).
+2. Lançar e editar pela tela: eventos, notas, recebimentos, lançamentos.
+3. Importar extrato (OFX/CSV) e regras de classificação.
+4. Robô do Diário Oficial (coletor diário do DOC-SP) gravando na caixa de entrada.
+5. Alertas por e-mail (resumo diário e D-10, D-5, D-1).
 
 ## Pendências com a Eco Direito
 

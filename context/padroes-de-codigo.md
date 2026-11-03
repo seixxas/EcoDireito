@@ -26,7 +26,8 @@ app/ (rotas e composição)  →  data/ (acesso a dados)  →  domain/ (regras p
 - Server Component é o padrão. `"use client"` só para interação: gráfico, estado local, clique.
 - Componente cliente recebe dados prontos e serializáveis (strings, números, arrays). Nada de funções nem `Date`.
 - A data de hoje vem **só** de `hoje()` em `src/data/hoje.ts`, que chama `connection()`. Nunca use `new Date()` ou `Date.now()` em componente de servidor.
-- As páginas de `(app)` rodam dentro do Suspense do `loading.tsx`. Página nova em outro grupo precisa do seu próprio `loading.tsx`.
+- Toda rota nova tem o seu `loading.tsx`, de uma linha: `export { Carregando as default } from '@/components/ui/carregando'`. Sem ele, o Next acusa navegação bloqueante.
+- Componente cliente que lê a URL (`usePathname`, `useSearchParams`) fica dentro de `<Suspense>` (veja `menu-lateral.tsx`).
 - `params` e `searchParams` são Promises: use `await`.
 - Filtros de lista ficam na URL (`?situacao=atrasada`), lidos com `searchParams`. Evite estado de cliente para isso.
 
