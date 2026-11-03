@@ -30,6 +30,7 @@ for (const tabela of [
   schema.contratos,
   schema.publicacoes,
   schema.eventos,
+  schema.propostas,
   schema.processos,
   schema.clientes,
   schema.edicoesDiario,
@@ -46,6 +47,7 @@ for (const { id, clienteId } of vinculos) {
 // O Drizzle grava só as colunas da tabela; campos a mais (como `eventos`) são ignorados.
 await inserir(schema.processos, base.processos)
 await inserir(schema.eventos, base.processos.flatMap((p) => p.eventos.map((e) => ({ ...e, processoId: p.id }))))
+await inserir(schema.propostas, base.propostas)
 await inserir(schema.contratos, base.contratos.map(({ id, processoId }) => ({ id, processoId })))
 await inserir(schema.parcelas, base.contratos.flatMap((c) => c.parcelas.map((parcela, ordem) => ({ ...parcela, ordem }))))
 await inserir(

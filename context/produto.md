@@ -11,7 +11,7 @@
 
 ## Módulos
 
-0. **Comercial** (`/comercial`, em desenvolvimento): por enquanto só uma prévia com propostas de exemplo. A ideia é o funil de propostas até virar processo.
+0. **Comercial** (`/comercial`): o funil de propostas. Cada proposta é a fase 1 de um processo; aprovada, o processo segue para a Documentação. Detalhe em `prazos.md` (seção Proposta).
 1. **Processos e prazos**: cada processo com as 8 fases (da Proposta à Compensação), as etapas de cada uma e os prazos calculados por regra. Detalhe em `prazos.md`.
 2. **Diário Oficial**: um robô lê o Diário Oficial da Cidade e acha os atos dos processos. Detalhe em `publicacoes.md`.
 3. **Portal do cliente**: a construtora acompanha o próprio processo, só para leitura.

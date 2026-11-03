@@ -28,7 +28,7 @@ export default async function PaginaNovoProcesso({ searchParams }: { searchParam
         resumo={
           publicacao
             ? `A partir do ato de ${formatarData(publicacao.ato.data)} (${publicacao.ato.serie}). Ao salvar, você volta ao Diário Oficial para confirmar.`
-            : 'É pelo nº SEI que o robô acha os atos do processo no Diário Oficial.'
+            : 'Para um cliente novo, comece pela proposta, em Comercial. Aqui é para cadastrar um processo que já anda na SVMA.'
         }
         acoes={
           <Link href={`/processos/clientes/novo?voltar=${encodeURIComponent(daqui)}`} className={classeBotao('secundario')}>

@@ -31,7 +31,7 @@ export type UsuarioDoMenu = { nome: string; papel: Papel }
 
 const GRUPOS: { titulo?: string; itens: Item[] }[] = [
   { itens: [{ href: '/', rotulo: 'Hoje', icone: ListTodo, area: 'prazos' }] },
-  { titulo: 'Comercial', itens: [{ href: '/comercial', rotulo: 'Propostas', icone: Handshake, area: 'comercial', emBreve: true }] },
+  { titulo: 'Comercial', itens: [{ href: '/comercial', rotulo: 'Propostas', icone: Handshake, area: 'comercial' }] },
   {
     titulo: 'Processos',
     itens: [
@@ -97,7 +97,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
 
   return (
     <>
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-nav px-3 py-5 lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-nav px-3 py-5 lg:flex print:hidden">
         <div className="px-2">
           <Marca />
         </div>
@@ -147,7 +147,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
         )}
       </aside>
 
-      <header className="sticky top-0 z-10 bg-nav px-4 py-3 lg:hidden">
+      <header className="sticky top-0 z-10 bg-nav px-4 py-3 lg:hidden print:hidden">
         <div className="flex items-center justify-between">
           <Marca />
           <div className="flex items-center gap-3">

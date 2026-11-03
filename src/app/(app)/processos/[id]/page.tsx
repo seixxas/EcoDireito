@@ -25,6 +25,7 @@ import { brl, formatarData } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { EtapasDaFase } from '../_components/etapas-da-fase'
+import { PropostaDoProcesso } from '../_components/proposta-do-processo'
 import { LinkVoltar } from '../_components/link-voltar'
 import { apagarEvento } from '../actions'
 
@@ -47,9 +48,10 @@ export default async function PaginaProcesso({
   const [{ id }, { aba: pedida, pagina, fase: fasePedida }] = await Promise.all([params, searchParams])
   const [dia, dados, usuario] = await Promise.all([hoje(), obterProcesso(id), exigirArea('prazos')])
   if (!dados) notFound()
-  const { processo, cliente, prazos, parcelas } = dados
+  const { processo, cliente, prazos, parcelas, proposta, situacaoProposta } = dados
   const editar = pode(usuario.papel, 'prazos', 'editar')
   const editarFinanceiro = pode(usuario.papel, 'financeiro', 'editar')
+  const recusada = situacaoProposta.estado === 'recusada'
 
   const abertos = prazos.filter((p) => estaAberto(p, dia))
   const cumpridos = prazos.filter((p) => !estaAberto(p, dia)).reverse()
@@ -58,13 +60,16 @@ export default async function PaginaProcesso({
   const fase = FASES[processo.faseAtual - 1]
   const faseVista = (FASES.find((f) => String(f.numero) === fasePedida) ?? fase).numero
 
+  // Enquanto o processo está na Proposta, ela é a aba que abre primeiro.
+  const padrao = proposta && processo.faseAtual === 1 ? 'proposta' : 'etapas'
   const abas = [
+    ...(proposta ? [{ valor: 'proposta', rotulo: 'Proposta' }] : []),
     { valor: 'etapas', rotulo: 'Etapas' },
     { valor: 'prazos', rotulo: 'Prazos', contagem: abertos.length },
     { valor: 'linha-do-tempo', rotulo: 'Linha do tempo', contagem: eventos.total },
     ...(pode(usuario.papel, 'financeiro') ? [{ valor: 'cobranca', rotulo: 'Cobrança', contagem: parcelas.length }] : []),
-  ].map((a) => ({ ...a, href: a.valor === 'etapas' ? `/processos/${id}` : `/processos/${id}?aba=${a.valor}` }))
-  const aba = abas.find((a) => a.valor === pedida)?.valor ?? 'etapas'
+  ].map((a) => ({ ...a, href: a.valor === padrao ? `/processos/${id}` : `/processos/${id}?aba=${a.valor}` }))
+  const aba = abas.find((a) => a.valor === pedida)?.valor ?? padrao
 
   const dadosDoProcesso = [
     cliente.nome,
@@ -78,56 +83,75 @@ export default async function PaginaProcesso({
 
   return (
     <>
-      <LinkVoltar href="/processos">Processos</LinkVoltar>
-      <PageHeader
-        titulo={processo.empreendimento}
-        resumo={`Fase ${fase.numero} de ${FASES.length}, ${fase.nome}. ${proximo ? `Próximo prazo: ${proximo.regra.titulo} (${descreverSituacao(proximo, dia).rotulo.toLowerCase()}).` : 'Nenhum prazo em aberto.'}`}
-        acoes={
-          <>
-            {editar && (
-              <Link href={`/processos/${processo.id}/editar`} className={classeBotao('secundario')}>
-                Editar
+      <div className="print:hidden">
+        {processo.faseAtual === 1 || recusada ? <LinkVoltar href="/comercial">Comercial</LinkVoltar> : <LinkVoltar href="/processos">Processos</LinkVoltar>}
+        <PageHeader
+          titulo={processo.empreendimento}
+          resumo={
+            recusada
+              ? `Proposta recusada em ${formatarData(situacaoProposta.recusadaEm!)}. Não aparece na lista de processos; fica no Comercial.`
+              : `Fase ${fase.numero} de ${FASES.length}, ${fase.nome}. ${proximo ? `Próximo prazo: ${proximo.regra.titulo} (${descreverSituacao(proximo, dia).rotulo.toLowerCase()}).` : 'Nenhum prazo em aberto.'}`
+          }
+          acoes={
+            <>
+              {editar && (
+                <Link href={`/processos/${processo.id}/editar`} className={classeBotao('secundario')}>
+                  Editar
+                </Link>
+              )}
+              <Link href={`/portal/${processo.id}`} target="_blank" className={classeBotao('secundario')}>
+                Ver como o cliente vê <ExternalLink className="size-4" />
               </Link>
-            )}
-            <Link href={`/portal/${processo.id}`} target="_blank" className={classeBotao('secundario')}>
-              Ver como o cliente vê <ExternalLink className="size-4" />
-            </Link>
-          </>
-        }
-      />
+            </>
+          }
+        />
 
-      <p className="-mt-3 mb-5 text-sm text-muted">{dadosDoProcesso.join(' · ')}</p>
+        <p className="-mt-3 mb-5 text-sm text-muted">{dadosDoProcesso.join(' · ')}</p>
 
-      <ol className="mb-1 grid grid-cols-8 gap-1" aria-label="Fases do processo">
-        {FASES.map((f) => {
-          const situacao = situacaoDaFase(processo, f.numero, dia)
-          const vista = aba === 'etapas' && f.numero === faseVista
-          return (
-            <li key={f.numero}>
-              <Link
-                href={`/processos/${id}?fase=${f.numero}`}
-                scroll={false}
-                title={`Ver as etapas: ${f.descricao}`}
-                aria-current={vista ? 'step' : undefined}
-                className={cn('group block rounded-md px-1 pb-1.5 pt-1 transition-colors hover:bg-brand-50', vista && 'bg-brand-50')}
-              >
-                <span className={cn('block h-1.5 rounded-full', situacao === 'concluida' ? 'bg-ok' : situacao === 'atual' ? 'bg-accent' : 'bg-line')} />
-                <span
-                  className={cn(
-                    'mt-1.5 block text-xs leading-tight group-hover:text-brand-700',
-                    vista ? 'font-semibold text-brand-700' : f.numero === fase.numero ? 'font-medium text-ink' : 'hidden text-subtle sm:block',
-                  )}
+        <ol className="mb-1 grid grid-cols-8 gap-1" aria-label="Fases do processo">
+          {FASES.map((f) => {
+            const situacao = situacaoDaFase(processo, f.numero, dia)
+            const vista = aba === 'etapas' && f.numero === faseVista
+            return (
+              <li key={f.numero}>
+                <Link
+                  href={`/processos/${id}?aba=etapas&fase=${f.numero}`}
+                  scroll={false}
+                  title={`Ver as etapas: ${f.descricao}`}
+                  aria-current={vista ? 'step' : undefined}
+                  className={cn('group block rounded-md px-1 pb-1.5 pt-1 transition-colors hover:bg-brand-50', vista && 'bg-brand-50')}
                 >
-                  {f.numero}. {f.nome}
-                </span>
-              </Link>
-            </li>
-          )
-        })}
-      </ol>
-      <p className="mb-5 px-1 text-xs text-subtle">Clique numa fase para ver as etapas dela.</p>
+                  <span className={cn('block h-1.5 rounded-full', situacao === 'concluida' ? 'bg-ok' : situacao === 'atual' ? 'bg-accent' : 'bg-line')} />
+                  <span
+                    className={cn(
+                      'mt-1.5 block text-xs leading-tight group-hover:text-brand-700',
+                      vista ? 'font-semibold text-brand-700' : f.numero === fase.numero ? 'font-medium text-ink' : 'hidden text-subtle sm:block',
+                    )}
+                  >
+                    {f.numero}. {f.nome}
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
+        </ol>
+        <p className="mb-5 px-1 text-xs text-subtle">Clique numa fase para ver as etapas dela.</p>
 
-      <Abas abas={abas} ativa={aba} />
+        <Abas abas={abas} ativa={aba} />
+      </div>
+
+      {aba === 'proposta' && proposta && (
+        <PropostaDoProcesso
+          processo={processo}
+          cliente={cliente}
+          proposta={proposta}
+          situacao={situacaoProposta}
+          parcelas={parcelas.map((p) => p.parcela)}
+          dia={dia}
+          marcar={editar}
+          editarTexto={pode(usuario.papel, 'comercial', 'editar')}
+        />
+      )}
 
       {aba === 'etapas' && <EtapasDaFase processo={processo} fase={faseVista} dia={dia} prazos={prazos} editar={editar} />}
 
@@ -158,7 +182,7 @@ export default async function PaginaProcesso({
           {editar && (
             <p className="mb-3 text-sm text-muted">
               Para lançar um evento, marque a etapa na{' '}
-              <Link href={`/processos/${id}?fase=${fase.numero}`} className="link">
+              <Link href={`/processos/${id}?aba=etapas&fase=${fase.numero}`} className="link">
                 fase {fase.nome}
               </Link>{' '}
               (ou em outra fase, clicando nela na barra acima).

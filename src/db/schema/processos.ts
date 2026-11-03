@@ -27,6 +27,16 @@ export const processos = pgTable('processos', {
   criadoEm: timestamp({ withTimezone: true }).notNull().defaultNow(),
 })
 
+/** O texto da proposta (fase 1). O preço fica no contrato do processo (parcelas). */
+export const propostas = pgTable('propostas', {
+  processoId: text()
+    .primaryKey()
+    .references(() => processos.id, { onDelete: 'cascade' }),
+  escopo: text().notNull(),
+  validadeDias: integer().notNull().default(30),
+  criadaEm: date({ mode: 'string' }).notNull(),
+})
+
 export const eventos = pgTable('eventos', {
   id: text().primaryKey(),
   processoId: text()

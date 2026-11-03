@@ -3,7 +3,9 @@ import { db, exigirBanco, schema } from '@/db'
 import { situacaoParcela } from '@/domain/financeiro/parcelas'
 import { gerarPrazos, proximoPrazo, type Prazo } from '@/domain/prazos'
 import { faseDepoisDoEvento, type Cliente, type Evento, type Processo } from '@/domain/processos'
+import { parcelasDaProposta, propostaRecusada, situacaoDaProposta, type Proposta } from '@/domain/propostas'
 import type { DataISO } from '@/lib/datas'
+import { somar, type Centavos } from '@/lib/dinheiro'
 import { carregar } from './base'
 import { hoje } from './hoje'
 
@@ -11,9 +13,10 @@ export type PrazoComProcesso = Prazo & { processo: Processo; cliente: Cliente }
 export type DadosCliente = Omit<Cliente, 'id'>
 export type DadosProcesso = Omit<Processo, 'id' | 'eventos'>
 
+/** Proposta recusada não conta como processo do cliente. */
 export async function listarClientes() {
   const { clientes, processos } = await carregar()
-  return clientes.map((cliente) => ({ cliente, processos: processos.filter((p) => p.clienteId === cliente.id).length }))
+  return clientes.map((cliente) => ({ cliente, processos: processos.filter((p) => p.clienteId === cliente.id && !propostaRecusada(p)).length }))
 }
 
 export async function obterCliente(id: string) {
@@ -28,9 +31,10 @@ export async function seiEmUso(numeroSei: string | undefined, exceto?: string) {
   return processos.some((p) => p.numeroSei === numeroSei && p.id !== exceto)
 }
 
+/** Proposta recusada sai da lista de processos; ela fica no Comercial. */
 export async function listarProcessos() {
   const { hoje, processos, clientes } = await carregar()
-  return processos.map((processo) => {
+  return processos.filter((processo) => !propostaRecusada(processo)).map((processo) => {
     const prazos = gerarPrazos(processo)
     return { processo, cliente: clientes.find((c) => c.id === processo.clienteId)!, prazos, proximo: proximoPrazo(prazos, hoje) }
   })
@@ -47,7 +51,7 @@ export async function listarPrazos(): Promise<PrazoComProcesso[]> {
 }
 
 export async function obterProcesso(id: string) {
-  const { hoje, processos, clientes, contratos, financeiro } = await carregar()
+  const { hoje, processos, clientes, contratos, propostas, financeiro } = await carregar()
   const processo = processos.find((p) => p.id === id)
   if (!processo) return undefined
   const contrato = contratos.find((c) => c.processoId === id)
@@ -57,7 +61,51 @@ export async function obterProcesso(id: string) {
     cliente: clientes.find((c) => c.id === processo.clienteId)!,
     prazos: gerarPrazos(processo),
     parcelas: (contrato?.parcelas ?? []).map((parcela) => ({ parcela, ...situacaoParcela(parcela, processo, notas, hoje) })),
+    proposta: propostas.find((p) => p.processoId === id),
+    situacaoProposta: situacaoDaProposta(processo, hoje),
   }
+}
+
+/** O funil do Comercial: cada proposta com a situação e o valor (a soma das parcelas, para quem vê o financeiro). */
+export async function listarPropostas() {
+  const { hoje, processos, clientes, contratos, propostas } = await carregar()
+  return propostas.flatMap((proposta) => {
+    const processo = processos.find((p) => p.id === proposta.processoId)
+    if (!processo) return []
+    const parcelas = contratos.find((c) => c.processoId === processo.id)?.parcelas
+    return [
+      {
+        proposta,
+        processo,
+        cliente: clientes.find((c) => c.id === processo.clienteId)!,
+        valor: parcelas ? somar(parcelas.map((p) => p.valor)) : undefined,
+        situacao: situacaoDaProposta(processo, hoje),
+      },
+    ]
+  })
+}
+
+export type DadosProposta = Pick<Processo, 'clienteId' | 'empreendimento' | 'endereco' | 'responsavel' | 'servico'> & Omit<Proposta, 'processoId' | 'criadaEm'> & { valor: Centavos }
+
+/** Proposta nova: o processo na fase 1 (sem nº SEI), o texto da proposta e o contrato com as parcelas do serviço, numa transação. Devolve o id. */
+export async function gravarProposta({ valor, escopo, validadeDias, ...processo }: DadosProposta) {
+  exigirBanco()
+  const id = crypto.randomUUID()
+  const contratoId = crypto.randomUUID()
+  await db.batch([
+    db.insert(schema.processos).values({ id, ...processo, faseAtual: 1 }),
+    db.insert(schema.propostas).values({ processoId: id, escopo, validadeDias, criadaEm: await hoje() }),
+    db.insert(schema.contratos).values({ id: contratoId, processoId: id }),
+    db
+      .insert(schema.parcelas)
+      .values(parcelasDaProposta(processo.servico, valor).map((parcela, i) => ({ id: crypto.randomUUID(), contratoId, ordem: i + 1, ...parcela }))),
+  ])
+  return id
+}
+
+export async function alterarProposta(processoId: string, dados: Pick<Proposta, 'escopo' | 'validadeDias'>) {
+  exigirBanco()
+  await db.update(schema.propostas).set(dados).where(eq(schema.propostas.processoId, processoId))
 }
 
 /** Parcelas cujo evento já aconteceu e ainda não viraram nota. */

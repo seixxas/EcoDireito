@@ -2,6 +2,7 @@ import { somarDias, type DataISO } from '@/lib/datas'
 import { reais } from '@/lib/dinheiro'
 import type { Contrato } from '@/domain/financeiro/parcelas'
 import { EVENTOS, faseDepoisDoEvento, type Evento, type NumeroFase, type Processo, type TipoEvento } from '@/domain/processos'
+import { ESCOPO_PADRAO, parcelasDaProposta, VALIDADE_PADRAO, type Proposta } from '@/domain/propostas'
 
 /** Processos cuja última parcela liberada ainda não foi faturada (destaque da demonstração). */
 export const PARCELA_A_FATURAR = new Set(['p02', 'p10'])
@@ -17,8 +18,11 @@ const abertura = (aceite: number, autuacao: number): Linha[] => [
   ['autuacao', autuacao],
 ]
 
-/** Os dias são relativos a hoje: -24 = 24 dias atrás. A fase atual sai das próprias etapas. */
-const CASOS: (Omit<Processo, 'eventos' | 'faseAtual'> & { valor: number; linhas: Linha[] })[] = [
+/**
+ * Os dias são relativos a hoje: -24 = 24 dias atrás. A fase atual sai das próprias etapas.
+ * A proposta é criada 3 dias antes de ser enviada; `criada` vale para a que ainda não foi.
+ */
+const CASOS: (Omit<Processo, 'eventos' | 'faseAtual'> & { valor: number; linhas: Linha[]; criada?: number })[] = [
   {
     id: 'p01', clienteId: 'altavista-pinheiros', empreendimento: 'Residencial Altavista Pinheiros', endereco: 'Rua Cardeal Arcoverde, 1.480 · Pinheiros',
     responsavel: 'Juliana Prado', servico: 'licenciamento', numeroSei: '6027.2026/0003127-4', valor: 64_000,
@@ -112,25 +116,29 @@ const CASOS: (Omit<Processo, 'eventos' | 'faseAtual'> & { valor: number; linhas:
     responsavel: 'Marina Lopes', servico: 'licenciamento', valor: 84_000,
     linhas: [['proposta_enviada', -6, { observacao: 'Enviada à diretoria do hospital; retorno prometido para a semana que vem.' }]],
   },
+  {
+    id: 'p16', clienteId: 'bebidas-serrana', empreendimento: 'Bebidas Serrana · nova linha de envase', endereco: 'Av. Gastão Vidigal, 2.300 · Vila Leopoldina',
+    responsavel: 'Rafael Moura', servico: 'licenciamento', valor: 95_000, criada: -2,
+    linhas: [],
+  },
+  {
+    id: 'p17', clienteId: 'condominio-jardim-europa', empreendimento: 'Condomínio Jardim Europa · poda e transplante', endereco: 'Rua Groenlândia, 410 · Jardim Europa',
+    responsavel: 'Juliana Prado', servico: 'manejo', valor: 24_000,
+    linhas: [['proposta_enviada', -12, { observacao: 'Enviada ao síndico por e-mail.' }]],
+  },
+  {
+    id: 'p18', clienteId: 'colegio-monteiro', empreendimento: 'Colégio Monteiro Lobato · nova quadra', endereco: 'Rua Monte Alegre, 1.100 · Perdizes',
+    responsavel: 'Marina Lopes', servico: 'licenciamento', valor: 38_000,
+    linhas: [['proposta_enviada', -45], ['proposta_recusada', -30, { observacao: 'Fechou com outra consultoria, pelo preço.' }]],
+  },
 ]
-
-const PARCELAS = {
-  licenciamento: [
-    { descricao: 'Parcela 1/3 · aceite da proposta', fracao: 0.3, gatilho: 'aceite_proposta' },
-    { descricao: 'Parcela 2/3 · emissão do LAA', fracao: 0.3, gatilho: 'laa_emitido' },
-    { descricao: 'Parcela 3/3 · publicação do TCA', fracao: 0.4, gatilho: 'tca_publicado' },
-  ],
-  manejo: [
-    { descricao: 'Entrada (50%)', fracao: 0.5, gatilho: 'aceite_proposta' },
-    { descricao: 'Término do corte (50%)', fracao: 0.5, gatilho: 'corte_concluido' },
-  ],
-} as const
 
 export function gerarProcessos(hoje: DataISO) {
   const processos: Processo[] = []
   const contratos: Contrato[] = []
+  const propostas: Proposta[] = []
 
-  for (const { valor, linhas, ...processo } of CASOS) {
+  for (const { valor, linhas, criada, ...processo } of CASOS) {
     const eventos: Evento[] = linhas.map(([tipo, dias, extra], i) => ({
       id: `${processo.id}-e${i + 1}`,
       tipo,
@@ -143,15 +151,16 @@ export function gerarProcessos(hoje: DataISO) {
     contratos.push({
       id: `ct-${processo.id}`,
       processoId: processo.id,
-      parcelas: PARCELAS[processo.servico].map((parcela, i) => ({
-        id: `${processo.id}-pc${i + 1}`,
-        contratoId: `ct-${processo.id}`,
-        descricao: parcela.descricao,
-        valor: reais(valor * parcela.fracao),
-        gatilho: parcela.gatilho,
-      })),
+      parcelas: parcelasDaProposta(processo.servico, reais(valor)).map((parcela, i) => ({ id: `${processo.id}-pc${i + 1}`, contratoId: `ct-${processo.id}`, ...parcela })),
+    })
+    const enviada = eventos.find((e) => e.tipo === 'proposta_enviada')
+    propostas.push({
+      processoId: processo.id,
+      escopo: ESCOPO_PADRAO[processo.servico],
+      validadeDias: VALIDADE_PADRAO,
+      criadaEm: enviada ? somarDias(enviada.data, -3) : somarDias(hoje, criada ?? 0),
     })
   }
 
-  return { processos, contratos }
+  return { processos, contratos, propostas }
 }
