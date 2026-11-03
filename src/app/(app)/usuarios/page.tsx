@@ -1,71 +1,78 @@
 import { Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
-import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { Expansivel, Vazio } from '@/components/ui/expansivel'
+import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
 import { carregar } from '@/data/base'
 import { exigirArea } from '@/data/sessao'
 import { listarUsuarios } from '@/data/usuarios'
+import { contar, juntar } from '@/lib/formatar'
 import { PAPEIS, type Papel } from '@/lib/permissoes'
 import { excluirUsuario } from './actions'
 import { FormularioUsuario } from './_components/formulario-usuario'
 
 export const metadata: Metadata = { title: 'Usuários' }
 
-const TOM: Record<Papel, 'brand' | 'info' | 'neutral' | 'warn'> = { socia: 'brand', financeiro: 'info', equipe: 'neutral', contador: 'info', cliente: 'warn' }
+/** "edita prazos e financeiro e cuida dos acessos", em vez de uma tabela de permissões. */
+function oQuePode(papel: Papel) {
+  if (papel === 'cliente') return 'vê só o portal dos próprios processos'
+  const { prazos, financeiro, usuarios } = PAPEIS[papel]
+  const partes = [
+    prazos !== 'nada' && `${prazos === 'editar' ? 'edita' : 'vê'} prazos`,
+    financeiro !== 'nada' && `${financeiro === 'editar' ? 'edita' : 'vê'} o financeiro`,
+    usuarios === 'editar' && 'cuida dos acessos',
+  ].filter((parte): parte is string => Boolean(parte))
+  return juntar(partes)
+}
 
 export default async function PaginaUsuarios() {
   const [eu, usuarios, { clientes }] = await Promise.all([exigirArea('usuarios'), listarUsuarios(), carregar()])
 
   return (
     <>
-      <PageHeader titulo="Usuários" descricao="Quem entra no sistema e o que cada perfil vê. Cliente entra só no portal, nos processos dele." />
+      <PageHeader titulo="Usuários" resumo={`${contar(usuarios.length, 'pessoa tem', 'pessoas têm')} acesso. Cada perfil vê só a sua parte.`} />
 
-      <Card titulo="Novo acesso" className="mb-6">
-        <FormularioUsuario clientes={clientes} />
-      </Card>
+      <Lista>
+        {usuarios.map((usuario) => (
+          <Linha key={usuario.id}>
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-700">
+              {usuario.nome.at(0)}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-medium text-ink">
+                {usuario.nome}
+                {usuario.id === eu.id && <span className="ml-2 text-xs font-normal text-subtle">você</span>}
+              </span>
+              <span className="block truncate text-xs text-muted">{usuario.email}</span>
+            </span>
+            <span className="hidden min-w-0 flex-1 sm:block">
+              <span className="block text-sm text-ink">
+                {PAPEIS[usuario.papel].nome}
+                {usuario.cliente && <span className="text-muted"> · {usuario.cliente}</span>}
+              </span>
+              <span className="block text-xs text-muted">{oQuePode(usuario.papel)}</span>
+            </span>
+            <span className="w-8 shrink-0">
+              {usuario.id !== eu.id && (
+                <form action={excluirUsuario}>
+                  <input type="hidden" name="id" value={usuario.id} />
+                  <button title="Remover acesso" className="rounded-md p-1.5 text-subtle hover:bg-danger-soft hover:text-danger">
+                    <Trash2 className="size-4" />
+                  </button>
+                </form>
+              )}
+            </span>
+          </Linha>
+        ))}
+      </Lista>
+      {usuarios.length === 0 && <Vazio>Sem banco configurado: os usuários aparecem aqui quando o Neon estiver ligado.</Vazio>}
 
-      <Card titulo="Acessos" flush>
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>E-mail</th>
-              <th>Perfil</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {usuarios.map((usuario) => (
-              <tr key={usuario.id}>
-                <td className="font-medium">{usuario.nome}</td>
-                <td className="text-muted">{usuario.email}</td>
-                <td>
-                  <Badge tom={TOM[usuario.papel]}>{PAPEIS[usuario.papel].nome}</Badge>
-                  {usuario.cliente && <span className="ml-2 text-xs text-muted">{usuario.cliente}</span>}
-                </td>
-                <td className="text-right">
-                  {usuario.id !== eu.id && (
-                    <form action={excluirUsuario}>
-                      <input type="hidden" name="id" value={usuario.id} />
-                      <button title="Remover acesso" className="rounded-lg p-2 text-subtle hover:bg-danger-soft hover:text-danger">
-                        <Trash2 className="size-4" />
-                      </button>
-                    </form>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {usuarios.length === 0 && (
-              <tr>
-                <td colSpan={4} className="py-8 text-center text-muted">
-                  Sem banco configurado: os usuários aparecem aqui quando o Neon estiver ligado.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
+      <Expansivel resumo="Dar acesso a outra pessoa" className="mt-5">
+        <Card className="max-w-3xl">
+          <FormularioUsuario clientes={clientes} />
+        </Card>
+      </Expansivel>
     </>
   )
 }

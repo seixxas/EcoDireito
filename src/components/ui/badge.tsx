@@ -21,9 +21,10 @@ export const COR_DO_TEXTO: Record<Tom, string> = {
   neutral: 'text-ink',
 }
 
+/** Etiqueta neutra (tipo, origem). Para situação (vencido, recebido), use `Situacao`. */
 export function Badge({ tom = 'neutral', className, children }: { tom?: Tom; className?: string; children: ReactNode }) {
   return (
-    <span className={cn('inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold', TONS[tom], className)}>
+    <span className={cn('inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-medium', TONS[tom], className)}>
       {children}
     </span>
   )
