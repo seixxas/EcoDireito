@@ -3,6 +3,7 @@ import { montarDre } from './dre'
 import { diasDaSemana, movimentosPrevistos, projetarSemanas } from './fluxo'
 import type { Processo } from '../processos'
 import { alteracoesDoLancamento, errosDoLancamento, mesDoLancamento, type Lancamento } from './lancamentos'
+import { situacaoDoContrato } from './parcelas'
 import { errosDaNota, errosDoRecebimento, montarNota, motivoParaNaoCancelar, resumoNotas, situacaoNota, type NotaFiscal } from './notas'
 
 const nota = (parcial: Partial<NotaFiscal>): NotaFiscal => ({
@@ -158,5 +159,17 @@ describe('semana dia a dia', () => {
     expect(dias.map((d) => d.saldoFinal)).toEqual([100_000, 150_000, 150_000, 140_000, 140_000, 140_000, 140_000])
     expect(dias[3]).toMatchObject({ entradas: 10_000, saidas: -20_000 })
     expect(dias.at(-1)!.saldoFinal).toBe(semana.saldoFinal)
+  })
+})
+
+describe('contrato fechado', () => {
+  const comEventos = (...eventos: [string, string][]) =>
+    ({ eventos: eventos.map(([tipo, data], i) => ({ id: `e${i}`, tipo, data, origem: 'manual' })) }) as unknown as Processo
+
+  it('só conta como contratado depois do aceite da proposta (até hoje)', () => {
+    expect(situacaoDoContrato(comEventos(['proposta_enviada', '2026-10-20']), '2026-11-03')).toBe('proposta')
+    expect(situacaoDoContrato(comEventos(['proposta_enviada', '2026-10-20'], ['aceite_proposta', '2026-11-05']), '2026-11-03')).toBe('proposta')
+    expect(situacaoDoContrato(comEventos(['aceite_proposta', '2026-11-01']), '2026-11-03')).toBe('fechado')
+    expect(situacaoDoContrato(comEventos(['proposta_recusada', '2026-10-30']), '2026-11-03')).toBe('recusada')
   })
 })
