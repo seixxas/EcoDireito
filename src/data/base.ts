@@ -5,7 +5,7 @@ import type { Lancamento } from '@/domain/financeiro/lancamentos'
 import type { NotaFiscal } from '@/domain/financeiro/notas'
 import type { Contrato } from '@/domain/financeiro/parcelas'
 import type { ContaId } from '@/domain/financeiro/plano-de-contas'
-import type { Evento, NumeroFase, Processo, Servico, TipoEvento } from '@/domain/processos'
+import { EVENTOS, type Evento, type NumeroFase, type Processo, type Servico, type TipoEvento } from '@/domain/processos'
 import { mesDe, mesesEntre, type DataISO } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
 import { pode } from '@/lib/permissoes'
@@ -59,13 +59,23 @@ async function doBanco(dia: DataISO): Promise<Base> {
         endereco: p.endereco,
         responsavel: p.responsavel,
         servico: p.servico as Servico,
-        numeroSei: p.numeroSei,
+        numeroSei: p.numeroSei ?? undefined,
         numeroSimproc: p.numeroSimproc ?? undefined,
         numeroTca: p.numeroTca ?? undefined,
         faseAtual: p.faseAtual as NumeroFase,
         eventos: eventos
-          .filter((e) => e.processoId === p.id)
-          .map((e): Evento => ({ id: e.id, tipo: e.tipo as TipoEvento, data: e.data, origem: e.origem as Evento['origem'], diasNoAto: e.diasNoAto ?? undefined })),
+          // Tipo que saiu de EVENTOS (ex.: parecer_conclusivo, que virou laa_emitido) não derruba a tela.
+          .filter((e) => e.processoId === p.id && e.tipo in EVENTOS)
+          .map(
+            (e): Evento => ({
+              id: e.id,
+              tipo: e.tipo as TipoEvento,
+              data: e.data,
+              origem: e.origem as Evento['origem'],
+              diasNoAto: e.diasNoAto ?? undefined,
+              observacao: e.observacao ?? undefined,
+            }),
+          ),
       }),
     ),
     contratos: contratos.map(

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Busca } from '@/components/ui/busca'
 import { Vazio } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
 import { Linha, Lista } from '@/components/ui/lista'
@@ -7,6 +8,7 @@ import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
 import { listarClientes } from '@/data/processos'
 import { exigirArea } from '@/data/sessao'
+import { combina } from '@/lib/buscar'
 import { contar } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
@@ -14,10 +16,20 @@ import { LinkVoltar } from '../_components/link-voltar'
 
 export const metadata: Metadata = { title: 'Clientes' }
 
-export default async function PaginaClientes({ searchParams }: { searchParams: Promise<{ pagina?: string }> }) {
-  const [{ pagina }, itens, usuario] = await Promise.all([searchParams, listarClientes(), exigirArea('prazos')])
+function endereco(q?: string, pagina = 1) {
+  const busca = new URLSearchParams()
+  if (q) busca.set('q', q)
+  if (pagina > 1) busca.set('pagina', String(pagina))
+  return busca.size ? `/processos/clientes?${busca}` : '/processos/clientes'
+}
+
+export default async function PaginaClientes({ searchParams }: { searchParams: Promise<{ q?: string; pagina?: string }> }) {
+  const [{ q: buscado, pagina }, itens, usuario] = await Promise.all([searchParams, listarClientes(), exigirArea('prazos')])
   const editar = pode(usuario.papel, 'prazos', 'editar')
-  const paginado = paginar(itens, pagina)
+  const q = String(buscado ?? '').trim() || undefined
+  // O CNPJ também vale digitado só com números.
+  const achados = itens.filter(({ cliente: c }) => combina(q, c.nome, c.documento, c.documento.replace(/\D/g, ''), c.grupo))
+  const paginado = paginar(achados, pagina)
 
   return (
     <>
@@ -33,6 +45,7 @@ export default async function PaginaClientes({ searchParams }: { searchParams: P
           )
         }
       />
+      <Busca valor={q} placeholder="Nome, CNPJ ou grupo" limpar={endereco()} className="mb-4" />
       <Lista>
         {paginado.itens.map(({ cliente, processos }) => (
           <Linha key={cliente.id} href={editar ? `/processos/clientes/${cliente.id}` : undefined}>
@@ -47,8 +60,8 @@ export default async function PaginaClientes({ searchParams }: { searchParams: P
           </Linha>
         ))}
       </Lista>
-      {itens.length === 0 && <Vazio>Nenhum cliente cadastrado.</Vazio>}
-      <Paginacao {...paginado} href={(n) => (n > 1 ? `/processos/clientes?pagina=${n}` : '/processos/clientes')} />
+      {paginado.total === 0 && <Vazio>{q ? 'Nenhum cliente com essa busca.' : 'Nenhum cliente cadastrado.'}</Vazio>}
+      <Paginacao {...paginado} href={(n) => endereco(q, n)} />
     </>
   )
 }

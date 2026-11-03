@@ -44,8 +44,8 @@ export function FormularioProcesso({ clientes, valores, voltar }: { clientes: { 
             <option value="manejo">Manejo</option>
           </Selecao>
         </Campo>
-        <Campo rotulo="Nº SEI" erro={erros.numeroSei} dica="É por ele que o robô acha os atos no Diário Oficial.">
-          <Entrada name="numeroSei" defaultValue={valor('numeroSei')} placeholder="6027.2026/0000021-3" pattern="\d{4}\.\d{4}/\d{7}-\d" required />
+        <Campo rotulo="Nº SEI" erro={erros.numeroSei} dica="Deixe vazio até abrir o processo na SVMA. É por ele que o robô acha os atos no Diário Oficial.">
+          <Entrada name="numeroSei" defaultValue={valor('numeroSei')} placeholder="6027.2026/0000021-3" pattern="\d{4}\.\d{4}/\d{7}-\d" />
         </Campo>
         <Campo rotulo="Nº SIMPROC" erro={erros.numeroSimproc} dica="Só em processo antigo, aberto antes do SEI.">
           <Entrada name="numeroSimproc" defaultValue={valor('numeroSimproc')} placeholder="2016-0.084.512-3" pattern="\d{4}-0\.\d{3}\.\d{3}-\d" />
@@ -53,7 +53,7 @@ export function FormularioProcesso({ clientes, valores, voltar }: { clientes: { 
         <Campo rotulo="Nº TCA" erro={erros.numeroTca} dica="Quando o Termo de Compromisso for publicado.">
           <Entrada name="numeroTca" defaultValue={valor('numeroTca')} placeholder="318/2026" />
         </Campo>
-        <Campo rotulo="Fase atual" erro={erros.faseAtual} dica="Avança sozinha quando um evento de fase seguinte é lançado.">
+        <Campo rotulo="Fase atual" erro={erros.faseAtual} dica="Processo novo começa na Proposta. Depois, a fase avança sozinha quando a etapa final dela é marcada.">
           <Selecao name="faseAtual" defaultValue={valor('faseAtual') ?? 1}>
             {FASES.map((fase) => (
               <option key={fase.numero} value={fase.numero}>
