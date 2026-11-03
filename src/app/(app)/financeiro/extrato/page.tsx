@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/ui/page-header'
 import { Stat } from '@/components/ui/stat'
 import { filaDoExtrato } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
-import { notasParaCredito, sugerirTermo, type Sugestao } from '@/domain/financeiro/classificacao'
+import { chaveDaSugestao, notasParaCredito, sugerirTermo, type Sugestao } from '@/domain/financeiro/classificacao'
 import { valorLiquido } from '@/domain/financeiro/notas'
 import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
 import { somar } from '@/lib/dinheiro'
@@ -72,9 +72,9 @@ export default async function PaginaExtrato() {
             data: linha.data,
             descricao: linha.descricao,
             valor: linha.valor,
-            sugestao: sugestao && descrever(sugestao),
+            sugestao: sugestao && { ...descrever(sugestao), chave: chaveDaSugestao(sugestao) },
             termo: sugerirTermo(linha.descricao),
-            candidatas: linha.valor > 0 ? notasParaCredito(linha, aReceber, clientes).map((n) => n.id) : [],
+            candidatas: linha.valor > 0 ? notasParaCredito(linha, aReceber, clientes).map(({ nota }) => nota.id) : [],
           }))}
           processos={processos.map((p) => ({ id: p.id, nome: p.empreendimento }))}
           notas={aReceber.map((n) => ({ id: n.id, nome: `NF ${n.numero} · ${nomeDoCliente(n.clienteId)} · ${brl(valorLiquido(n))}` }))}

@@ -20,10 +20,25 @@ export type Sugestao =
 /** Folga entre a data do extrato e a de um lançamento já feito à mão. */
 const DIAS_DE_FOLGA = 3
 
-/** Com mais de uma regra, ganha a mais específica (o trecho mais longo). */
+/** Palavras sem acento, sem maiúscula e sem pontuação ("Mata-Nativa" → mata, nativa). */
+export function palavrasDe(texto: string) {
+  return normalizar(texto)
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+}
+
+/**
+ * A regra vale quando todas as palavras dela aparecem na descrição, em qualquer ordem
+ * ("conta luz enel" pega "PAGTO CONTA DE LUZ ENEL"). Com mais de uma, ganha a mais específica (o trecho mais longo).
+ */
 export function regraPara(descricao: string, regras: Regra[]) {
-  const texto = normalizar(descricao)
-  return regras.filter((r) => texto.includes(normalizar(r.contem))).sort((a, b) => b.contem.length - a.contem.length)[0]
+  const texto = palavrasDe(descricao).join(' ')
+  return regras
+    .filter((regra) => {
+      const palavras = palavrasDe(regra.contem)
+      return palavras.length > 0 && palavras.every((palavra) => texto.includes(palavra))
+    })
+    .sort((a, b) => b.contem.length - a.contem.length)[0]
 }
 
 const PALAVRAS_DE_BANCO = /\b(pix|ted|doc|transf\w*|enviad[oa]|recebid[oa]|pagamento|pagto|pgto|boleto|de|da|do|para)\b/g
@@ -38,24 +53,49 @@ export function sugerirTermo(descricao: string) {
   return palavras.slice(0, 4).join(' ') || normalizar(descricao)
 }
 
+/** Aparecem no nome de muitos clientes e não identificam nenhum. */
+const PALAVRAS_GENERICAS = new Set([
+  'ltda',
+  'eireli',
+  'empreendimento',
+  'empreendimentos',
+  'imobiliario',
+  'imobiliaria',
+  'incorporacao',
+  'incorporadora',
+  'desenvolvimento',
+  'participacoes',
+  'condominio',
+  'edificio',
+  'residencial',
+  'comercio',
+  'servicos',
+  'construtora',
+  'engenharia',
+  'industria',
+])
+
+/** Quantas palavras próprias do nome do cliente aparecem na descrição do extrato. */
+function citacoes(descricao: string, nomeDoCliente: string) {
+  const texto = palavrasDe(descricao)
+  return palavrasDe(nomeDoCliente).filter((p) => p.length >= 4 && !PALAVRAS_GENERICAS.has(p) && texto.includes(p)).length
+}
+
 /**
  * Notas a receber que batem com o crédito: valor líquido ou bruto igual.
- * Ordem: cliente citado na descrição, valor líquido exato, previsão mais perto.
+ * Ordem: mais palavras do nome do cliente na descrição, valor líquido exato, previsão mais perto.
  */
 export function notasParaCredito(credito: Movimento, notas: NotaFiscal[], clientes: Cliente[]) {
-  const texto = normalizar(credito.descricao)
-  const citaCliente = (nota: NotaFiscal) =>
-    normalizar(clientes.find((c) => c.id === nota.clienteId)?.nome ?? '')
-      .split(' ')
-      .some((palavra) => palavra.length >= 4 && texto.includes(palavra))
+  const pontos = new Map(clientes.map((c) => [c.id, citacoes(credito.descricao, c.nome)]))
   const liquidoExato = (nota: NotaFiscal) => valorLiquido(nota) === credito.valor
   return notas
     .filter((n) => !n.cancelada && !n.recebimento && n.emissao <= credito.data && (liquidoExato(n) || n.valor === credito.valor))
+    .map((nota) => ({ nota, citacoes: pontos.get(nota.clienteId) ?? 0 }))
     .sort(
       (a, b) =>
-        Number(citaCliente(b)) - Number(citaCliente(a)) ||
-        Number(liquidoExato(b)) - Number(liquidoExato(a)) ||
-        Math.abs(diasEntre(a.previsao, credito.data)) - Math.abs(diasEntre(b.previsao, credito.data)),
+        b.citacoes - a.citacoes ||
+        Number(liquidoExato(b.nota)) - Number(liquidoExato(a.nota)) ||
+        Math.abs(diasEntre(a.nota.previsao, credito.data)) - Math.abs(diasEntre(b.nota.previsao, credito.data)),
     )
 }
 
@@ -71,11 +111,19 @@ export function sugerir(linha: Movimento, contexto: Contexto): Sugestao | undefi
     .sort((a, b) => Math.abs(diasEntre(a.data, linha.data)) - Math.abs(diasEntre(b.data, linha.data)))[0]
   if (lancamento) return { tipo: 'lancamento', lancamento }
 
-  const nota = linha.valor > 0 ? notasParaCredito(linha, contexto.notas, contexto.clientes)[0] : undefined
-  if (nota) return { tipo: 'nota', nota }
+  // Com mais de uma nota possível, só sugere se o nome do cliente desempata: na dúvida, quem classifica escolhe.
+  const [primeira, segunda] = linha.valor > 0 ? notasParaCredito(linha, contexto.notas, contexto.clientes) : []
+  if (primeira && (!segunda || primeira.citacoes > segunda.citacoes)) return { tipo: 'nota', nota: primeira.nota }
 
   const regra = regraPara(linha.descricao, contexto.regras)
   return regra && { tipo: 'regra', regra }
+}
+
+/** Identifica a sugestão que estava na tela, para confirmar exatamente ela. */
+export function chaveDaSugestao(sugestao: Sugestao) {
+  if (sugestao.tipo === 'lancamento') return `lancamento:${sugestao.lancamento.id}`
+  if (sugestao.tipo === 'nota') return `nota:${sugestao.nota.id}`
+  return `regra:${sugestao.regra.id}`
 }
 
 /** Sugere para a fila inteira, da linha mais antiga para a mais nova, sem usar o mesmo lançamento ou a mesma nota duas vezes. */

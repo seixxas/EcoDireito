@@ -35,18 +35,20 @@ export function decodificar(bytes: Uint8Array) {
 }
 
 export function lerExtrato(texto: string): Leitura {
-  const lido = /<OFX>/i.test(texto) ? { linhas: lerOfx(texto) } : lerCsv(texto)
+  const ofx = /<OFX>/i.test(texto)
+  const lido = ofx ? { linhas: lerOfx(texto) } : lerCsv(texto)
   if ('erro' in lido) return lido
   const validas = lido.linhas.filter((l) => /^\d{4}-\d{2}-\d{2}$/.test(l.data) && Number.isFinite(l.valor) && l.valor !== 0)
   if (!validas.length) return { erro: 'Não achei lançamentos neste arquivo.' }
-  return { linhas: comChaves(validas) }
+  // O OFX traz o número da conta: a mesma tarifa no mesmo dia em duas contas são duas linhas. O CSV não traz.
+  return { linhas: comChaves(validas, ofx ? tag(texto, 'ACCTID') : undefined) }
 }
 
 /** O id do banco (FITID) nem sempre é único; data, valor e a ordem no arquivo desempatam. */
-function comChaves(linhas: Bruta[]): LinhaExtrato[] {
+function comChaves(linhas: Bruta[], conta?: string): LinhaExtrato[] {
   const vistas = new Map<string, number>()
   return linhas.map(({ idDoBanco, ...linha }) => {
-    const base = [idDoBanco ?? normalizar(linha.descricao), linha.data, linha.valor].join('|')
+    const base = [conta, idDoBanco ?? normalizar(linha.descricao), linha.data, linha.valor].filter((parte) => parte !== undefined).join('|')
     const vezes = (vistas.get(base) ?? 0) + 1
     vistas.set(base, vezes)
     return { ...linha, chave: vezes > 1 ? `${base}#${vezes}` : base }
@@ -116,7 +118,8 @@ function colunasPeloNome(cabecalho: string[]): Colunas | undefined {
   const colunas = {
     data: coluna(/^data/),
     // Alguns bancos separam "Histórico" ("Pix enviado") e "Descrição" (o nome): fica com as duas.
-    descricao: nomes.flatMap((nome, i) => (/hist|descri|lancamento|memo|detalhe/.test(nome) && !nome.startsWith('data') ? [i] : [])),
+    // Só pelo começo do nome: "Lançamento" (Bradesco) é descrição; "Valor do lançamento" e "Tipo lançamento" não.
+    descricao: nomes.flatMap((nome, i) => (/^(hist|descri|lancamento|memo|detalhe)/.test(nome) ? [i] : [])),
     valor: coluna(/^valor/),
     credito: coluna(/credito|entrada/),
     debito: coluna(/debito|saida/),

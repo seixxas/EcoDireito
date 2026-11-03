@@ -40,15 +40,18 @@ Regras (em `src/domain/financeiro/notas.ts` e `lancamentos.ts`, com teste):
 Fluxo: importar o arquivo → as linhas vão para a fila "a classificar" → cada uma vira lançamento.
 
 - Leitor (`src/domain/financeiro/extrato.ts`): OFX 1.x e 2.x; CSV com ou sem cabeçalho (Data; Descrição; Valor), crédito e débito em colunas separadas, sufixo D/C, Windows-1252 ou UTF-8. Linhas de saldo são ignoradas.
-- Cada linha tem uma chave (FITID ou descrição, mais data, valor e a ordem no arquivo): importar o mesmo período de novo não duplica.
+- Cada linha tem uma chave (número da conta, no OFX; FITID ou descrição; data; valor; ordem no arquivo): importar o mesmo período de novo não duplica.
 - Sugestão por linha (`classificacao.ts`), nesta ordem:
   1. **Já lançado**: um lançamento sem linha de extrato, com o mesmo valor e até 3 dias de diferença. Confirmar só liga os dois, para não contar duas vezes.
-  2. **Recebimento de nota** (só crédito): nota a receber com valor líquido ou bruto igual. Primeiro a do cliente citado na descrição, depois a de valor líquido exato e, por fim, a de previsão mais próxima. Confirmar registra o recebimento.
-  3. **Regra**: "descrição contém X → conta Y" (sem acento nem maiúscula; vence o trecho mais longo).
-- A mesma nota ou o mesmo lançamento nunca é sugerido para duas linhas.
+  2. **Recebimento de nota** (só crédito): nota a receber com valor líquido ou bruto igual. Com mais de uma nota possível, só sugere quando o nome do cliente na descrição desempata (palavras genéricas como "ltda" e "incorporação" não contam); senão, quem classifica escolhe na lista. Confirmar registra o recebimento.
+  3. **Regra**: "descrição tem todas as palavras de X → conta Y", em qualquer ordem, sem acento nem maiúscula; vence o trecho mais longo.
+- A mesma nota ou o mesmo lançamento nunca é sugerido para duas linhas. "Confirmar" aplica a sugestão que estava na tela; se ela mudou, só atualiza a tela.
+- Uma linha nunca vira dois lançamentos: se duas confirmações chegam juntas (clique duplo, duas abas), a segunda não grava nada.
+- Corrigir o recebimento na tela da nota atualiza o mesmo lançamento de receita, que continua ligado à linha do extrato.
 - Na mão: escolher a conta (e o processo) ou a nota, e opcionalmente criar a regra com o trecho sugerido (a descrição sem números nem "PIX ENVIADO").
 - "Ignorar" tira da fila sem lançar (ex.: transferência entre contas da empresa), com volta. Apagar o lançamento devolve a linha para a fila.
 - Tabelas: `extrato_linhas` (com `lancamento_id`) e `regras_classificacao`.
+- Limites conhecidos: a nota tem um recebimento só (a paga em duas vezes não se concilia pelo segundo crédito; precisa de mudança no schema); o CSV não traz a conta, então duas contas com a mesma linha no mesmo dia colidem; a projeção do fluxo ainda usa as despesas fixas da base fictícia.
 
 ## DRE (estrutura que a Eco Direito já usa)
 

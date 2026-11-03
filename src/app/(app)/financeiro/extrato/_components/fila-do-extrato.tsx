@@ -16,7 +16,8 @@ export type LinhaDaFila = {
   data: string
   descricao: string
   valor: number
-  sugestao?: { texto: string; tom: Tom }
+  /** `chave` vai no "Confirmar": a action só aplica se a sugestão ainda for a mesma da tela. */
+  sugestao?: { texto: string; tom: Tom; chave: string }
   /** Trecho sugerido para a regra nova. */
   termo: string
   /** Notas a receber que batem com o crédito, da mais provável para a menos. */
@@ -39,6 +40,7 @@ export function FilaDoExtrato({ linhas, processos, notas, editar }: { linhas: Li
             {editar && linha.sugestao && (
               <form action={confirmarSugestao}>
                 <input type="hidden" name="linhaId" value={linha.id} />
+                <input type="hidden" name="sugestao" value={linha.sugestao.chave} />
                 <BotaoEnviar variante="secundario" className="py-1">
                   Confirmar
                 </BotaoEnviar>

@@ -72,11 +72,23 @@ describe('lerExtrato', () => {
     ])
   })
 
+  it('não põe "Valor do lançamento" nem "Tipo lançamento" na descrição', () => {
+    const csv = 'Data;Lançamento;Tipo lançamento;Valor do lançamento\n10/10/2026;PIX FULANO;Saída;-150,00'
+    expect(linhas(lerExtrato(csv))).toEqual([{ data: '2026-10-10', descricao: 'PIX FULANO', valor: -15_000 }])
+  })
+
+  const chaves = (leitura: Leitura) => ('erro' in leitura ? [] : leitura.linhas.map((l) => l.chave))
+
   it('dá a mesma chave ao reimportar e desempata linhas iguais no mesmo arquivo', () => {
     const csv = 'Data;Descrição;Valor\n09/10/2026;PIX JOSE;-100,00\n09/10/2026;PIX JOSE;-100,00'
-    const [a, b] = (lerExtrato(csv) as { linhas: { chave: string }[] }).linhas
-    expect(a.chave).not.toBe(b.chave)
-    expect((lerExtrato(csv) as { linhas: { chave: string }[] }).linhas[1].chave).toBe(b.chave)
+    const [a, b] = chaves(lerExtrato(csv))
+    expect(a).not.toBe(b)
+    expect(chaves(lerExtrato(csv))[1]).toBe(b)
+  })
+
+  it('no OFX, a mesma linha em duas contas tem chaves diferentes', () => {
+    const daConta = (conta: string) => OFX_SGML.replace('<BANKTRANLIST>', `<BANKACCTFROM><ACCTID>${conta}</BANKACCTFROM><BANKTRANLIST>`)
+    expect(chaves(lerExtrato(daConta('111')))[0]).not.toBe(chaves(lerExtrato(daConta('222')))[0])
   })
 
   it('recusa arquivo que não é extrato', () => {
@@ -107,6 +119,12 @@ describe('classificação', () => {
     expect(sugerirTermo('TED 001')).toBe('ted 001')
   })
 
+  it('a regra criada com o termo sugerido pega a própria linha, mesmo com palavras no meio', () => {
+    for (const descricao of ['PAGTO CONTA DE LUZ ENEL', 'TED 0341 MARIA DE SOUZA', 'PIX ENVIADO Mata-Nativa Viveiro']) {
+      expect(regraPara(descricao, [{ id: 'r', contem: sugerirTermo(descricao), contaId: 'gerais' }])?.id).toBe('r')
+    }
+  })
+
   const clientes: Cliente[] = [
     { id: 'c1', nome: 'Torre Alta Empreendimentos SPE', documento: '' },
     { id: 'c2', nome: 'Jardins do Morumbi SPE', documento: '' },
@@ -127,9 +145,26 @@ describe('classificação', () => {
   it('acha a nota pelo valor líquido ou bruto: primeiro o cliente citado, depois o líquido exato', () => {
     const notas = [nota({ id: 'n1' }), nota({ id: 'n2', clienteId: 'c1' }), nota({ id: 'n3', retencao: 0, previsao: '2026-10-20' })]
     const credito = { data: '2026-10-16', descricao: 'PIX RECEBIDO TORRE ALTA', valor: 945_000 }
-    expect(notasParaCredito(credito, notas, clientes).map((n) => n.id)).toEqual(['n2', 'n1'])
-    expect(notasParaCredito({ ...credito, valor: 1_000_000 }, notas, clientes).map((n) => n.id)).toEqual(['n2', 'n3', 'n1'])
-    expect(notasParaCredito({ ...credito, descricao: 'PIX', valor: 1_000_000 }, notas, clientes).map((n) => n.id)).toEqual(['n3', 'n1', 'n2'])
+    const ids = (c: typeof credito) => notasParaCredito(c, notas, clientes).map(({ nota }) => nota.id)
+    expect(ids(credito)).toEqual(['n2', 'n1'])
+    expect(ids({ ...credito, valor: 1_000_000 })).toEqual(['n2', 'n3', 'n1'])
+    expect(ids({ ...credito, descricao: 'PIX', valor: 1_000_000 })).toEqual(['n3', 'n1', 'n2'])
+  })
+
+  it('palavras genéricas do nome ("ltda", "incorporação") não contam como cliente citado', () => {
+    const spes: Cliente[] = [
+      { id: 'h', nome: 'Horizonte Moema Incorporação SPE Ltda', documento: '' },
+      { id: 'j', nome: 'Jequitibá Campo Belo Desenvolvimento Imobiliário SPE Ltda', documento: '' },
+    ]
+    const notas = [nota({ id: 'nh', clienteId: 'h', previsao: '2026-10-16' }), nota({ id: 'nj', clienteId: 'j', previsao: '2026-10-01' })]
+    const credito = { data: '2026-10-16', descricao: 'PIX RECEBIDO JEQUITIBA CAMPO BELO DESENV IMOB SPE LTDA', valor: 945_000 }
+    expect(notasParaCredito(credito, notas, spes).map(({ nota }) => nota.id)).toEqual(['nj', 'nh'])
+  })
+
+  it('com duas notas possíveis, só sugere se o nome do cliente desempatar', () => {
+    const contexto = { lancamentosSemExtrato: [], notas: [nota({ id: 'n1' }), nota({ id: 'n2', clienteId: 'c1' })], clientes, regras: [] }
+    expect(sugerir({ data: '2026-10-16', descricao: 'PIX RECEBIDO', valor: 945_000 }, contexto)).toBeUndefined()
+    expect(sugerir({ data: '2026-10-16', descricao: 'PIX RECEBIDO TORRE ALTA', valor: 945_000 }, contexto)).toMatchObject({ nota: { id: 'n2' } })
   })
 
   it('ignora nota cancelada, já recebida ou emitida depois do crédito', () => {

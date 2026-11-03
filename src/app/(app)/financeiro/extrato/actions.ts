@@ -13,6 +13,7 @@ import {
   receberPelaLinhaExtrato,
 } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
+import { chaveDaSugestao } from '@/domain/financeiro/classificacao'
 import { decodificar, lerExtrato } from '@/domain/financeiro/extrato'
 import { errosDoRecebimento } from '@/domain/financeiro/notas'
 import { CONTAS, type ContaId } from '@/domain/financeiro/plano-de-contas'
@@ -38,10 +39,13 @@ async function itemDaFila(linhaId: string) {
   return { fila, item: fila.pendentes.find((p) => p.linha.id === linhaId) }
 }
 
+/** Só aplica se a sugestão ainda for a que estava na tela; se mudou, a tela atualiza e mostra a nova. */
 export async function confirmarSugestao(formData: FormData) {
   await exigirArea('financeiro', 'editar')
   const { fila, item } = await itemDaFila(String(formData.get('linhaId')))
-  if (item?.sugestao) await aplicarSugestoes([{ linha: item.linha, sugestao: item.sugestao }], fila.clientes)
+  if (item?.sugestao && chaveDaSugestao(item.sugestao) === formData.get('sugestao')) {
+    await aplicarSugestoes([{ linha: item.linha, sugestao: item.sugestao }], fila.clientes)
+  }
   refresh()
 }
 
@@ -83,16 +87,18 @@ export async function classificarLinha(_: EstadoFormulario, formData: FormData):
     if (!nota) return comErro({ notaId: 'Esta nota não está mais a receber' })
     const erros = errosDoRecebimento(nota, { data: item.linha.data, valor: item.linha.valor }, fila.hoje)
     if (Object.keys(erros).length) return comErro({ notaId: Object.values(erros)[0] })
-    await receberPelaLinhaExtrato(item.linha, nota, fila.clientes.find((c) => c.id === nota.clienteId)!)
+    if (!(await receberPelaLinhaExtrato(item.linha, nota, fila.clientes.find((c) => c.id === nota.clienteId)!))) return JA_LANCADA
   } else {
     if (!contaId) return comErro({ contaId: 'Escolha a conta ou a nota' })
     if (lembrar && (termo ?? '').length < 3) return comErro({ termo: 'Use pelo menos 3 letras' })
-    await lancarLinhaExtrato(item.linha, { contaId, processoId })
+    if (!(await lancarLinhaExtrato(item.linha, { contaId, processoId }))) return JA_LANCADA
     if (lembrar && termo) await gravarRegra({ contem: termo, contaId, processoId })
   }
   refresh()
   return { ok: 'Lançado.' }
 }
+
+const JA_LANCADA: EstadoFormulario = { erro: 'Esta linha acabou de ser lançada por outra confirmação. Nada foi gravado em dobro.' }
 
 export async function ignorarLinha(formData: FormData) {
   await exigirArea('financeiro', 'editar')
