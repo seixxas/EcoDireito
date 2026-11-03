@@ -13,7 +13,7 @@ export type VarianteBotao = keyof typeof VARIANTES
 /** Classes de botão, também para `<Link>`. */
 export function classeBotao(variante: VarianteBotao = 'primario', className?: string) {
   return cn(
-    'inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+    'inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
     VARIANTES[variante],
     className,
   )
@@ -23,7 +23,7 @@ export function Botao({ variante, className, ...props }: ComponentProps<'button'
   return <button className={classeBotao(variante, className)} {...props} />
 }
 
-const CAMPO = 'w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100'
+const CAMPO = 'w-full rounded-md border border-line bg-surface px-3 py-1.5 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100'
 
 export function Entrada({ className, ...props }: ComponentProps<'input'>) {
   return <input className={cn(CAMPO, className)} {...props} />
@@ -50,7 +50,7 @@ export function Campo({ rotulo, erro, dica, className, children }: { rotulo: str
 
 /** Mensagem geral do formulário (erro ou sucesso). */
 export function MensagemFormulario({ estado }: { estado?: EstadoFormulario }) {
-  if (estado?.erro) return <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">{estado.erro}</p>
-  if (estado?.ok) return <p className="rounded-lg bg-ok-soft px-3 py-2 text-sm text-ok">{estado.ok}</p>
+  if (estado?.erro) return <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{estado.erro}</p>
+  if (estado?.ok) return <p className="rounded-md bg-ok-soft px-3 py-2 text-sm text-ok">{estado.ok}</p>
   return null
 }

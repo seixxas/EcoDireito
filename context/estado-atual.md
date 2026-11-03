@@ -1,6 +1,6 @@
 # Estado atual
 
-Atualizado em 2026-11-02. Os dados ficam no banco Neon (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login.
+Atualizado em 2026-11-03. Os dados ficam no banco Neon (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login.
 Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de demonstração.
 
 ## Pronto
@@ -8,7 +8,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | Rota | Tela | O que mostra |
 |---|---|---|
 | `/login` | Login | E-mail e senha; cada perfil cai na sua tela inicial |
-| `/` | Painel | Prazos vencidos e próximos, Diário Oficial, parcelas a faturar (com "Emitir nota"), notas atrasadas, saldo |
+| `/` | Hoje | Lista por urgência (atrasado, hoje, próximos 7 dias): prazos, publicações a revisar, parcelas a faturar, notas atrasadas; ao lado, saldo e Diário |
 | `/prazos` | Prazos | Todos os prazos com cálculo explicado; filtros na URL (`?filtro=vencidos`) |
 | `/processos` | Processos | Lista com fase e próximo prazo; cadastrar processo (`/processos/novo`) |
 | `/processos/[id]` | Processo | 7 fases, prazos, linha do tempo (lançar e apagar evento) e parcelas do contrato; editar em `/processos/[id]/editar` |
@@ -26,6 +26,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/usuarios` | Usuários | Sócias criam e removem acessos (equipe, contador, cliente) |
 | `/portal` e `/portal/[id]` | Portal do cliente | O cliente entra e vê só os próprios processos |
 
+- Redesign em andamento (guia em `context/interface.md`): base visual, menu claro, Hoje, login, portal e usuários prontos; prazos e Diário (sessão B) e financeiro (sessão C) em seguida.
 - Perfis (`src/lib/permissoes.ts`): sócia, financeiro, equipe, contador e cliente. O recorte do que cada um vê fica em `carregar()` (`src/data/base.ts`).
 - Domínio com testes (`npm test`); build de produção passando (`npm run build`).
 

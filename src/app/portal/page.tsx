@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Linha, Lista } from '@/components/ui/lista'
 import { listarProcessos } from '@/data/processos'
 import { exigirUsuario } from '@/data/sessao'
+import { TopoDoPortal } from './_components/topo'
 
 export const metadata: Metadata = { title: 'Seus processos' }
 
@@ -14,19 +15,26 @@ export default async function PortalInicio() {
   if (processos.length === 1) redirect(`/portal/${processos[0].processo.id}`)
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-12">
-      <h1 className="font-display text-2xl font-semibold text-brand-900">Seus processos</h1>
-      <ul className="mt-6 space-y-3">
-        {processos.map(({ processo }) => (
-          <li key={processo.id}>
-            <Link href={`/portal/${processo.id}`} className="block rounded-xl border border-line bg-surface p-4 hover:border-brand-300">
-              <p className="font-semibold text-brand-700">{processo.empreendimento}</p>
-              <p className="text-sm text-muted">{processo.endereco}</p>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      {processos.length === 0 && <p className="mt-6 text-muted">Nenhum processo ligado à sua conta. Fale com a Eco Direito.</p>}
-    </main>
+    <>
+      <TopoDoPortal comSair />
+      <main className="mx-auto max-w-3xl px-5 py-10">
+        <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-ink">Seus processos</h1>
+        <p className="mb-6 mt-1 text-muted">Escolha o empreendimento para ver a fase e o próximo prazo.</p>
+        {processos.length ? (
+          <Lista>
+            {processos.map(({ processo }) => (
+              <Linha key={processo.id} href={`/portal/${processo.id}`}>
+                <span>
+                  <span className="block font-medium text-ink">{processo.empreendimento}</span>
+                  <span className="block text-xs text-muted">{processo.endereco}</span>
+                </span>
+              </Linha>
+            ))}
+          </Lista>
+        ) : (
+          <p className="text-muted">Nenhum processo ligado à sua conta. Fale com a Eco Direito.</p>
+        )}
+      </main>
+    </>
   )
 }
