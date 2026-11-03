@@ -2,6 +2,7 @@ import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
+import { Busca } from '@/components/ui/busca'
 import { Expansivel, Vazio } from '@/components/ui/expansivel'
 import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
@@ -14,6 +15,7 @@ import { exigirArea } from '@/data/sessao'
 import { diaUtilAnterior, ehDiaUtil } from '@/domain/feriados'
 import { EVENTOS } from '@/domain/processos'
 import { COMO_ACHOU } from '@/domain/publicacoes'
+import { combina } from '@/lib/buscar'
 import { contar, formatarDataNaLista, formatarDiaEData } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
@@ -27,19 +29,24 @@ type Aba = keyof typeof ABAS
 
 const HORARIO = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 
-function endereco(aba: Aba, pagina = 1) {
+function endereco(aba: Aba, q?: string, pagina = 1) {
   const busca = new URLSearchParams()
   if (aba !== 'nova') busca.set('aba', aba)
+  if (q) busca.set('q', q)
   if (pagina > 1) busca.set('pagina', String(pagina))
   return busca.size ? `/publicacoes?${busca}` : '/publicacoes'
 }
 
-export default async function PaginaPublicacoes({ searchParams }: { searchParams: Promise<{ aba?: string; pagina?: string }> }) {
-  const { aba: pedida, pagina } = await searchParams
+export default async function PaginaPublicacoes({ searchParams }: { searchParams: Promise<{ aba?: string; q?: string; pagina?: string }> }) {
+  const { aba: pedida, q: buscado, pagina } = await searchParams
   const aba: Aba = pedida && pedida in ABAS ? (pedida as Aba) : 'nova'
+  const q = String(buscado ?? '').trim() || undefined
   const [{ edicao, itens }, usuario, dia] = await Promise.all([listarPublicacoes(), exigirArea('prazos'), hoje()])
   const editar = pode(usuario.papel, 'prazos', 'editar')
-  const lista = paginar(itens.filter((item) => item.ato.status === aba), pagina)
+  const achados = itens.filter(({ ato, cliente, processo }) =>
+    combina(q, ato.texto, ato.serie, ato.processo, cliente.nome, cliente.grupo, processo?.empreendimento, processo?.numeroSei),
+  )
+  const lista = paginar(achados.filter((item) => item.ato.status === aba), pagina)
   const novas = itens.filter((item) => item.ato.status === 'nova').length
 
   const lida = edicao.processadaEm ? ` (lida em ${HORARIO.format(new Date(edicao.processadaEm)).replace(', ', ' às ')})` : ''
@@ -58,15 +65,22 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
         </p>
       )}
 
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <SegmentedLinks
           ativo={aba}
           opcoes={Object.entries(ABAS).map(([valor, rotulo]) => ({
             valor,
             rotulo,
-            href: endereco(valor as Aba),
-            contagem: itens.filter((item) => item.ato.status === valor).length,
+            href: endereco(valor as Aba, q),
+            contagem: achados.filter((item) => item.ato.status === valor).length,
           }))}
+        />
+        <Busca
+          valor={q}
+          placeholder="Empresa, nº SEI ou texto do ato"
+          manter={{ aba: aba === 'nova' ? undefined : aba }}
+          limpar={endereco(aba)}
+          className="min-w-60"
         />
       </div>
 
@@ -130,8 +144,8 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
           </Linha>
         ))}
       </Lista>
-      {lista.total === 0 && <Vazio>Nada aqui.</Vazio>}
-      <Paginacao {...lista} href={(n) => endereco(aba, n)} />
+      {lista.total === 0 && <Vazio>{q ? 'Nenhum ato com essa busca.' : 'Nada aqui.'}</Vazio>}
+      <Paginacao {...lista} href={(n) => endereco(aba, q, n)} />
     </>
   )
 }

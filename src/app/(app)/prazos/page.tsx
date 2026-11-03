@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { LinhaPrazo } from '@/components/prazos/linha-prazo'
+import { Busca } from '@/components/ui/busca'
 import { Vazio } from '@/components/ui/expansivel'
 import { Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
@@ -9,6 +10,8 @@ import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { hoje } from '@/data/hoje'
 import { listarPrazos, type PrazoComProcesso } from '@/data/processos'
 import { PERIODOS, estaAberto, periodoDoPrazo, type Periodo } from '@/domain/prazos'
+import { combina } from '@/lib/buscar'
+import type { DataISO } from '@/lib/datas'
 import { contar } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 
@@ -16,6 +19,7 @@ export const metadata: Metadata = { title: 'Prazos' }
 
 const VISTAS = { nossos: 'Nossos prazos', orgao: 'Aguardando a SVMA', cumpridos: 'Cumpridos' } as const
 type Vista = keyof typeof VISTAS
+type Filtros = { vista: Vista; responsavel?: string; q?: string; pagina?: number }
 
 function frase(vencidos: number, semana: number) {
   const atrasados = vencidos ? contar(vencidos, 'prazo vencido', 'prazos vencidos') : 'Nenhum prazo vencido'
@@ -23,25 +27,46 @@ function frase(vencidos: number, semana: number) {
   return `${atrasados} e ${proximos} nesta semana.`
 }
 
-function endereco(vista: Vista, pagina = 1) {
+function endereco({ vista, responsavel, q, pagina = 1 }: Filtros) {
   const busca = new URLSearchParams()
   if (vista !== 'nossos') busca.set('filtro', vista)
+  if (responsavel) busca.set('responsavel', responsavel)
+  if (q) busca.set('q', q)
   if (pagina > 1) busca.set('pagina', String(pagina))
   return busca.size ? `/prazos?${busca}` : '/prazos'
 }
 
-export default async function PaginaPrazos({ searchParams }: { searchParams: Promise<{ filtro?: string; pagina?: string }> }) {
-  const { filtro, pagina } = await searchParams
-  const vista: Vista = filtro && filtro in VISTAS ? (filtro as Vista) : 'nossos'
-  const [dia, prazos] = await Promise.all([hoje(), listarPrazos()])
-
+function separar(prazos: PrazoComProcesso[], dia: DataISO): Record<Vista, PrazoComProcesso[]> {
   const abertos = prazos.filter((p) => estaAberto(p, dia))
-  const listas: Record<Vista, PrazoComProcesso[]> = {
+  return {
     nossos: abertos.filter((p) => p.regra.tipo !== 'expectativa'),
     orgao: abertos.filter((p) => p.regra.tipo === 'expectativa'),
     cumpridos: prazos.filter((p) => !estaAberto(p, dia)).sort((a, b) => (b.cumpridoEm ?? '').localeCompare(a.cumpridoEm ?? '')),
   }
-  const periodosNossos = listas.nossos.map((p) => periodoDoPrazo(p.vencimento, dia))
+}
+
+export default async function PaginaPrazos({
+  searchParams,
+}: {
+  searchParams: Promise<{ filtro?: string; responsavel?: string; q?: string; pagina?: string }>
+}) {
+  const { filtro, responsavel: pedido, q: buscado, pagina } = await searchParams
+  const [dia, prazos] = await Promise.all([hoje(), listarPrazos()])
+
+  const responsaveis = [...new Set(prazos.map((p) => p.processo.responsavel).filter(Boolean))].sort()
+  const filtros: Filtros = {
+    vista: filtro && filtro in VISTAS ? (filtro as Vista) : 'nossos',
+    responsavel: responsaveis.find((r) => r === pedido),
+    q: String(buscado ?? '').trim() || undefined,
+  }
+  const { vista, responsavel, q } = filtros
+
+  const buscados = prazos.filter((p) =>
+    combina(q, p.regra.titulo, p.processo.empreendimento, p.processo.numeroSei, p.processo.responsavel, p.cliente.nome, p.cliente.grupo),
+  )
+  const listas = separar(responsavel ? buscados.filter((p) => p.processo.responsavel === responsavel) : buscados, dia)
+  const daVista = separar(buscados, dia)[vista]
+  const periodosNossos = separar(prazos, dia).nossos.map((p) => periodoDoPrazo(p.vencimento, dia))
   const paginado = paginar(listas[vista], pagina)
   const linha = (prazo: PrazoComProcesso) => <LinhaPrazo key={prazo.id} prazo={prazo} hoje={dia} processo={prazo.processo} cliente={prazo.cliente} />
 
@@ -51,16 +76,39 @@ export default async function PaginaPrazos({ searchParams }: { searchParams: Pro
         titulo="Prazos"
         resumo={frase(periodosNossos.filter((p) => p === 'vencidos').length, periodosNossos.filter((p) => p === 'semana').length)}
       />
-      <div className="mb-6">
+      <div className="mb-6 space-y-3">
         <SegmentedLinks
           ativo={vista}
           opcoes={Object.entries(VISTAS).map(([valor, rotulo]) => ({
             valor,
             rotulo,
-            href: endereco(valor as Vista),
+            href: endereco({ ...filtros, vista: valor as Vista }),
             contagem: listas[valor as Vista].length,
           }))}
         />
+        <div className="flex flex-wrap items-center gap-3">
+          <Busca
+            valor={q}
+            placeholder="Empresa, empreendimento ou prazo"
+            manter={{ filtro: vista === 'nossos' ? undefined : vista, responsavel }}
+            limpar={endereco({ ...filtros, q: undefined })}
+            className="min-w-60"
+          />
+          {responsaveis.length > 1 && (
+            <SegmentedLinks
+              ativo={responsavel ?? 'todos'}
+              opcoes={[
+                { valor: 'todos', rotulo: 'Todos', href: endereco({ ...filtros, responsavel: undefined }), contagem: daVista.length },
+                ...responsaveis.map((r) => ({
+                  valor: r,
+                  rotulo: r.split(' ')[0],
+                  href: endereco({ ...filtros, responsavel: r }),
+                  contagem: daVista.filter((p) => p.processo.responsavel === r).length,
+                })),
+              ]}
+            />
+          )}
+        </div>
       </div>
 
       {vista === 'cumpridos' ? (
@@ -77,8 +125,8 @@ export default async function PaginaPrazos({ searchParams }: { searchParams: Pro
           )
         })
       )}
-      {paginado.total === 0 && <Vazio>Nenhum prazo aqui.</Vazio>}
-      <Paginacao {...paginado} href={(n) => endereco(vista, n)} />
+      {paginado.total === 0 && <Vazio>{q || responsavel ? 'Nenhum prazo com esse filtro.' : 'Nenhum prazo aqui.'}</Vazio>}
+      <Paginacao {...paginado} href={(n) => endereco({ ...filtros, pagina: n })} />
     </>
   )
 }

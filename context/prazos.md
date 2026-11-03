@@ -72,6 +72,8 @@ Na tela, situação é ponto + texto (`SituacaoPrazo`); prazo do órgão atrasad
 ## Tela de prazos
 
 - Vistas: nossos prazos (padrão), aguardando a SVMA (`?filtro=orgao`) e cumpridos (`?filtro=cumpridos`, do mais recente ao mais antigo).
+- Busca (`?q=`) por cliente, grupo, empreendimento, nº SEI, título do prazo e responsável, e filtro por responsável (`?responsavel=`, nome completo; as opções saem dos processos). Busca, responsável e vista se somam; os contadores das vistas e dos responsáveis mostram o resultado filtrado. O resumo do topo é sempre do escritório inteiro.
+- Clientes (`/processos/clientes`): busca por nome, CNPJ (com ou sem pontuação) e grupo.
 - Todas paginadas de 10 em 10 (`?pagina=`). A página corta a lista em ordem de vencimento e só então agrupa por `periodoDoPrazo`: vencidos, esta semana (até domingo), próximas semanas (as 4 seguintes) e mais adiante.
 - Também paginados: `/processos`, `/processos/clientes`, as abas do Diário Oficial e a linha do tempo do processo.
 - Cada prazo é uma `LinhaPrazo` (`src/components/prazos/linha-prazo.tsx`), a mesma da aba Prazos do processo. Data de outro ano aparece com o ano (`formatarDataNaLista`).
