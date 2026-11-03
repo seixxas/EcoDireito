@@ -58,6 +58,33 @@ export const lancamentos = pgTable('lancamentos', {
   criadoEm: timestamp({ withTimezone: true }).notNull().defaultNow(),
 })
 
+/** Linha importada do extrato do banco. Sai da fila quando vira lançamento (ou se liga a um que já existia). */
+export const extratoLinhas = pgTable('extrato_linhas', {
+  id: text().primaryKey(),
+  /** A mesma linha em duas importações tem a mesma chave (veja src/domain/financeiro/extrato.ts). */
+  chave: text().notNull().unique(),
+  data: date({ mode: 'string' }).notNull(),
+  descricao: text().notNull(),
+  /** Positivo = crédito, negativo = débito. */
+  valor: integer().notNull(),
+  arquivo: text().notNull(),
+  lancamentoId: text().references(() => lancamentos.id, { onDelete: 'set null' }),
+  /** Fora da fila sem virar lançamento (ex.: transferência entre contas da própria empresa). */
+  ignorada: boolean().notNull().default(false),
+  importadoEm: timestamp({ withTimezone: true }).notNull().defaultNow(),
+})
+
+/** "Descrição do extrato contém `contem` → conta tal." */
+export const regrasClassificacao = pgTable('regras_classificacao', {
+  id: text().primaryKey(),
+  /** Gravado já normalizado (minúsculas, sem acento). */
+  contem: text().notNull().unique(),
+  /** Id de CONTAS em src/domain/financeiro/plano-de-contas.ts */
+  contaId: text().notNull(),
+  processoId: text().references(() => processos.id, { onDelete: 'set null' }),
+  criadoEm: timestamp({ withTimezone: true }).notNull().defaultNow(),
+})
+
 /** Conta bancária: o saldo de abertura e o que estava aplicado no início do histórico. */
 export const contasBancarias = pgTable('contas_bancarias', {
   id: text().primaryKey(),
