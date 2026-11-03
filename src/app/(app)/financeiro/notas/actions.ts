@@ -13,7 +13,8 @@ const esquemaNota = z.object({
   emissao: campo.data(),
   clienteId: campo.texto('Escolha o cliente'),
   processoId: campo.opcional(),
-  parcelaId: campo.opcional(),
+  /** Só existe no formulário que vem de uma parcela. */
+  parcelaId: campo.opcional().optional(),
   descricao: campo.texto('Descreva o serviço'),
   valor: campo.dinheiro(),
   previsao: campo.data(),
