@@ -4,6 +4,9 @@ Registro curto, do mais novo para o mais antigo. Mudou uma decisão? Acrescente 
 
 | Data | Decisão | Por quê |
 |---|---|---|
+| 2026-11-02 | Drizzle com driver HTTP do Neon; `drizzle-kit push` sem arquivos de migração por enquanto | Três sessões em paralelo: migrações numeradas iam conflitar. Adotar migrações antes da produção |
+| 2026-11-02 | `carregar()` lê a base inteira do banco a cada requisição (com `cache` do React) | Volume pequeno; mantém todas as funções de `src/data` iguais. Otimizar por consulta quando crescer |
+| 2026-11-02 | Zod para validar formulários | Validação e tipos num lugar só, padrão com Server Actions |
 | 2026-11-02 | Demonstração na Vercel com banco Neon (Postgres), no lugar do Supabase previsto | Rápido de subir na conta já ligada ao GitHub; a hospedagem oficial ainda vai ser definida |
 | 2026-11-02 | Um `loading.tsx` por rota e `<Suspense>` no menu lateral | Validação de navegação instantânea do Next 16 exige fronteira por segmento |
 | 2026-11-02 | Gráficos com `responsive` do Recharts 3, sem `ResponsiveContainer` | Mais simples e usa CSS padrão |
