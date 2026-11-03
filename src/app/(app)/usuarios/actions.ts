@@ -4,7 +4,7 @@ import { refresh } from 'next/cache'
 import { z } from 'zod'
 import { exigirArea } from '@/data/sessao'
 import { criarUsuario, removerUsuario } from '@/data/usuarios'
-import { campo, lerFormulario, type EstadoFormulario } from '@/lib/formulario'
+import { campo, lerFormulario, valoresDoFormulario, type EstadoFormulario } from '@/lib/formulario'
 import { PAPEIS, type Papel } from '@/lib/permissoes'
 
 const esquema = z
@@ -23,7 +23,7 @@ export async function adicionarUsuario(_: EstadoFormulario, formData: FormData):
   if ('estado' in lido) return lido.estado
   const { clienteId, ...dados } = lido.dados
   const resultado = await criarUsuario({ ...dados, clienteId: dados.papel === 'cliente' ? clienteId : undefined })
-  if (resultado.erro) return { erro: resultado.erro }
+  if (resultado.erro) return { erro: resultado.erro, valores: valoresDoFormulario(formData) }
   refresh()
   return { ok: `${dados.nome} já pode entrar com ${dados.email}.` }
 }

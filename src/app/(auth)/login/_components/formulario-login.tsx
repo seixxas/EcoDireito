@@ -11,7 +11,7 @@ export function FormularioLogin({ voltar }: { voltar?: string }) {
     <form action={acao} className="space-y-4">
       <input type="hidden" name="voltar" value={voltar ?? ''} />
       <Campo rotulo="E-mail" erro={estado.erros?.email}>
-        <Entrada name="email" type="email" autoComplete="email" required autoFocus />
+        <Entrada name="email" type="email" autoComplete="email" defaultValue={estado.valores?.email} required autoFocus />
       </Campo>
       <Campo rotulo="Senha" erro={estado.erros?.senha}>
         <Entrada name="senha" type="password" autoComplete="current-password" required />

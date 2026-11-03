@@ -38,7 +38,7 @@ app/ (rotas e composição)  →  data/ (acesso a dados)  →  domain/ (regras p
    - valida com `lerFormulario(esquema, formData)` de `src/lib/formulario.ts` (Zod; campos prontos em `campo.*`);
    - chama a função de `data/`;
    - termina com `refresh()` de `next/cache` (para continuar na página) ou `redirect()`.
-3. O formulário é um componente cliente com `useActionState(action, {})`. Use `Campo`, `Entrada`, `Selecao`, `AreaTexto`, `MensagemFormulario` (`ui/form.tsx`) e `BotaoEnviar` (`ui/botao-enviar.tsx`). Link com cara de botão: `classeBotao()`.
+3. O formulário é um componente cliente com `useActionState(action, {})`. O React 19 limpa o formulário depois da action; para não perder o que foi digitado, use `defaultValue={estado.valores?.campo ?? padrao}` (o `lerFormulario` já devolve `valores`; em outros erros, `valoresDoFormulario(formData)`). Use `Campo`, `Entrada`, `Selecao`, `AreaTexto`, `MensagemFormulario` (`ui/form.tsx`) e `BotaoEnviar` (`ui/botao-enviar.tsx`). Link com cara de botão: `classeBotao()`.
 4. Ids novos com `crypto.randomUUID()`. Dinheiro digitado vira centavos com `campo.dinheiro()`.
 5. Schema do banco: `src/db/schema/<area>.ts`, mantido pela sessão A (veja `plano.md`).
 

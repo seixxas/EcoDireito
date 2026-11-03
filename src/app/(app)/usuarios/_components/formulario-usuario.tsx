@@ -13,10 +13,10 @@ export function FormularioUsuario({ clientes }: { clientes: { id: string; nome: 
   return (
     <form action={acao} className="grid gap-4 sm:grid-cols-2">
       <Campo rotulo="Nome" erro={estado.erros?.nome}>
-        <Entrada name="nome" required />
+        <Entrada name="nome" defaultValue={estado.valores?.nome} required />
       </Campo>
       <Campo rotulo="E-mail" erro={estado.erros?.email}>
-        <Entrada name="email" type="email" required />
+        <Entrada name="email" type="email" defaultValue={estado.valores?.email} required />
       </Campo>
       <Campo rotulo="Perfil" erro={estado.erros?.papel}>
         <Selecao name="papel" value={papel} onChange={(e) => setPapel(e.target.value as Papel)}>

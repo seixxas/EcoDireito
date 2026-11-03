@@ -23,7 +23,7 @@ export async function entrar(_: EstadoFormulario, formData: FormData): Promise<E
     const { user } = await auth.api.signInEmail({ body: { email, password: senha }, headers: await headers() })
     destino = voltar?.startsWith('/') ? voltar : inicioDoPapel(ehPapel(user.papel) ? user.papel : 'equipe')
   } catch {
-    return { erro: 'E-mail ou senha incorretos.' }
+    return { erro: 'E-mail ou senha incorretos.', valores: { email } }
   }
   redirect(destino)
 }

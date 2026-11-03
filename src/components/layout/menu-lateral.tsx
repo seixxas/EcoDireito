@@ -1,9 +1,11 @@
 'use client'
 
 import {
+  ArrowLeftRight,
   CalendarClock,
   ChartColumn,
   ChartLine,
+  FileSignature,
   FolderKanban,
   HandCoins,
   LayoutDashboard,
@@ -40,6 +42,8 @@ const GRUPOS: { titulo?: string; itens: Item[] }[] = [
       { href: '/financeiro/receber', rotulo: 'Contas a receber', icone: HandCoins, area: 'financeiro' },
       { href: '/financeiro/dre', rotulo: 'DRE', icone: ChartColumn, area: 'financeiro' },
       { href: '/financeiro/fluxo', rotulo: 'Fluxo de caixa', icone: ChartLine, area: 'financeiro' },
+      { href: '/financeiro/lancamentos', rotulo: 'Lançamentos', icone: ArrowLeftRight, area: 'financeiro' },
+      { href: '/financeiro/contratos', rotulo: 'Contratos', icone: FileSignature, area: 'financeiro' },
     ],
   },
   {
