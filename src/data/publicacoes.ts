@@ -3,7 +3,7 @@ import { db, exigirBanco, schema } from '@/db'
 import { ehDiaUtil } from '@/domain/feriados'
 import { REGRAS_SVMA, calcularVencimento } from '@/domain/prazos'
 import type { Processo } from '@/domain/processos'
-import { eventoDoAto, extrairDiasDoTexto, vincularAto } from '@/domain/publicacoes'
+import { eventoDoAto, prazoDoAto, vincularAto } from '@/domain/publicacoes'
 import type { DataISO } from '@/lib/datas'
 import { baixarEdicao } from '@/robo/doc-sp'
 import { carregar } from './base'
@@ -16,7 +16,7 @@ export async function listarPublicacoes() {
     const vinculo = vincularAto(ato, processos, clientes)
     if (!vinculo) return []
     const evento = eventoDoAto(ato)
-    const diasNoAto = extrairDiasDoTexto(ato.texto)
+    const diasNoAto = prazoDoAto(ato)
     return [
       {
         ato,
@@ -54,7 +54,8 @@ export async function gravarConfirmacao(item: PublicacaoNaCaixa & { processo: Pr
     await db.update(schema.publicacoes).set({ status: 'confirmada' }).where(aindaNova(item.ato.id))
     return
   }
-  const evento = { id: crypto.randomUUID(), tipo: item.evento, data: item.ato.data, origem: 'diario' as const, diasNoAto: item.diasNoAto }
+  // Id fixo por ato: duas confirmações ao mesmo tempo gravam um evento só.
+  const evento = { id: `diario-${item.ato.id}`, tipo: item.evento, data: item.ato.data, origem: 'diario' as const, diasNoAto: item.diasNoAto }
   await db.batch([
     ...gravacoesDoEvento(item.processo, evento, hoje),
     db.update(schema.publicacoes).set({ status: 'confirmada', eventoId: evento.id }).where(aindaNova(item.ato.id)),

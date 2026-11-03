@@ -26,7 +26,7 @@ Arquivos: `src/domain/processos.ts` (fases e eventos), `src/domain/prazos.ts` (r
 - Conta a partir da publicação, excluindo o dia do início e incluindo o do fim, em dias corridos.
 - Se o vencimento cai em dia sem expediente, vai para o próximo dia útil.
 - Antecedência que cai em dia sem expediente volta para o dia útil anterior.
-- Prazo escrito no próprio ato ("60 dias") substitui o padrão: campo `diasNoAto` do evento.
+- Prazo escrito no próprio ato ("60 dias") substitui o padrão: campo `diasNoAto` do evento. Do Diário, só o do Comunique-se é lido sozinho (`prazoDoAto`); no evento manual, quem lança informa.
 - Feriados em `src/domain/feriados.ts` (nacionais, estaduais e municipais de SP, 2026 e 2027).
 
 ## Edição (E3)

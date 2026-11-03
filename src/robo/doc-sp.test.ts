@@ -67,6 +67,10 @@ describe('htmlParaTexto', () => {
   it('mantém entidade desconhecida como veio', () => {
     expect(htmlParaTexto('a &naoexiste; b')).toBe('a &naoexiste; b')
   })
+
+  it('mantém entidade numérica fora do Unicode em vez de lançar', () => {
+    expect(htmlParaTexto('a &#99999999; &#xFFFFFFF; b')).toBe('a &#99999999; &#xFFFFFFF; b')
+  })
 })
 
 describe('baixarEdicao', () => {
@@ -86,5 +90,10 @@ describe('baixarEdicao', () => {
 
   it('outra resposta ruim é falha', async () => {
     await expect(baixarEdicao('2026-10-29', resposta(403))).rejects.toThrow('403')
+  })
+
+  it('formato desconhecido e falha de rede viram mensagem em português', async () => {
+    await expect(baixarEdicao('2026-10-29', resposta(200, '{"atos":[]};'))).rejects.toThrow('formato que o robô não conhece')
+    await expect(baixarEdicao('2026-10-29', async () => Promise.reject(new TypeError('fetch failed')))).rejects.toThrow('Não foi possível falar')
   })
 })

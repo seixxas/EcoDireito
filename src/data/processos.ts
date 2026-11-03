@@ -91,10 +91,16 @@ export async function gravarProcesso(dados: DadosProcesso, id?: string) {
   return novo
 }
 
-/** As gravações de um evento novo, para juntar num `db.batch`: o evento e a fase do processo. Os prazos saem do motor na leitura. */
+/**
+ * As gravações de um evento novo, para juntar num `db.batch`: o evento e a fase do processo. Os prazos saem do motor na leitura.
+ * Id repetido não grava de novo: é o que impede o mesmo ato do Diário de virar dois eventos.
+ */
 export function gravacoesDoEvento(processo: Processo, evento: Evento, dia: DataISO) {
   return [
-    db.insert(schema.eventos).values({ ...evento, processoId: processo.id, diasNoAto: evento.diasNoAto ?? null }),
+    db
+      .insert(schema.eventos)
+      .values({ ...evento, processoId: processo.id, diasNoAto: evento.diasNoAto ?? null })
+      .onConflictDoNothing(),
     db
       .update(schema.processos)
       .set({ faseAtual: faseDepoisDoEvento(processo.faseAtual, evento, dia) })

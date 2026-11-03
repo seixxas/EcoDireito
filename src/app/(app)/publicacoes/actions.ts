@@ -2,6 +2,7 @@
 
 import { refresh } from 'next/cache'
 import { z } from 'zod'
+import { hoje } from '@/data/hoje'
 import { gravarConfirmacao, gravarDescarte, importarEdicao, obterPublicacao } from '@/data/publicacoes'
 import { exigirArea } from '@/data/sessao'
 import { formatarData } from '@/lib/formatar'
@@ -24,6 +25,7 @@ export async function buscarEdicao(_: EstadoFormulario, formData: FormData): Pro
   const lido = lerFormulario(z.object({ data: campo.data() }), formData)
   if ('estado' in lido) return lido.estado
   const { data } = lido.dados
+  if (data > (await hoje())) return { erro: 'Confira os campos destacados.', erros: { data: 'A edição deste dia ainda não saiu' }, valores: { data } }
   let resultado: Awaited<ReturnType<typeof importarEdicao>>
   try {
     resultado = await importarEdicao(data)
