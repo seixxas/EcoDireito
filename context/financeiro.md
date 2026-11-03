@@ -35,6 +35,21 @@ Regras (em `src/domain/financeiro/notas.ts` e `lancamentos.ts`, com teste):
 - Parcela já faturada não se apaga.
 - Gravar exige banco (`exigirBanco()`). Quem edita: sócia e financeiro; o contador só vê (os formulários somem).
 
+## Extrato bancário (`/financeiro/extrato`)
+
+Fluxo: importar o arquivo → as linhas vão para a fila "a classificar" → cada uma vira lançamento.
+
+- Leitor (`src/domain/financeiro/extrato.ts`): OFX 1.x e 2.x; CSV com ou sem cabeçalho (Data; Descrição; Valor), crédito e débito em colunas separadas, sufixo D/C, Windows-1252 ou UTF-8. Linhas de saldo são ignoradas.
+- Cada linha tem uma chave (FITID ou descrição, mais data, valor e a ordem no arquivo): importar o mesmo período de novo não duplica.
+- Sugestão por linha (`classificacao.ts`), nesta ordem:
+  1. **Já lançado**: um lançamento sem linha de extrato, com o mesmo valor e até 3 dias de diferença. Confirmar só liga os dois, para não contar duas vezes.
+  2. **Recebimento de nota** (só crédito): nota a receber com valor líquido ou bruto igual. Primeiro a do cliente citado na descrição, depois a de valor líquido exato e, por fim, a de previsão mais próxima. Confirmar registra o recebimento.
+  3. **Regra**: "descrição contém X → conta Y" (sem acento nem maiúscula; vence o trecho mais longo).
+- A mesma nota ou o mesmo lançamento nunca é sugerido para duas linhas.
+- Na mão: escolher a conta (e o processo) ou a nota, e opcionalmente criar a regra com o trecho sugerido (a descrição sem números nem "PIX ENVIADO").
+- "Ignorar" tira da fila sem lançar (ex.: transferência entre contas da empresa), com volta. Apagar o lançamento devolve a linha para a fila.
+- Tabelas: `extrato_linhas` (com `lancamento_id`) e `regras_classificacao`.
+
 ## DRE (estrutura que a Eco Direito já usa)
 
 Receita bruta → (−) Simples Nacional → Receita líquida → (−) Custos (ART, serviços de terceiros, equipamentos)

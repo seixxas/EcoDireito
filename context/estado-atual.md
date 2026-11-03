@@ -21,6 +21,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/financeiro/notas/[id]` | Nota fiscal | Detalhe, registrar ou corrigir recebimento, cancelar |
 | `/financeiro/lancamentos` | Lançamentos | Lista por mês e lançamento manual com conta, competência e processo |
 | `/financeiro/contratos` | Contratos | Parcelas por processo; `/[processoId]` inclui, edita e apaga |
+| `/financeiro/extrato` | Extrato bancário | Importa OFX/CSV; fila a classificar com sugestão (já lançado, recebimento de nota, regra); regras |
 | `/usuarios` | Usuários | Sócias criam e removem acessos (equipe, contador, cliente) |
 | `/portal` e `/portal/[id]` | Portal do cliente | O cliente entra e vê só os próprios processos |
 
