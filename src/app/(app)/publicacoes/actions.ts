@@ -2,8 +2,9 @@
 
 import { refresh } from 'next/cache'
 import { z } from 'zod'
-import { gravarConfirmacao, gravarDescarte, obterPublicacao } from '@/data/publicacoes'
+import { gravarConfirmacao, gravarDescarte, importarEdicao, obterPublicacao } from '@/data/publicacoes'
 import { exigirArea } from '@/data/sessao'
+import { formatarData } from '@/lib/formatar'
 import { campo, lerFormulario, type EstadoFormulario } from '@/lib/formulario'
 
 export async function confirmarAto(_: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
@@ -16,6 +17,23 @@ export async function confirmarAto(_: EstadoFormulario, formData: FormData): Pro
   await gravarConfirmacao({ ...item, processo: item.processo })
   refresh()
   return {}
+}
+
+export async function buscarEdicao(_: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
+  await exigirArea('prazos', 'editar')
+  const lido = lerFormulario(z.object({ data: campo.data() }), formData)
+  if ('estado' in lido) return lido.estado
+  const { data } = lido.dados
+  let resultado: Awaited<ReturnType<typeof importarEdicao>>
+  try {
+    resultado = await importarEdicao(data)
+  } catch (erro) {
+    return { erro: erro instanceof Error ? erro.message : 'Não foi possível ler o Diário Oficial.', valores: { data } }
+  }
+  refresh()
+  if (!resultado) return { ok: `Não houve edição em ${formatarData(data)} (fim de semana, feriado ou ponto facultativo).`, valores: { data } }
+  const { atosSvma, novos } = resultado
+  return { ok: `Edição de ${formatarData(data)}: ${atosSvma} atos da Secretaria do Verde, ${novos === 1 ? '1 novo' : `${novos} novos`} para revisar.`, valores: { data } }
 }
 
 const esquemaDescarte = z.object({ id: campo.texto(), motivo: campo.texto('Diga por que o ato não é nosso') })

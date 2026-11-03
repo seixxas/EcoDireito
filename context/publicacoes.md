@@ -1,7 +1,7 @@
 # Diário Oficial (publicações)
 
 Arquivos: `src/domain/publicacoes.ts`, `src/data/publicacoes.ts`, `src/app/(app)/publicacoes/`.
-O robô real ainda não existe (E5): a caixa de entrada mostra o que está na tabela `publicacoes` (ou os atos fictícios, sem banco).
+A caixa de entrada mostra o que está na tabela `publicacoes` (ou os atos fictícios, sem banco). O robô baixa e grava sob demanda; o agendamento diário ainda não existe.
 
 ## Caixa de entrada (E3)
 
@@ -25,7 +25,9 @@ O robô real ainda não existe (E5): a caixa de entrada mostra o que está na ta
 - Id do ato: `doc-<data>-<documento>` (a tabela tem unique em data + documento; gravar com `onConflictDoNothing`).
 - Texto: HTML vira um parágrafo por linha, entidades decodificadas sem dependência nova (`htmlParaTexto`).
 - Testes com uma edição fictícia no formato real. O arquivo real nunca entra no repositório (pode citar clientes).
-- Falta: gravar na caixa de entrada só os atos que `vincularAto` liga a cliente ou processo, registrar a edição em `edicoes_diario` (com `erro` quando falhar) e o botão "buscar agora".
+- `importarEdicao(data)` (`src/data/publicacoes.ts`): grava na caixa de entrada só os atos que `vincularAto` liga a cliente ou processo e registra a edição em `edicoes_diario`. Dia útil sem edição grava a linha com `erro`, para conferir (pode ser ponto facultativo).
+- Botão "Buscar no Diário" em `/publicacoes` (quem edita prazos): escolhe o dia, já vem no último dia útil. Falha do download aparece na tela.
+- Falta: agendar todo dia útil às 6h (`src/app/api/robo/**`), alerta de falha por e-mail (E7) e mostrar na tela o link do ato e o `erro` da edição (precisa de `link` e `erro` em `src/data/base.ts`).
 
 ## Evento sugerido (`eventoDoAto`)
 
