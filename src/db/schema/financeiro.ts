@@ -55,6 +55,8 @@ export const lancamentos = pgTable('lancamentos', {
   valor: integer().notNull(),
   processoId: text().references(() => processos.id, { onDelete: 'set null' }),
   notaId: text().references(() => notasFiscais.id, { onDelete: 'set null' }),
+  /** Nota livre de quem classifica (ex.: "festa de fim de ano"), para o que a descrição do banco não diz. */
+  observacao: text(),
   criadoEm: timestamp({ withTimezone: true }).notNull().defaultNow(),
 })
 

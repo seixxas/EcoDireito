@@ -2,8 +2,25 @@ import { ChevronLeft, ChevronRight, type LucideIcon } from 'lucide-react'
 import Link from 'next/link'
 import { formatarMes } from '@/lib/formatar'
 
-/** ‹ out/26 ›: anda pelos meses do histórico. O mês vive na URL (`?mes=`), quem usa monta o link. */
-export function NavegacaoMes({ mes, meses, href }: { mes: string; meses: string[]; href: (mes: string) => string }) {
+/** Valor de `?mes=` para o histórico inteiro (útil com busca: "todas as notas do cliente X"). */
+export const TODOS_OS_MESES = 'todos'
+
+/**
+ * ‹ out/26 ›: anda pelos meses do histórico. O mês vive na URL (`?mes=`), quem usa monta o link.
+ * Com `todos`, oferece também o histórico inteiro (`href(TODOS_OS_MESES)`).
+ */
+export function NavegacaoMes({ mes, meses, href, todos }: { mes: string; meses: string[]; href: (mes: string) => string; todos?: boolean }) {
+  if (mes === TODOS_OS_MESES) {
+    return (
+      <nav aria-label="Mês" className="inline-flex items-center gap-3 text-sm">
+        <span className="font-medium text-ink">Todos os meses</span>
+        <Link href={href(meses.at(-1)!)} scroll={false} className="link">
+          por mês
+        </Link>
+      </nav>
+    )
+  }
+
   const i = meses.indexOf(mes)
   const seta = (alvo: string | undefined, rotulo: string, Icone: LucideIcon) =>
     alvo ? (
@@ -21,6 +38,11 @@ export function NavegacaoMes({ mes, meses, href }: { mes: string; meses: string[
       {seta(meses[i - 1], 'Mês anterior', ChevronLeft)}
       <span className="min-w-16 text-center text-sm font-medium tabular-nums text-ink">{formatarMes(mes)}</span>
       {seta(meses[i + 1], 'Próximo mês', ChevronRight)}
+      {todos && (
+        <Link href={href(TODOS_OS_MESES)} scroll={false} className="link ml-2 whitespace-nowrap text-sm">
+          todos os meses
+        </Link>
+      )}
     </nav>
   )
 }

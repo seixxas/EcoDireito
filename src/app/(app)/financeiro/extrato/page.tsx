@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Abas } from '@/components/ui/abas'
 import type { Tom } from '@/components/ui/badge'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
+import { Busca } from '@/components/ui/busca'
 import { Card } from '@/components/ui/card'
 import { Expansivel, Vazio } from '@/components/ui/expansivel'
 import { Linha, Lista } from '@/components/ui/lista'
@@ -13,6 +14,7 @@ import { exigirArea } from '@/data/sessao'
 import { chaveDaSugestao, notasParaCredito, sugerirTermo, type Sugestao } from '@/domain/financeiro/classificacao'
 import { valorLiquido } from '@/domain/financeiro/notas'
 import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
+import { combina } from '@/lib/buscar'
 import { brl, contar, formatarData } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
@@ -23,18 +25,25 @@ import { FormularioRegra } from './_components/formulario-regra'
 
 export const metadata: Metadata = { title: 'Extrato bancário' }
 
-export default async function PaginaExtrato({ searchParams }: { searchParams: Promise<{ aba?: string; pagina?: string }> }) {
-  const [{ aba: pedida, pagina }, usuario, fila] = await Promise.all([searchParams, exigirArea('financeiro'), filaDoExtrato()])
-  const { pendentes, regras, ignoradas, lancadas, clientes, processos, notas } = fila
-  const aba = pedida === 'regras' || pedida === 'ignoradas' ? pedida : 'fila'
-  const linkDaPagina = (n: number) => (aba === 'fila' ? `/financeiro/extrato?pagina=${n}` : `/financeiro/extrato?aba=${aba}&pagina=${n}`)
-  const filaPaginada = paginar(pendentes, pagina)
-  const regrasPaginadas = paginar(regras, pagina)
-  const ignoradasPaginadas = paginar(ignoradas, pagina)
+type Filtros = { aba?: string; q?: string; pagina?: string }
+
+export default async function PaginaExtrato({ searchParams }: { searchParams: Promise<Filtros> }) {
+  const [filtros, usuario, fila] = await Promise.all([searchParams, exigirArea('financeiro'), filaDoExtrato()])
+  const { clientes, processos, notas, lancadas } = fila
+  const aba = filtros.aba === 'regras' || filtros.aba === 'ignoradas' ? filtros.aba : 'fila'
+  const q = filtros.q?.trim() || undefined
+  const link = (novos: Filtros) => {
+    const f = { aba, q, ...novos }
+    const params = new URLSearchParams()
+    if (f.aba && f.aba !== 'fila') params.set('aba', f.aba)
+    if (f.q) params.set('q', f.q)
+    if (f.pagina && f.pagina !== '1') params.set('pagina', f.pagina)
+    return params.size ? `/financeiro/extrato?${params}` : '/financeiro/extrato'
+  }
   const editar = pode(usuario.papel, 'financeiro', 'editar')
-  const comSugestao = pendentes.filter((p) => p.sugestao).length
   const aReceber = notas.filter((n) => !n.cancelada && !n.recebimento)
   const nomeDoCliente = (id: string) => clientes.find((c) => c.id === id)!.nome
+  const nomeDoProcesso = (id?: string) => processos.find((p) => p.id === id)?.empreendimento
   const opcoesDeProcesso = processos.map((p) => ({ id: p.id, nome: p.empreendimento }))
 
   const descrever = (sugestao: Sugestao): { texto: string; tom: Tom } => {
@@ -43,13 +52,24 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
     return { texto: `${nomeDaConta(sugestao.regra.contaId)} · regra “${sugestao.regra.contem}”`, tom: 'brand' }
   }
 
+  // A busca vale nas três abas: descrição e valor da linha, e o que a sugestão diz (NF, cliente, conta).
+  const pendentes = fila.pendentes.filter(({ linha, sugestao }) => combina(q, linha.descricao, brl(linha.valor), sugestao && descrever(sugestao).texto))
+  const regras = fila.regras.filter((regra) => combina(q, regra.contem, nomeDaConta(regra.contaId), nomeDoProcesso(regra.processoId)))
+  const ignoradas = fila.ignoradas.filter((linha) => combina(q, linha.descricao, brl(linha.valor)))
+  const filaPaginada = paginar(pendentes, filtros.pagina)
+  const regrasPaginadas = paginar(regras, filtros.pagina)
+  const ignoradasPaginadas = paginar(ignoradas, filtros.pagina)
+  const linkDaPagina = (n: number) => link({ pagina: String(n) })
+  const sugeridas = pendentes.flatMap(({ linha, sugestao }) => (sugestao ? [`${linha.id} ${chaveDaSugestao(sugestao)}`] : []))
+  const comSugestao = sugeridas.length
+
   return (
     <>
       <PageHeader
         titulo="Extrato bancário"
         resumo={
-          pendentes.length
-            ? `${contar(pendentes.length, 'linha', 'linhas')} a classificar, ${comSugestao} com sugestão pronta.`
+          fila.pendentes.length
+            ? `${contar(fila.pendentes.length, 'linha', 'linhas')} a classificar, ${fila.pendentes.filter((p) => p.sugestao).length} com sugestão pronta.`
             : lancadas
               ? `Nada a classificar: tudo o que foi importado já virou lançamento (${contar(lancadas, 'linha', 'linhas')}).`
               : 'Importe o extrato do banco: cada linha vira lançamento, com sugestão de conta e de nota.'
@@ -59,7 +79,13 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
           aba === 'fila' &&
           comSugestao > 0 && (
             <form action={confirmarTodas}>
-              <BotaoEnviar>{comSugestao === 1 ? 'Confirmar a sugestão' : `Confirmar as ${comSugestao} sugestões`}</BotaoEnviar>
+              {sugeridas.map((item) => (
+                <input key={item} type="hidden" name="item" value={item} />
+              ))}
+              <BotaoEnviar>
+                {comSugestao === 1 ? 'Confirmar a sugestão' : `Confirmar as ${comSugestao} sugestões`}
+                {q && ' encontradas'}
+              </BotaoEnviar>
             </form>
           )
         }
@@ -74,14 +100,23 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
       <Abas
         ativa={aba}
         abas={[
-          { valor: 'fila', rotulo: 'A classificar', href: '/financeiro/extrato', contagem: pendentes.length },
-          { valor: 'regras', rotulo: 'Regras', href: '/financeiro/extrato?aba=regras', contagem: regras.length },
-          { valor: 'ignoradas', rotulo: 'Ignoradas', href: '/financeiro/extrato?aba=ignoradas', contagem: ignoradas.length },
+          { valor: 'fila', rotulo: 'A classificar', href: link({ aba: 'fila' }), contagem: pendentes.length },
+          { valor: 'regras', rotulo: 'Regras', href: link({ aba: 'regras' }), contagem: regras.length },
+          { valor: 'ignoradas', rotulo: 'Ignoradas', href: link({ aba: 'ignoradas' }), contagem: ignoradas.length },
         ]}
+      />
+
+      <Busca
+        valor={q}
+        placeholder={aba === 'regras' ? 'Buscar trecho, conta ou processo' : 'Buscar descrição, valor, NF ou cliente'}
+        manter={{ aba: aba === 'fila' ? undefined : aba }}
+        limpar={link({ q: undefined })}
+        className="mb-3"
       />
 
       {aba === 'fila' && (
         <FilaDoExtrato
+          vazio={q && `Nenhuma linha a classificar com “${q}”.`}
           editar={editar}
           linhas={filaPaginada.itens.map(({ linha, sugestao }) => ({
             id: linha.id,
@@ -128,7 +163,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
               ))}
             </Lista>
           ) : (
-            <Vazio>Nenhuma regra ainda. Ao classificar uma linha, marque “daqui em diante” para criar uma.</Vazio>
+            <Vazio>{q ? `Nenhuma regra com “${q}”.` : "Nenhuma regra ainda. Ao classificar uma linha, marque “daqui em diante” para criar uma."}</Vazio>
           )}
           <Paginacao {...regrasPaginadas} href={linkDaPagina} />
         </>
@@ -155,7 +190,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
             <Paginacao {...ignoradasPaginadas} href={linkDaPagina} />
           </>
         ) : (
-          <Vazio>Nenhuma linha ignorada.</Vazio>
+          <Vazio>{q ? `Nenhuma linha ignorada com “${q}”.` : "Nenhuma linha ignorada."}</Vazio>
         ))}
     </>
   )

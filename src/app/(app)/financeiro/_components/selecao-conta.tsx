@@ -12,11 +12,11 @@ const GRUPOS: Record<GrupoDre, string> = {
   fora: 'Fora da DRE',
 }
 
-/** Plano de contas agrupado como na DRE. */
-export function SelecaoConta(props: ComponentProps<'select'>) {
+/** Plano de contas agrupado como na DRE. `vazia` é o texto da opção sem conta. */
+export function SelecaoConta({ vazia = 'Escolha a conta', ...props }: ComponentProps<'select'> & { vazia?: string }) {
   return (
     <Selecao {...props}>
-      <option value="">Escolha a conta</option>
+      <option value="">{vazia}</option>
       {Object.entries(GRUPOS).map(([grupo, nome]) => (
         <optgroup key={grupo} label={nome}>
           {CONTAS.filter((conta) => conta.grupo === grupo).map((conta) => (

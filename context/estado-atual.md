@@ -15,13 +15,13 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/comercial` | Comercial | Em desenvolvimento: prévia do funil de propostas com dados de exemplo |
 | `/processos/clientes` | Clientes | Lista com busca por nome, CNPJ e grupo; cadastro e edição de clientes |
 | `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; busca no texto, empresa e nº SEI; confirmar cria o evento, descartar pede motivo, cadastrar processo a partir do ato |
-| `/financeiro` | Faturamento | Notas, situação, faturado × recebido, parcelas prontas para faturar |
-| `/financeiro/receber` | Contas a receber | Atraso por faixa e por grupo econômico |
-| `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`) |
-| `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas e realizado por mês |
+| `/financeiro` | Faturamento | Notas do mês (ou todos) com busca e situação, faturado × recebido, parcelas prontas para faturar |
+| `/financeiro/receber` | Contas a receber | Notas em aberto com busca e filtros de situação e faixa de atraso; maiores saldos por empresa ou grupo |
+| `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`); cada valor abre os lançamentos da conta no mês |
+| `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas (clicar numa semana mostra dia a dia, `?semana=`) e realizado por mês |
 | `/financeiro/notas/nova` | Registrar nota | Nota avulsa ou a partir de parcela liberada (`?parcela=`) |
 | `/financeiro/notas/[id]` | Nota fiscal | Detalhe, registrar ou corrigir recebimento, cancelar |
-| `/financeiro/lancamentos` | Lançamentos | Lista por mês e lançamento manual com conta, competência e processo |
+| `/financeiro/lancamentos` | Lançamentos | Lista por mês (ou todos) com busca e filtro de conta; lançamento manual; `/[id]` edita descrição, conta, competência, processo e observação |
 | `/financeiro/contratos` | Contratos | Parcelas por processo; `/[processoId]` inclui, edita e apaga |
 | `/financeiro/extrato` | Extrato bancário | Importa OFX/CSV; fila a classificar com sugestão (já lançado, recebimento de nota, regra); regras |
 | `/usuarios` | Usuários | Sócias criam e removem acessos (equipe, contador, cliente). O Comercial aparece para sócias, financeiro e equipe; não para contador e cliente |
@@ -39,7 +39,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 - Local: `npm run dev` e abrir http://localhost:3000.
 - Usuários de demonstração (senha em `SENHA_DEMO` do `.env.local`): `admin@`, `elaine@`, `karim@`, `cissa@` (sócias), `juliana@` (equipe), `contador@` e `cliente@` (portal da Altavista Pinheiros), todos `@demo.ecodireito.com.br`.
 - Antes da reunião: `npm run db:seed` refaz a base com as datas do dia (apaga o que foi editado e recria os usuários).
-- Roteiro testado em 03/11 no site e de novo no visual novo (navegador real, gravando no Neon): confirmar o Extrato do TCA do Jequitibá Campo Belo em `/publicacoes` → prazo da cláusula 9.3 em `/processos/p11` e parcela 3 "pronta para faturar" na aba Cobrança → "Emitir nota" → registrar recebimento → importar `docs/demo/extrato-demo.ofx` em `/financeiro/extrato` (2 linhas "já lançado", o PIX sugere a NF 729, 2 a classificar). O extrato de exemplo vale para a base gerada em 03/11.
+- Roteiro testado em 03/11 no site e de novo no visual novo (navegador real, gravando no Neon): confirmar o Extrato do TCA do Jequitibá Campo Belo em `/publicacoes` → prazo da cláusula 9.3 em `/processos/p11` e parcela 3 "pronta para faturar" na aba Cobrança → "Emitir nota" → registrar recebimento → em `/financeiro/extrato`, "baixar extrato de exemplo" e importar o arquivo (2 linhas "já lançado", o PIX recebido sugere a NF em aberto do mesmo valor, o PIX enviado e a tarifa ficam a classificar). O exemplo é montado da base do dia, então bate com qualquer seed.
 - Login em produção: no máximo 3 tentativas a cada 10 s por IP (proteção do Better Auth).
 - Bons exemplos: `/processos/p06` (fase Resposta: Comunique-se vencido, LAA depois da resposta), `/processos/p15` (ainda na Proposta, sem nº SEI), `/processos/p08` (Documentação, falta autuar), `/processos/p02` (TCA publicado, parcela pronta para faturar), `/processos/p13` (processo antigo com nº SIMPROC) e o portal com o usuário cliente.
 

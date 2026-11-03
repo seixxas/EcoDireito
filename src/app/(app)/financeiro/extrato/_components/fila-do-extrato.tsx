@@ -26,8 +26,20 @@ export type LinhaDaFila = {
   candidatas: string[]
 }
 
-export function FilaDoExtrato({ linhas, processos, notas, editar }: { linhas: LinhaDaFila[]; processos: Opcao[]; notas: Opcao[]; editar: boolean }) {
-  if (!linhas.length) return <Vazio>Nada a classificar. Importe um extrato para começar.</Vazio>
+export function FilaDoExtrato({
+  linhas,
+  processos,
+  notas,
+  editar,
+  vazio = 'Nada a classificar. Importe um extrato para começar.',
+}: {
+  linhas: LinhaDaFila[]
+  processos: Opcao[]
+  notas: Opcao[]
+  editar: boolean
+  vazio?: string
+}) {
+  if (!linhas.length) return <Vazio>{vazio}</Vazio>
   return (
     <ul className="divide-y divide-line border-y border-line">
       {linhas.map((linha) => (

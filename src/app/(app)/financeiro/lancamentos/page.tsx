@@ -1,46 +1,78 @@
-import { Trash2 } from 'lucide-react'
+import { X } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Busca } from '@/components/ui/busca'
 import { Card } from '@/components/ui/card'
 import { Expansivel } from '@/components/ui/expansivel'
 import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
 import { listarLancamentos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
-import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
+import type { Regime } from '@/domain/financeiro/dre'
+import { mesDoLancamento } from '@/domain/financeiro/lancamentos'
+import { CONTAS, nomeDaConta } from '@/domain/financeiro/plano-de-contas'
+import { combina } from '@/lib/buscar'
 import { cn } from '@/lib/cn'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
-import { brl, contar, formatarDataCurta, formatarMes } from '@/lib/formatar'
+import { brl, contar, formatarDataCurta, formatarMes, juntar } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
-import { NavegacaoMes } from '../_components/navegacao-mes'
-import { excluirLancamento } from './actions'
+import { AbrirLinha } from '../_components/abrir-linha'
+import { FiltroConta } from '../_components/filtro-conta'
+import { NavegacaoMes, TODOS_OS_MESES } from '../_components/navegacao-mes'
 import { FormularioLancamento } from './_components/formulario-lancamento'
 
 export const metadata: Metadata = { title: 'Lançamentos' }
 
-export default async function PaginaLancamentos({ searchParams }: { searchParams: Promise<{ mes?: string; pagina?: string }> }) {
+/** `regime=competencia` filtra o mês pela competência (é o link da DRE por competência). */
+type Filtros = { mes?: string; q?: string; conta?: string; regime?: string; pagina?: string }
+
+export default async function PaginaLancamentos({ searchParams }: { searchParams: Promise<Filtros> }) {
   const [filtros, usuario, { hoje: dia, meses, lancamentos, processos }] = await Promise.all([searchParams, exigirArea('financeiro'), listarLancamentos()])
   const editar = pode(usuario.papel, 'financeiro', 'editar')
-  const mes = filtros.mes && meses.includes(filtros.mes) ? filtros.mes : mesDe(dia)
-  const doMes = lancamentos.filter((l) => mesDe(l.data) === mes).sort((a, b) => b.data.localeCompare(a.data))
-  const paginado = paginar(doMes, filtros.pagina)
-  const link = (novoMes: string, pagina = 1) => {
+  const atual = mesDe(dia)
+  const mes = filtros.mes === TODOS_OS_MESES || meses.includes(filtros.mes ?? '') ? filtros.mes! : atual
+  const regime: Regime = filtros.regime === 'competencia' ? 'competencia' : 'caixa'
+  const conta = CONTAS.find((c) => c.id === filtros.conta)?.id
+  const q = filtros.q?.trim() || undefined
+  const nomeDoProcesso = (id?: string) => processos.find((p) => p.id === id)?.empreendimento
+
+  const link = (novos: Partial<Filtros>) => {
+    const f = { mes, q, conta, regime, ...novos }
     const params = new URLSearchParams()
-    if (novoMes !== mesDe(dia)) params.set('mes', novoMes)
-    if (pagina > 1) params.set('pagina', String(pagina))
+    if (f.mes && f.mes !== atual) params.set('mes', f.mes)
+    if (f.conta) params.set('conta', f.conta)
+    if (f.regime === 'competencia') params.set('regime', f.regime)
+    if (f.q) params.set('q', f.q)
+    if (f.pagina && f.pagina !== '1') params.set('pagina', f.pagina)
     return params.size ? `/financeiro/lancamentos?${params}` : '/financeiro/lancamentos'
   }
-  const entradas = somar(doMes.filter((l) => l.valor > 0).map((l) => l.valor))
-  const saidas = somar(doMes.filter((l) => l.valor < 0).map((l) => l.valor))
+
+  const filtrados = lancamentos
+    .filter(
+      (l) =>
+        // "Todos" são os meses do histórico, como na DRE (o DAS de dezembro pago em janeiro fica fora pela competência).
+        (mes === TODOS_OS_MESES ? meses.includes(mesDoLancamento(l, regime)) : mesDoLancamento(l, regime) === mes) &&
+        (!conta || l.contaId === conta) &&
+        combina(q, l.descricao, l.observacao, nomeDaConta(l.contaId), nomeDoProcesso(l.processoId), brl(l.valor)),
+    )
+    .sort((a, b) => b.data.localeCompare(a.data))
+  const paginado = paginar(filtrados, filtros.pagina)
+  const entradas = somar(filtrados.filter((l) => l.valor > 0).map((l) => l.valor))
+  const saidas = somar(filtrados.filter((l) => l.valor < 0).map((l) => l.valor))
+
+  const periodo = mes === TODOS_OS_MESES ? 'em todos os meses' : regime === 'competencia' ? `com competência ${formatarMes(mes)}` : `em ${formatarMes(mes)}`
+  const filtrado = Boolean(q || conta || regime === 'competencia')
+  // Filtrado por uma conta de despesa, "entraram R$ 0,00" só atrapalha.
+  const movimento = juntar([entradas ? `entraram ${brl(entradas)}` : '', saidas ? `saíram ${brl(-saidas)}` : ''].filter(Boolean))
 
   return (
     <>
       <PageHeader
         titulo="Lançamentos"
-        resumo={`${contar(doMes.length, 'lançamento', 'lançamentos')} em ${formatarMes(mes)}: entraram ${brl(entradas)} e saíram ${brl(-saidas)}. A receita das notas entra sozinha com o recebimento.`}
-        acoes={<NavegacaoMes mes={mes} meses={meses} href={(m) => link(m)} />}
+        resumo={`${contar(filtrados.length, 'lançamento', 'lançamentos')} ${periodo}${conta ? ` em ${nomeDaConta(conta)}` : ''}${movimento ? `: ${movimento}` : ''}.${filtrado ? '' : ' A receita das notas entra sozinha com o recebimento.'}`}
+        acoes={<NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m })} todos />}
       />
 
       {editar && (
@@ -51,6 +83,26 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
         </Expansivel>
       )}
 
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <Busca
+          valor={q}
+          placeholder="Buscar na descrição, observação ou processo"
+          manter={{ mes: mes === atual ? undefined : mes, conta, regime: regime === 'competencia' ? regime : undefined }}
+          limpar={link({ q: undefined })}
+          className="min-w-60"
+        />
+        <FiltroConta valor={conta} manter={{ mes: mes === atual ? undefined : mes, regime: regime === 'competencia' ? regime : undefined, q }} />
+        {regime === 'competencia' && (
+          <Link
+            href={link({ regime: undefined })}
+            title="Voltar a filtrar pela data do dinheiro"
+            className="inline-flex h-9 items-center gap-1 rounded-md border border-line bg-surface px-2.5 text-sm text-ink hover:bg-brand-50"
+          >
+            Pela competência <X className="size-3.5 text-muted" />
+          </Link>
+        )}
+      </div>
+
       <Card flush>
         <table className="tabela">
           <thead>
@@ -60,7 +112,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
               <th className="hidden sm:table-cell">Conta</th>
               <th className="hidden sm:table-cell">Competência</th>
               <th className="num">Valor</th>
-              {editar && <th />}
+              <th />
             </tr>
           </thead>
           <tbody>
@@ -69,6 +121,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                 <td className="hidden whitespace-nowrap sm:table-cell">{formatarDataCurta(lancamento.data)}</td>
                 <td className="sm:min-w-64">
                   {lancamento.descricao}
+                  {lancamento.observacao && <span className="block text-sm text-muted">Obs.: {lancamento.observacao}</span>}
                   {/* No celular, data e conta vêm embaixo da descrição. */}
                   <span className="block text-xs text-muted sm:hidden">
                     {formatarDataCurta(lancamento.data)} · {nomeDaConta(lancamento.contaId)}
@@ -80,39 +133,28 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                   )}
                   {!lancamento.notaId && lancamento.processoId && (
                     <Link href={`/processos/${lancamento.processoId}`} className="link block w-fit text-xs">
-                      {processos.find((p) => p.id === lancamento.processoId)?.empreendimento}
+                      {nomeDoProcesso(lancamento.processoId)}
                     </Link>
                   )}
                 </td>
                 <td className="hidden text-muted sm:table-cell">{nomeDaConta(lancamento.contaId)}</td>
-                {/* Só aparece quando a competência é outro mês: é a exceção que importa para a DRE. */}
-                <td className="hidden whitespace-nowrap text-warn sm:table-cell">{lancamento.competencia !== mes && formatarMes(lancamento.competencia)}</td>
+                {/* Só aparece quando a competência não é o mês da data: é a exceção que importa para a DRE. */}
+                <td className="hidden whitespace-nowrap text-warn sm:table-cell">{lancamento.competencia !== mesDe(lancamento.data) && formatarMes(lancamento.competencia)}</td>
                 <td className={cn('num font-medium', lancamento.valor > 0 && 'text-ok')}>{brl(lancamento.valor)}</td>
-                {editar && (
-                  <td className="text-right">
-                    {!lancamento.notaId && (
-                      <form action={excluirLancamento}>
-                        <input type="hidden" name="id" value={lancamento.id} />
-                        <button title="Apagar lançamento" className="rounded-md p-1.5 text-subtle hover:bg-danger-soft hover:text-danger">
-                          <Trash2 className="size-4" />
-                        </button>
-                      </form>
-                    )}
-                  </td>
-                )}
+                <AbrirLinha href={`/financeiro/lancamentos/${lancamento.id}`} rotulo={editar ? 'Abrir para editar' : 'Abrir lançamento'} />
               </tr>
             ))}
-            {doMes.length === 0 && (
+            {filtrados.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-10 text-center text-muted">
-                  Nenhum lançamento neste mês.
+                  {filtrado ? 'Nenhum lançamento neste filtro.' : 'Nenhum lançamento neste mês.'}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </Card>
-      <Paginacao {...paginado} href={(n) => link(mes, n)} />
+      <Paginacao {...paginado} href={(n) => link({ pagina: String(n) })} />
     </>
   )
 }
