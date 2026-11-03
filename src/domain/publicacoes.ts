@@ -12,6 +12,8 @@ export type Ato = {
   processo: string
   documento: string
   texto: string
+  /** Endereço do ato no DOC-SP. Muda a cada download: abre o ato, não o identifica. */
+  link?: string
 }
 
 export const ORGAO_SVMA = 'Secretaria Municipal do Verde e do Meio Ambiente'
@@ -67,8 +69,13 @@ export function vincularAto(ato: Ato, processos: Processo[], clientes: Cliente[]
   if (cliente) return { comoAchou: 'cnpj', clienteId: cliente.id }
 }
 
-/** "no prazo de 60 (sessenta) dias" → 60 */
-export function extrairDiasDoTexto(texto: string) {
-  const achado = texto.match(/(\d+)\s*(?:\([^)]*\)\s*)?dias/i)
+/**
+ * Prazo que o próprio Comunique-se dá para responder: "no prazo de (até) 60 (sessenta) dias" → 60.
+ * Em extrato e despacho, "N dias" costuma ser vigência ou validade e trocaria o prazo da cláusula por um maior.
+ * "Dias úteis" é lido como corridos: isso só antecipa o vencimento.
+ */
+export function prazoDoAto(ato: Pick<Ato, 'serie' | 'texto'>) {
+  if (eventoDoAto(ato) !== 'comunique_se') return undefined
+  const achado = ato.texto.match(/prazo\s+de\s+(?:até\s+)?(\d+)\s*(?:\([^)]*\)\s*)?dias/i)
   return achado ? Number(achado[1]) : undefined
 }

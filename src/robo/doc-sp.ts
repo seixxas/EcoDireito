@@ -2,7 +2,6 @@ import { z } from 'zod'
 import { ORGAO_SVMA, type Ato } from '@/domain/publicacoes'
 import type { DataISO } from '@/lib/datas'
 
-/** O link do DOC-SP muda a cada download: serve para abrir o ato, não para identificá-lo. */
 export type AtoColetado = Ato & { link: string }
 
 export type Edicao = { data: DataISO; totalAtos: number; atos: AtoColetado[] }
@@ -37,30 +36,43 @@ export function lerEdicao(json: string, data: DataISO): Edicao {
     data,
     totalAtos: edicao.length,
     atos: edicao
-      .filter((linha) => linha.orgao === ORGAO_SVMA)
-      .map((linha) => ({
-        id: `doc-${data}-${linha.documento}`,
-        data,
-        orgao: linha.orgao,
-        unidade: espacos(linha.unidade),
-        serie: espacos(linha.serie),
-        processo: linha.processo.trim(),
-        documento: linha.documento.trim(),
-        texto: htmlParaTexto(linha.conteudo),
-        link: linha.link,
-      })),
+      .filter((linha) => espacos(linha.orgao) === ORGAO_SVMA)
+      .map((linha) => {
+        const documento = linha.documento.trim()
+        return {
+          id: `doc-${data}-${documento}`,
+          data,
+          orgao: ORGAO_SVMA,
+          unidade: espacos(linha.unidade),
+          serie: espacos(linha.serie),
+          processo: linha.processo.trim(),
+          documento,
+          texto: htmlParaTexto(linha.conteudo),
+          link: linha.link,
+        }
+      }),
   }
 }
 
 /** Sem edição (fim de semana, feriado, ponto facultativo) o DOC-SP responde 500. Qualquer outra resposta ruim é falha. */
 export async function baixarEdicao(data: DataISO, buscar: typeof fetch = fetch): Promise<Edicao | undefined> {
-  const resposta = await buscar(urlDaEdicao(data), { signal: AbortSignal.timeout(120_000) })
+  let resposta: Response
+  try {
+    resposta = await buscar(urlDaEdicao(data), { signal: AbortSignal.timeout(120_000) })
+  } catch (erro) {
+    throw new Error(`Não foi possível falar com o Diário Oficial ao baixar a edição de ${data}.`, { cause: erro })
+  }
   if (resposta.status === 500) return undefined
   if (!resposta.ok) throw new Error(`O Diário Oficial respondeu ${resposta.status} ao baixar a edição de ${data}.`)
-  return lerEdicao(await resposta.text(), data)
+  const json = await resposta.text()
+  try {
+    return lerEdicao(json, data)
+  } catch (erro) {
+    throw new Error(`A edição de ${data} veio num formato que o robô não conhece.`, { cause: erro })
+  }
 }
 
-const ACENTOS: Record<string, string> = { acute: '́', grave: '̀', circ: '̂', tilde: '̃', uml: '̈', cedil: '̧', ring: '̊' }
+const ACENTOS: Record<string, string> = { acute: '\u0301', grave: '\u0300', circ: '\u0302', tilde: '\u0303', uml: '\u0308', cedil: '\u0327', ring: '\u030A' }
 
 const ENTIDADES: Record<string, string> = {
   nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", ordm: 'º', ordf: 'ª', deg: '°', sect: '§', para: '¶',
@@ -70,8 +82,11 @@ const ENTIDADES: Record<string, string> = {
 
 /** `&atilde;` vira "a" + til combinado; numéricas e as do mapa acima, direto. A desconhecida fica como está. */
 function decodificar(entidade: string, nome: string) {
-  if (nome.startsWith('#x') || nome.startsWith('#X')) return String.fromCodePoint(parseInt(nome.slice(2), 16))
-  if (nome.startsWith('#')) return String.fromCodePoint(Number(nome.slice(1)))
+  if (nome.startsWith('#')) {
+    // Código fora do Unicode faria fromCodePoint lançar e derrubar a edição inteira.
+    const codigo = /^#[xX]/.test(nome) ? parseInt(nome.slice(2), 16) : Number(nome.slice(1))
+    return codigo <= 0x10ffff ? String.fromCodePoint(codigo) : entidade
+  }
   if (nome in ENTIDADES) return ENTIDADES[nome]
   const letra = /^([a-zA-Z])(acute|grave|circ|tilde|uml|cedil|ring)$/.exec(nome)
   return letra ? (letra[1] + ACENTOS[letra[2]]).normalize('NFC') : entidade

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Cliente, Processo } from './processos'
-import { ORGAO_SVMA, eventoDoAto, extrairDiasDoTexto, vincularAto, type Ato } from './publicacoes'
+import { ORGAO_SVMA, eventoDoAto, prazoDoAto, vincularAto, type Ato } from './publicacoes'
 
 const clientes: Cliente[] = [{ id: 'c1', nome: 'Aurora SPE', documento: '12.345.678/0001-95' }]
 const processos: Processo[] = [
@@ -67,9 +67,21 @@ describe('eventoDoAto', () => {
   })
 })
 
-describe('extrairDiasDoTexto', () => {
-  it('lê o prazo escrito no ato', () => {
-    expect(extrairDiasDoTexto('atender no prazo de 60 (sessenta) dias contados da publicação')).toBe(60)
-    expect(extrairDiasDoTexto('sem prazo')).toBeUndefined()
+describe('prazoDoAto', () => {
+  const comunique = (texto: string) => ({ serie: 'Comunique-se', texto })
+
+  it('lê o prazo de resposta do Comunique-se', () => {
+    expect(prazoDoAto(comunique('atender no prazo de 60 (sessenta) dias contados da publicação'))).toBe(60)
+    expect(prazoDoAto(comunique('no prazo de até 30 (trinta) dias contados a partir da data desta publicação'))).toBe(30)
+    expect(prazoDoAto(comunique('sem prazo'))).toBeUndefined()
+  })
+
+  it('ignora "N dias" que não é o prazo de resposta', () => {
+    expect(prazoDoAto(comunique('vistoria realizada há 15 dias; apresentar no prazo de 20 (vinte) dias'))).toBe(20)
+    expect(prazoDoAto(comunique('autorização com validade de 180 dias'))).toBeUndefined()
+  })
+
+  it('não troca o prazo de cláusula do TCA pelo que aparece no extrato', () => {
+    expect(prazoDoAto({ serie: 'Extrato', texto: 'EXTRATO DO TERMO DE COMPROMISSO AMBIENTAL TCA Nº 455/2026, no prazo de 720 dias' })).toBeUndefined()
   })
 })
