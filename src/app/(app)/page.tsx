@@ -145,7 +145,12 @@ export default async function Painel() {
                       </Link>
                       <p className="text-xs text-muted">{parcela.descricao}</p>
                     </div>
-                    <span className="font-semibold tabular-nums">{brl(parcela.valor)}</span>
+                    <div className="text-right">
+                      <p className="font-semibold tabular-nums">{brl(parcela.valor)}</p>
+                      <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="text-xs font-medium text-brand-700 hover:underline">
+                        Emitir nota
+                      </Link>
+                    </div>
                   </li>
                 ))}
               </ul>
