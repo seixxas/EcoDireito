@@ -4,6 +4,7 @@ Registro curto, do mais novo para o mais antigo. Mudou uma decisão? Acrescente 
 
 | Data | Decisão | Por quê |
 |---|---|---|
+| 2026-11-02 | Demonstração na Vercel com banco Neon (Postgres), no lugar do Supabase previsto | Rápido de subir na conta já ligada ao GitHub; a hospedagem oficial ainda vai ser definida |
 | 2026-11-02 | Um `loading.tsx` por rota e `<Suspense>` no menu lateral | Validação de navegação instantânea do Next 16 exige fronteira por segmento |
 | 2026-11-02 | Gráficos com `responsive` do Recharts 3, sem `ResponsiveContainer` | Mais simples e usa CSS padrão |
 | 2026-11-02 | Confirmar publicação e emitir nota são só visuais por enquanto | Sem banco, nada persiste; a tela já mostra o fluxo |

@@ -6,7 +6,8 @@
 - Tailwind CSS 4 com tokens em `src/app/globals.css`.
 - Recharts (gráficos, só em componentes cliente) e lucide-react (ícones).
 - Vitest para regras de domínio.
-- Planejado, ainda não instalado: Supabase (Postgres, auth) com Drizzle, jobs agendados para o robô e Resend para e-mail.
+- Demonstração na Vercel: https://eco-direito.vercel.app, com banco Neon (Postgres) já conectado, ainda sem uso no código.
+- Planejado, ainda não instalado: Drizzle sobre o Neon, login, jobs agendados para o robô e Resend para e-mail.
 
 ## Pastas
 
@@ -48,7 +49,7 @@ page.tsx → data/*.ts (await hoje(), lê seed) → domain/*.ts (calcula) → co
 
 ## Trocar o mock pelo banco (próximo passo estrutural)
 
-1. Criar o schema Drizzle a partir dos tipos de `src/domain`.
+1. Criar o schema Drizzle a partir dos tipos de `src/domain` e apontar para a `DATABASE_URL` do Neon (`vercel env pull` traz as variáveis para o `.env.local`).
 2. Reimplementar as funções de `src/data/*.ts` com consultas, mantendo as assinaturas.
 3. Rodar o seed fictício no banco de desenvolvimento.
 4. Páginas e domínio não mudam.

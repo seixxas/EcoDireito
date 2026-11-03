@@ -22,13 +22,14 @@ Atualizado em 2026-11-02. Tudo roda com dados fictícios em memória (`src/data/
 
 ## Para apresentar
 
-- `npm run dev` e abrir http://localhost:3000.
+- No ar: https://eco-direito.vercel.app (Vercel do Guilherme, deploy automático a cada push na `main`).
+- Local: `npm run dev` e abrir http://localhost:3000.
 - Para congelar a data, crie `.env.local` com `DATA_DEMO=AAAA-MM-DD` (os dados são gerados a partir dela).
 - Bons exemplos: `/processos/p02` (TCA publicado, parcela pronta para faturar), `/processos/p13` (processo antigo com nº SIMPROC) e `/portal/p01`.
 
 ## Próximos passos
 
-1. Banco (Supabase + Drizzle) e login com perfis (sócias, financeiro, equipe, contador, cliente).
+1. Ligar o banco Neon (já criado e conectado ao projeto na Vercel, variáveis em `DATABASE_URL`) com Drizzle, carregar o seed nele e pôr login com perfis (sócias, financeiro, equipe, contador, cliente).
 2. Lançar e editar pela tela: eventos, notas, recebimentos, lançamentos.
 3. Importar extrato (OFX/CSV) e regras de classificação.
 4. Robô do Diário Oficial (coletor diário do DOC-SP) gravando na caixa de entrada.
