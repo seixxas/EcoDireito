@@ -25,9 +25,13 @@ const total = (parcelas: Item[], ...situacoes: SituacaoParcela[]) =>
 export default async function PaginaContratos({ searchParams }: { searchParams: Promise<{ q?: string; pagina?: string }> }) {
   const [filtros, usuario, contratos] = await Promise.all([searchParams, exigirArea('financeiro'), listarContratos()])
   const editar = pode(usuario.papel, 'financeiro', 'editar')
-  const todas = contratos.flatMap((c) => c.parcelas)
+  // Só conta o que foi aceito. Proposta em aberto fica numa linha à parte (o funil está no Comercial); recusada some.
+  const fechados = contratos.filter((c) => c.situacao === 'fechado')
+  const emAberto = contratos.filter((c) => c.situacao === 'proposta').flatMap((c) => c.parcelas)
+  const propostasEmAberto = contratos.filter((c) => c.situacao === 'proposta' && c.parcelas.length).length
+  const todas = fechados.flatMap((c) => c.parcelas)
   const q = filtros.q?.trim() || undefined
-  const encontrados = contratos.filter(({ processo, cliente }) => combina(q, processo.empreendimento, cliente.nome, cliente.grupo, processo.numeroSei))
+  const encontrados = fechados.filter(({ processo, cliente }) => combina(q, processo.empreendimento, cliente.nome, cliente.grupo, processo.numeroSei))
   const paginado = paginar(encontrados, filtros.pagina)
   const link = (pagina: number) => {
     const params = new URLSearchParams({ ...(q && { q }), ...(pagina > 1 && { pagina: String(pagina) }) })
@@ -42,11 +46,28 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
       />
 
       <Resumo className="mb-6">
-        <ItemResumo rotulo="Contratado" valor={brl(total(todas))} detalhe={contar(contratos.filter((c) => c.parcelas.length).length, 'contrato', 'contratos')} />
+        <ItemResumo rotulo="Contratado" valor={brl(total(todas))} detalhe={contar(fechados.filter((c) => c.parcelas.length).length, 'contrato', 'contratos')} />
         <ItemResumo rotulo="Faturado" valor={brl(total(todas, 'faturada', 'recebida'))} tom="ok" />
         <ItemResumo rotulo="Pronto para faturar" valor={brl(total(todas, 'liberada'))} detalhe="evento já aconteceu" tom="warn" />
         <ItemResumo rotulo="Aguardando evento" valor={brl(total(todas, 'aguardando'))} />
       </Resumo>
+      {propostasEmAberto > 0 && (
+        <p className="-mt-3 mb-6 text-sm text-muted">
+          Fora destes totais: {brl(total(emAberto))} em {contar(propostasEmAberto, 'proposta em aberto', 'propostas em aberto')}, que entram aqui quando o cliente aceita
+          {pode(usuario.papel, 'comercial') ? (
+            <>
+              {' '}
+              (
+              <Link href="/comercial" className="link">
+                ver no Comercial
+              </Link>
+              ).
+            </>
+          ) : (
+            '.'
+          )}
+        </p>
+      )}
 
       <Busca valor={q} placeholder="Buscar processo, cliente, grupo ou nº SEI" limpar="/financeiro/contratos" className="mb-3" />
       <Card flush>

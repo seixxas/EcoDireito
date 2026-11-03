@@ -26,6 +26,7 @@ para a demonstração fazer sentido.
 - `p11`: o Extrato do TCA dele está na caixa de entrada de hoje (achado pelo nº SEI).
 - `p13`: processo antigo; o Comunique-se de hoje só cita o nº SIMPROC no texto.
 - Caixa de entrada: dois atos de clientes sem processo cadastrado (achados pelo CNPJ) e um descartado.
+- Lançamentos: uns 15 com observação de exemplo (`OBSERVACOES` em `src/data/seed/financeiro.ts`), nos mais recentes de cada descrição. A escolha não usa o gerador aleatório: notas, valores e o extrato de exemplo não mudam.
 
 ## Para mudar a demonstração
 

@@ -47,6 +47,12 @@ export function alteracoesDoLancamento(lancamento: Lancamento, edicao: EdicaoLan
   }
 }
 
+/** Quantos meses a competência fica antes (negativo) ou depois do mês do pagamento. 0 = o mesmo mês, o caso comum. */
+export function mesesDaCompetencia(lancamento: Pick<Lancamento, 'data' | 'competencia'>) {
+  const indice = (mes: string) => Number(mes.slice(0, 4)) * 12 + Number(mes.slice(5, 7))
+  return indice(lancamento.competencia) - indice(mesDe(lancamento.data))
+}
+
 /** Mês em que o lançamento cai: pela data do dinheiro (caixa) ou pela competência. */
 export function mesDoLancamento(lancamento: Lancamento, regime: Regime) {
   return regime === 'competencia' ? lancamento.competencia : mesDe(lancamento.data)

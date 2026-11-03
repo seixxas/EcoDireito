@@ -15,6 +15,7 @@ import { mesDe } from '@/lib/datas'
 import { brl, formatarData, formatarMes } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
 import { excluirLancamento } from '../actions'
+import { EXPLICACAO_COMPETENCIA, textoDaCompetencia } from '../../_components/competencia'
 import { FormularioEdicao } from './_components/formulario-edicao'
 
 export const metadata: Metadata = { title: 'Lançamento' }
@@ -53,8 +54,17 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
               <Dado rotulo="Valor">
                 <span className={cn('font-semibold', lancamento.valor > 0 && 'text-ok')}>{brl(lancamento.valor)}</span>
               </Dado>
-              <Dado rotulo="Competência">{formatarMes(lancamento.competencia)}</Dado>
               <Dado rotulo="Conta">{nomeDaConta(lancamento.contaId)}</Dado>
+              <Dado rotulo="Competência" className="col-span-2 sm:col-span-3">
+                {textoDaCompetencia(lancamento) ? (
+                  <span className="font-medium text-warn">{textoDaCompetencia(lancamento)}</span>
+                ) : (
+                  <>
+                    {formatarMes(lancamento.competencia)} <span className="text-sm text-muted">(o mês do pagamento)</span>
+                  </>
+                )}
+                <span className="mt-1 block max-w-prose text-xs text-subtle">{EXPLICACAO_COMPETENCIA}</span>
+              </Dado>
               <Dado rotulo="Processo">
                 {processo ? (
                   <Link href={`/processos/${processo.id}`} className="link">

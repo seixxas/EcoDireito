@@ -19,6 +19,7 @@ import { brl, contar, formatarDataCurta, formatarMes, juntar } from '@/lib/forma
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { AbrirLinha } from '../_components/abrir-linha'
+import { EXPLICACAO_COMPETENCIA, textoDaCompetencia } from '../_components/competencia'
 import { FiltroConta } from '../_components/filtro-conta'
 import { NavegacaoMes, TODOS_OS_MESES } from '../_components/navegacao-mes'
 import { FormularioLancamento } from './_components/formulario-lancamento'
@@ -110,7 +111,6 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
               <th className="hidden sm:table-cell">Data</th>
               <th>Descrição</th>
               <th className="hidden sm:table-cell">Conta</th>
-              <th className="hidden sm:table-cell">Competência</th>
               <th className="num">Valor</th>
               <th />
             </tr>
@@ -122,6 +122,12 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                 <td className="sm:min-w-64">
                   {lancamento.descricao}
                   {lancamento.observacao && <span className="block text-sm text-muted">Obs.: {lancamento.observacao}</span>}
+                  {/* Só quando a competência não é o mês do pagamento: é a exceção que muda a DRE por competência. */}
+                  {textoDaCompetencia(lancamento) && (
+                    <span className="block text-xs font-medium text-warn" title={EXPLICACAO_COMPETENCIA}>
+                      Competência {textoDaCompetencia(lancamento)}
+                    </span>
+                  )}
                   {/* No celular, data e conta vêm embaixo da descrição. */}
                   <span className="block text-xs text-muted sm:hidden">
                     {formatarDataCurta(lancamento.data)} · {nomeDaConta(lancamento.contaId)}
@@ -138,15 +144,13 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                   )}
                 </td>
                 <td className="hidden text-muted sm:table-cell">{nomeDaConta(lancamento.contaId)}</td>
-                {/* Só aparece quando a competência não é o mês da data: é a exceção que importa para a DRE. */}
-                <td className="hidden whitespace-nowrap text-warn sm:table-cell">{lancamento.competencia !== mesDe(lancamento.data) && formatarMes(lancamento.competencia)}</td>
                 <td className={cn('num font-medium', lancamento.valor > 0 && 'text-ok')}>{brl(lancamento.valor)}</td>
                 <AbrirLinha href={`/financeiro/lancamentos/${lancamento.id}`} rotulo={editar ? 'Abrir para editar' : 'Abrir lançamento'} />
               </tr>
             ))}
             {filtrados.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-muted">
+                <td colSpan={5} className="py-10 text-center text-muted">
                   {filtrado ? 'Nenhum lançamento neste filtro.' : 'Nenhum lançamento neste mês.'}
                 </td>
               </tr>
@@ -154,6 +158,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
           </tbody>
         </table>
       </Card>
+      {paginado.itens.some((l) => textoDaCompetencia(l)) && <p className="mt-2 text-xs text-subtle">{EXPLICACAO_COMPETENCIA}</p>}
       <Paginacao {...paginado} href={(n) => link({ pagina: String(n) })} />
     </>
   )
