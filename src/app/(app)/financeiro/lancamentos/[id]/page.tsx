@@ -82,7 +82,7 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
                     </span>
                   </>
                 ) : (
-                  <span className="text-muted">Lançado à mão (não veio de extrato importado).</span>
+                  <span className="text-muted">{nota ? 'Não veio de extrato: é o recebimento registrado na nota.' : 'Não veio de extrato: foi lançado à mão.'}</span>
                 )}
               </Dado>
               <Dado rotulo="Observação" className="col-span-2 sm:col-span-3">

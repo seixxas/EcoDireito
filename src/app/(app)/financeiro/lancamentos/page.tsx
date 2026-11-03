@@ -15,7 +15,7 @@ import { combina } from '@/lib/buscar'
 import { cn } from '@/lib/cn'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
-import { brl, contar, formatarDataCurta, formatarMes } from '@/lib/formatar'
+import { brl, contar, formatarDataCurta, formatarMes, juntar } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { AbrirLinha } from '../_components/abrir-linha'
@@ -64,12 +64,14 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
 
   const periodo = mes === TODOS_OS_MESES ? 'em todos os meses' : regime === 'competencia' ? `com competência ${formatarMes(mes)}` : `em ${formatarMes(mes)}`
   const filtrado = Boolean(q || conta || regime === 'competencia')
+  // Filtrado por uma conta de despesa, "entraram R$ 0,00" só atrapalha.
+  const movimento = juntar([entradas ? `entraram ${brl(entradas)}` : '', saidas ? `saíram ${brl(-saidas)}` : ''].filter(Boolean))
 
   return (
     <>
       <PageHeader
         titulo="Lançamentos"
-        resumo={`${contar(filtrados.length, 'lançamento', 'lançamentos')} ${periodo}${conta ? ` em ${nomeDaConta(conta)}` : ''}: entraram ${brl(entradas)} e saíram ${brl(-saidas)}.${filtrado ? '' : ' A receita das notas entra sozinha com o recebimento.'}`}
+        resumo={`${contar(filtrados.length, 'lançamento', 'lançamentos')} ${periodo}${conta ? ` em ${nomeDaConta(conta)}` : ''}${movimento ? `: ${movimento}` : ''}.${filtrado ? '' : ' A receita das notas entra sozinha com o recebimento.'}`}
         acoes={<NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m })} todos />}
       />
 
