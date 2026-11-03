@@ -1,7 +1,9 @@
-import { CalendarClock, Check, Leaf, LogOut, TriangleAlert } from 'lucide-react'
+import { Check } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { sair } from '@/app/(auth)/actions'
+import type { Tom } from '@/components/ui/badge'
+import { Secao } from '@/components/ui/secao'
+import { Situacao } from '@/components/ui/situacao'
 import { hoje } from '@/data/hoje'
 import { obterProcesso } from '@/data/processos'
 import { exigirUsuario } from '@/data/sessao'
@@ -11,14 +13,15 @@ import { FASES } from '@/domain/processos'
 import { cn } from '@/lib/cn'
 import { diasEntre } from '@/lib/datas'
 import { formatarData } from '@/lib/formatar'
+import { TopoDoPortal } from '../_components/topo'
 
 export const metadata: Metadata = { title: 'Acompanhamento do processo' }
 
-function contagem(dias: number) {
-  if (dias < 0) return { texto: `venceu há ${-dias} ${dias === -1 ? 'dia' : 'dias'}`, cor: 'text-danger' }
-  if (dias === 0) return { texto: 'vence hoje', cor: 'text-danger' }
-  if (dias === 1) return { texto: 'vence amanhã', cor: 'text-warn' }
-  return { texto: `faltam ${dias} dias`, cor: dias <= 10 ? 'text-warn' : 'text-ok' }
+function contagem(dias: number): { texto: string; tom: Tom } {
+  if (dias < 0) return { texto: `venceu há ${-dias} ${dias === -1 ? 'dia' : 'dias'}`, tom: 'danger' }
+  if (dias === 0) return { texto: 'vence hoje', tom: 'danger' }
+  if (dias === 1) return { texto: 'vence amanhã', tom: 'warn' }
+  return { texto: `faltam ${dias} dias`, tom: dias <= 10 ? 'warn' : 'ok' }
 }
 
 /** O que a construtora vê: só leitura, a fase do processo e o próximo prazo. */
@@ -34,111 +37,75 @@ export default async function Portal({ params }: { params: Promise<{ id: string 
   const conta = proximo && contagem(diasEntre(dia, proximo.vencimento))
 
   return (
-    <div className="pb-12">
-      <header className="bg-gradient-to-r from-brand-700 to-brand-500 pb-12 text-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <span className="flex items-center gap-2 font-display text-lg font-semibold">
-            <Leaf className="size-5" /> eco direito
-          </span>
-          <span className="flex items-center gap-4 text-sm text-brand-100">
-            por awer.co
-            {usuario.papel === 'cliente' && (
-              <form action={sair}>
-                <button className="flex items-center gap-1.5 rounded-lg px-2 py-1 hover:bg-white/10">
-                  <LogOut className="size-4" /> Sair
-                </button>
-              </form>
-            )}
-          </span>
-        </div>
-        <div className="mx-auto max-w-6xl px-5 pt-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-100">Eco Direito Ambiental · Acompanhamento de processo</p>
-          <h1 className="mt-1 font-display text-3xl font-semibold">As 7 etapas do seu processo</h1>
-          <p className="mt-1 text-brand-100">Cada projeto percorre 7 fases. Acompanhe aqui o andamento e as datas-limite.</p>
-        </div>
-      </header>
+    <>
+      <TopoDoPortal comSair={usuario.papel === 'cliente'} />
+      <main className="mx-auto max-w-3xl px-5 py-10">
+        <p className="text-sm text-muted">Acompanhamento do licenciamento ambiental</p>
+        <h1 className="mt-1 font-display text-[1.75rem] font-semibold leading-tight text-ink">{processo.empreendimento}</h1>
+        <p className="text-muted">{processo.endereco}</p>
 
-      <main className="mx-auto -mt-8 max-w-6xl px-5">
-        <div className="flex flex-wrap items-center justify-between gap-5 rounded-2xl border border-line bg-surface px-6 py-5 shadow-sm">
-          <div>
-            <p className="font-display text-xl font-semibold text-brand-700">{processo.empreendimento}</p>
-            <p className="text-sm text-muted">{processo.endereco}</p>
-          </div>
-          <div className="min-w-64 flex-1">
-            <p className="text-sm font-semibold text-muted">
-              Fase {fase.numero} de 7 · {fase.nome}
-            </p>
-            <div className="mt-1.5 flex gap-1">
-              {FASES.map((f) => (
-                <span key={f.numero} className={cn('h-2.5 flex-1 rounded', f.numero < fase.numero ? 'bg-ok' : f.numero === fase.numero ? 'bg-accent' : 'bg-line')} />
-              ))}
-            </div>
-          </div>
-          <span className="rounded-full border border-accent/50 bg-warn-soft px-4 py-1.5 text-sm font-semibold text-warn">Em andamento</span>
-        </div>
-
-        {proximo && conta && (
-          <div className="mt-4 flex items-center gap-3 rounded-xl border border-accent/50 bg-warn-soft px-5 py-3.5 text-sm text-warn">
-            <TriangleAlert className="size-5 shrink-0" />
-            <p>
-              <strong>Atenção ao prazo:</strong> {proximo.regra.titulo.toLowerCase()} até <strong>{formatarData(proximo.vencimento)}</strong> ({conta.texto}).
-            </p>
-          </div>
-        )}
-
-        <ol className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-          {FASES.map((f) => {
-            const estado = f.numero < fase.numero ? 'feita' : f.numero === fase.numero ? 'atual' : 'futura'
-            return (
-              <li
+        <div className="mt-6 rounded-lg border border-line bg-surface p-5">
+          <p className="text-sm text-muted">
+            Fase {fase.numero} de {FASES.length}
+          </p>
+          <p className="text-lg font-semibold text-ink">{fase.nome}</p>
+          <div className="mt-3 flex gap-1">
+            {FASES.map((f) => (
+              <span
                 key={f.numero}
-                className={cn(
-                  'flex flex-col rounded-xl border border-line border-t-4 bg-surface p-4',
-                  estado === 'feita' && 'border-t-ok',
-                  estado === 'atual' && 'border-t-accent shadow-md',
-                  estado === 'futura' && 'border-t-subtle',
-                )}
-              >
-                <div className="mb-2 flex items-center justify-between">
-                  <span
-                    className={cn(
-                      'flex size-8 items-center justify-center rounded-full text-sm font-bold',
-                      estado === 'feita' && 'bg-ok text-white',
-                      estado === 'atual' && 'bg-accent text-white',
-                      estado === 'futura' && 'bg-canvas text-muted ring-1 ring-line',
-                    )}
-                  >
-                    {estado === 'feita' ? <Check className="size-4" /> : f.numero}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Fase {f.numero}</span>
-                </div>
-                <p className="font-semibold leading-tight">{f.nome}</p>
-                <p className="mt-1 flex-1 text-xs text-muted">{f.descricao}</p>
-                <div className="mt-3 border-t border-dashed border-line pt-2.5 text-sm">
-                  {estado === 'feita' && <p className="font-semibold text-ok">Concluída</p>}
-                  {estado === 'futura' && <p className="text-subtle">A iniciar</p>}
-                  {estado === 'atual' &&
-                    (proximo && conta ? (
-                      <>
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-subtle">Próximo prazo</p>
-                        <p className="flex items-center gap-1.5 font-semibold">
-                          <CalendarClock className="size-4 text-warn" /> {formatarData(proximo.vencimento)}
-                        </p>
-                        <p className={cn('text-xs font-semibold', conta.cor)}>{conta.texto}</p>
-                      </>
-                    ) : (
-                      <p className="font-semibold text-warn">Em andamento</p>
-                    ))}
-                </div>
-              </li>
-            )
-          })}
-        </ol>
+                className={cn('h-1.5 flex-1 rounded-full', f.numero < fase.numero ? 'bg-ok' : f.numero === fase.numero ? 'bg-accent' : 'bg-line')}
+              />
+            ))}
+          </div>
+          {proximo && conta && (
+            <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
+              <p>
+                <span className="text-muted">Próximo prazo: </span>
+                <span className="font-medium text-ink">{proximo.regra.titulo}</span>
+              </p>
+              <p className="flex items-center gap-3">
+                <span className="tabular-nums text-ink">{formatarData(proximo.vencimento)}</span>
+                <Situacao tom={conta.tom}>{conta.texto}</Situacao>
+              </p>
+            </div>
+          )}
+        </div>
 
-        <p className="mt-8 text-center text-xs text-subtle">
-          <strong className="text-brand-700">Eco Direito Ambiental</strong> · Painel elaborado por <strong className="text-brand-700">Awer Consultoria</strong>
-        </p>
+        <Secao titulo="As etapas do processo">
+          <ol>
+            {FASES.map((f, i) => {
+              const estado = f.numero < fase.numero ? 'feita' : f.numero === fase.numero ? 'atual' : 'futura'
+              return (
+                <li key={f.numero} className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <span
+                      className={cn(
+                        'flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
+                        estado === 'feita' && 'bg-ok text-white',
+                        estado === 'atual' && 'bg-brand-700 text-white ring-4 ring-brand-100',
+                        estado === 'futura' && 'bg-surface text-subtle ring-1 ring-line',
+                      )}
+                    >
+                      {estado === 'feita' ? <Check className="size-4" /> : f.numero}
+                    </span>
+                    {i < FASES.length - 1 && <span className={cn('my-1 w-px flex-1', estado === 'feita' ? 'bg-ok' : 'bg-line')} />}
+                  </div>
+                  <div className="pb-5 pt-0.5">
+                    <p className={cn('font-medium', estado === 'futura' ? 'text-muted' : 'text-ink')}>{f.nome}</p>
+                    {estado === 'atual' ? (
+                      <p className="mt-0.5 text-sm text-muted">{f.descricao}</p>
+                    ) : (
+                      <p className="text-xs text-subtle">{estado === 'feita' ? 'Concluída' : 'A iniciar'}</p>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </Secao>
+
+        <p className="mt-8 text-xs text-subtle">Eco Direito Ambiental · sistema desenvolvido pela Awer</p>
       </main>
-    </div>
+    </>
   )
 }

@@ -1,35 +1,70 @@
-import { ArrowRight } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import type { ReactNode } from 'react'
 import { SituacaoPrazo } from '@/components/prazos/situacao-prazo'
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
+import { Vazio } from '@/components/ui/expansivel'
+import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
-import { Stat } from '@/components/ui/stat'
+import { Secao } from '@/components/ui/secao'
+import { Situacao } from '@/components/ui/situacao'
 import { projecaoDeCaixa, listarNotas } from '@/data/financeiro'
 import { hoje } from '@/data/hoje'
-import { listarParcelasLiberadas, listarPrazos } from '@/data/processos'
+import { listarParcelasLiberadas, listarPrazos, type PrazoComProcesso } from '@/data/processos'
 import { listarPublicacoes } from '@/data/publicacoes'
 import { exigirUsuario } from '@/data/sessao'
-import { diasDeAtraso, resumoNotas, saldoAReceber, situacaoNota } from '@/domain/financeiro/notas'
-import { DIAS_ALERTA, estaAberto } from '@/domain/prazos'
-import { diasEntre, somarDias } from '@/lib/datas'
-import { somar } from '@/lib/dinheiro'
-import { brl, formatarDiaEData } from '@/lib/formatar'
+import { resumoNotas, situacaoNota } from '@/domain/financeiro/notas'
+import { estaAberto } from '@/domain/prazos'
+import { somarDias, type DataISO } from '@/lib/datas'
+import { cn } from '@/lib/cn'
+import { brl, contar, formatarDataLonga, formatarDiaEData, juntar } from '@/lib/formatar'
 import { inicioDoPapel, pode } from '@/lib/permissoes'
 
-export const metadata: Metadata = { title: 'Painel' }
+export const metadata: Metadata = { title: 'Hoje' }
 
-function VerTodos({ href }: { href: string }) {
+const HORARIO = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
+
+/** Uma linha da lista do dia: situação à esquerda, o que é no meio, data ou valor à direita. */
+function Item({ href, situacao, titulo, contexto, direita }: { href: string; situacao: ReactNode; titulo: ReactNode; contexto: ReactNode; direita: ReactNode }) {
   return (
-    <Link href={href} className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline">
-      Ver todos <ArrowRight className="size-4" />
-    </Link>
+    <Linha href={href} className="flex-wrap gap-x-4 gap-y-0.5 sm:flex-nowrap">
+      <span className="w-full shrink-0 sm:w-44">{situacao}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-medium text-ink">{titulo}</span>
+        <span className="block truncate text-xs text-muted">{contexto}</span>
+      </span>
+      <span className="shrink-0 text-right text-sm tabular-nums text-muted">{direita}</span>
+    </Linha>
   )
 }
 
-export default async function Painel() {
+function ItemPrazo({ prazo, dia }: { prazo: PrazoComProcesso; dia: DataISO }) {
+  return (
+    <Item
+      href={`/processos/${prazo.processo.id}`}
+      situacao={<SituacaoPrazo prazo={prazo} hoje={dia} />}
+      titulo={prazo.regra.titulo}
+      contexto={`${prazo.processo.empreendimento} · ${prazo.processo.responsavel}`}
+      direita={formatarDiaEData(prazo.vencimento)}
+    />
+  )
+}
+
+function Valor({ rotulo, valor, detalhe, perigo }: { rotulo: string; valor: string; detalhe?: string; perigo?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-2.5">
+      <dt className="text-muted">
+        {rotulo}
+        {detalhe && <span className="block text-xs text-subtle">{detalhe}</span>}
+      </dt>
+      <dd className={cn('font-semibold tabular-nums', perigo ? 'text-danger' : 'text-ink')}>{valor}</dd>
+    </div>
+  )
+}
+
+const porVencimento = (a: PrazoComProcesso, b: PrazoComProcesso) => a.vencimento.localeCompare(b.vencimento)
+
+export default async function Hoje() {
   const usuario = await exigirUsuario()
   if (!pode(usuario.papel, 'prazos')) redirect(inicioDoPapel(usuario.papel))
   const verFinanceiro = pode(usuario.papel, 'financeiro')
@@ -43,138 +78,154 @@ export default async function Painel() {
     projecaoDeCaixa(),
   ])
 
-  const abertos = prazos.filter((p) => p.regra.tipo !== 'expectativa' && estaAberto(p, dia))
+  // Só as obrigações da Eco Direito; o que depende da SVMA fica na tela de prazos.
+  const abertos = prazos.filter((p) => p.regra.tipo !== 'expectativa' && estaAberto(p, dia)).sort(porVencimento)
   const vencidos = abertos.filter((p) => p.vencimento < dia)
-  const proximos = abertos.filter((p) => p.vencimento >= dia && diasEntre(dia, p.vencimento) <= DIAS_ALERTA)
+  const deHoje = abertos.filter((p) => p.vencimento === dia)
+  const semana = abertos.filter((p) => p.vencimento > dia && p.vencimento <= somarDias(dia, 7))
   const novas = publicacoes.itens.filter((item) => item.ato.status === 'nova')
+  const aFaturar = verFinanceiro ? parcelas : []
+
+  const todas = notas.map(({ nota }) => nota)
+  const geral = resumoNotas(todas, dia)
   const ultimos30 = resumoNotas(
-    notas.filter(({ nota }) => nota.emissao > somarDias(dia, -30)).map(({ nota }) => nota),
+    todas.filter((nota) => nota.emissao > somarDias(dia, -30)),
     dia,
   )
-  const geral = resumoNotas(
-    notas.map(({ nota }) => nota),
-    dia,
-  )
-  const atrasadas = notas.filter(({ nota }) => situacaoNota(nota, dia) === 'atrasada').sort((a, b) => a.nota.previsao.localeCompare(b.nota.previsao))
+  const atrasadas = verFinanceiro ? notas.filter(({ nota }) => situacaoNota(nota, dia) === 'atrasada') : []
+  const clientesAtrasados = [...new Set(atrasadas.map(({ cliente }) => cliente.nome))]
+
+  const pendencias = [
+    vencidos.length && contar(vencidos.length, 'prazo vencido', 'prazos vencidos'),
+    deHoje.length && contar(deHoje.length, 'prazo vence hoje', 'prazos vencem hoje'),
+    semana.length && `${contar(semana.length, 'prazo', 'prazos')} nos próximos 7 dias`,
+    novas.length && contar(novas.length, 'publicação para revisar', 'publicações para revisar'),
+    aFaturar.length && contar(aFaturar.length, 'parcela para faturar', 'parcelas para faturar'),
+  ].filter((parte): parte is string => Boolean(parte))
+  const data = formatarDataLonga(dia)
+
+  const temAtrasado = vencidos.length > 0 || atrasadas.length > 0
+  const temHoje = deHoje.length + novas.length + aFaturar.length > 0
+  const { edicao } = publicacoes
 
   return (
     <>
       <PageHeader
-        titulo={`Olá, ${usuario.nome.split(' ')[0]}`}
-        descricao={`Hoje é ${formatarDiaEData(dia)}. O que pede atenção ${verFinanceiro ? 'nos prazos e no financeiro' : 'nos prazos'}.`}
+        titulo="Hoje"
+        resumo={`${data.charAt(0).toUpperCase()}${data.slice(1)}. ${pendencias.length ? `${juntar(pendencias)}.` : 'Nada pendente.'}`}
       />
 
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-subtle">Prazos</h2>
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat rotulo="Vencidos" valor={vencidos.length} detalhe="prazos da Eco Direito" tom={vencidos.length ? 'danger' : 'ok'} />
-        <Stat
-          rotulo={`Vencem em até ${DIAS_ALERTA} dias`}
-          valor={proximos.length}
-          detalhe={`${abertos.length} prazos em aberto no total`}
-          tom="warn"
-        />
-        <Stat rotulo="Diário Oficial" valor={novas.length} detalhe="publicações para revisar" tom={novas.length ? 'info' : 'ok'} />
-        {verFinanceiro && (
-          <Stat
-            rotulo="Prontas para faturar"
-            valor={parcelas.length}
-            detalhe={`${brl(somar(parcelas.map((p) => p.parcela.valor)))} em parcelas liberadas`}
-            tom="warn"
-          />
-        )}
-      </div>
+      <div className="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div>
+          {!temAtrasado && !temHoje && !semana.length && <Vazio>Nenhum prazo, publicação ou cobrança pede atenção agora.</Vazio>}
 
-      {verFinanceiro && (
-        <>
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-subtle">Financeiro</h2>
-          <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <Stat rotulo="Faturado em 30 dias" valor={brl(ultimos30.faturado)} detalhe={`${ultimos30.quantidade} notas emitidas`} tom="brand" />
-            <Stat rotulo="A receber" valor={brl(geral.aReceber)} detalhe={`prazo mediano de ${geral.prazoMedianoDias} dias`} />
-            <Stat rotulo="Atrasado" valor={brl(geral.atrasado)} detalhe={`${geral.quantidadeAtrasadas} notas passaram da previsão`} tom="danger" />
-            <Stat rotulo="Saldo em conta" valor={brl(caixa.saldoHoje)} detalhe={`mais ${brl(caixa.aplicado)} aplicados`} />
-          </div>
-        </>
-      )}
-
-      <div className="grid gap-6 xl:grid-cols-5">
-        <Card titulo="Prazos que pedem atenção" acao={<VerTodos href="/prazos" />} className="xl:col-span-3" flush>
-          <ul className="divide-y divide-line">
-            {[...vencidos, ...proximos].slice(0, 9).map((prazo) => (
-              <li key={prazo.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
-                <div>
-                  <p className="font-medium">{prazo.regra.titulo}</p>
-                  <p className="text-xs text-muted">
-                    <Link href={`/processos/${prazo.processo.id}`} className="text-brand-700 hover:underline">
-                      {prazo.processo.empreendimento}
-                    </Link>{' '}
-                    · {prazo.processo.responsavel}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <SituacaoPrazo prazo={prazo} hoje={dia} />
-                  <p className="mt-1 text-xs text-muted">{formatarDiaEData(prazo.vencimento)}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        <div className="space-y-6 xl:col-span-2">
-          <Card titulo={`Diário Oficial · ${formatarDiaEData(publicacoes.edicao.data)}`} acao={<VerTodos href="/publicacoes" />} flush>
-            <ul className="divide-y divide-line">
-              {novas.map(({ ato, cliente, processo }) => (
-                <li key={ato.id} className="px-5 py-3">
-                  <p className="flex items-center gap-2 text-sm font-medium">
-                    <Badge tom="brand">{ato.serie}</Badge>
-                  </p>
-                  <p className="mt-1 text-sm">{processo?.empreendimento ?? cliente.nome}</p>
-                  {!processo && <p className="text-xs text-warn">processo ainda não cadastrado</p>}
-                </li>
-              ))}
-            </ul>
-          </Card>
-
-          {verFinanceiro && (
-            <Card titulo="Prontas para faturar" flush>
-              <ul className="divide-y divide-line">
-                {parcelas.map(({ parcela, processo }) => (
-                  <li key={parcela.id} className="flex items-center justify-between gap-3 px-5 py-3">
-                    <div>
-                      <Link href={`/processos/${processo.id}`} className="text-sm font-medium text-brand-700 hover:underline">
-                        {processo.empreendimento}
-                      </Link>
-                      <p className="text-xs text-muted">{parcela.descricao}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold tabular-nums">{brl(parcela.valor)}</p>
-                      <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="text-xs font-medium text-brand-700 hover:underline">
-                        Emitir nota
-                      </Link>
-                    </div>
-                  </li>
+          {temAtrasado && (
+            <Secao titulo="Atrasado">
+              <Lista>
+                {vencidos.map((prazo) => (
+                  <ItemPrazo key={prazo.id} prazo={prazo} dia={dia} />
                 ))}
-              </ul>
-            </Card>
+                {atrasadas.length > 0 && (
+                  <Item
+                    href="/financeiro/receber"
+                    situacao={<Situacao tom="danger">{contar(atrasadas.length, 'nota atrasada', 'notas atrasadas')}</Situacao>}
+                    titulo="Cobrar clientes"
+                    contexto={juntar(clientesAtrasados.length > 3 ? [...clientesAtrasados.slice(0, 3), `mais ${clientesAtrasados.length - 3}`] : clientesAtrasados)}
+                    direita={<span className="font-semibold text-danger">{brl(geral.atrasado)}</span>}
+                  />
+                )}
+              </Lista>
+            </Secao>
           )}
 
-          {verFinanceiro && (
-            <Card titulo="Notas atrasadas" acao={<VerTodos href="/financeiro/receber" />} flush>
-              <ul className="divide-y divide-line">
-                {atrasadas.slice(0, 5).map(({ nota, cliente }) => (
-                  <li key={nota.id} className="flex items-center justify-between gap-3 px-5 py-3">
-                    <div>
-                      <p className="text-sm font-medium">{cliente.nome}</p>
-                      <p className="text-xs text-muted">
-                        NF {nota.numero} · {diasDeAtraso(nota, dia)} dias de atraso
-                      </p>
-                    </div>
-                    <span className="font-semibold tabular-nums text-danger">{brl(saldoAReceber(nota, dia))}</span>
-                  </li>
+          {temHoje && (
+            <Secao titulo="Hoje">
+              <Lista>
+                {deHoje.map((prazo) => (
+                  <ItemPrazo key={prazo.id} prazo={prazo} dia={dia} />
                 ))}
-              </ul>
-            </Card>
+                {novas.map(({ ato, cliente, processo }) => (
+                  <Item
+                    key={ato.id}
+                    href="/publicacoes"
+                    situacao={<Situacao tom="info">Nova no Diário</Situacao>}
+                    titulo={ato.serie}
+                    contexto={processo ? processo.empreendimento : `${cliente.nome} · processo ainda não cadastrado`}
+                    direita="Revisar"
+                  />
+                ))}
+                {aFaturar.map(({ parcela, processo, cliente }) => (
+                  <Item
+                    key={parcela.id}
+                    href={`/financeiro/notas/nova?parcela=${parcela.id}`}
+                    situacao={<Situacao tom="brand">Pronta para faturar</Situacao>}
+                    titulo={processo.empreendimento}
+                    contexto={`${parcela.descricao} · ${cliente.nome}`}
+                    direita={<span className="font-semibold text-ink">{brl(parcela.valor)}</span>}
+                  />
+                ))}
+              </Lista>
+            </Secao>
+          )}
+
+          {semana.length > 0 && (
+            <Secao
+              titulo="Próximos 7 dias"
+              acao={
+                <Link href="/prazos" className="text-sm text-brand-700 hover:underline">
+                  Todos os prazos
+                </Link>
+              }
+            >
+              <Lista>
+                {semana.map((prazo) => (
+                  <ItemPrazo key={prazo.id} prazo={prazo} dia={dia} />
+                ))}
+              </Lista>
+            </Secao>
           )}
         </div>
+
+        <aside className="space-y-8">
+          {verFinanceiro && (
+            <Secao
+              titulo="Dinheiro"
+              acao={
+                <Link href="/financeiro" className="text-sm text-brand-700 hover:underline">
+                  Financeiro
+                </Link>
+              }
+            >
+              <dl className="divide-y divide-line border-y border-line">
+                <Valor rotulo="Saldo em conta" valor={brl(caixa.saldoHoje)} detalhe={`mais ${brl(caixa.aplicado)} aplicados`} />
+                <Valor rotulo="A receber" valor={brl(geral.aReceber)} />
+                <Valor rotulo="Atrasado" valor={brl(geral.atrasado)} perigo={geral.atrasado > 0} />
+                <Valor rotulo="Faturado em 30 dias" valor={brl(ultimos30.faturado)} detalhe={contar(ultimos30.quantidade, 'nota', 'notas')} />
+              </dl>
+            </Secao>
+          )}
+
+          <Secao
+            titulo="Diário Oficial"
+            acao={
+              <Link href="/publicacoes" className="text-sm text-brand-700 hover:underline">
+                Abrir
+              </Link>
+            }
+          >
+            <p className="text-muted">
+              {edicao.erro ? (
+                <span className="text-warn">{edicao.erro}</span>
+              ) : (
+                <>
+                  Edição de {formatarDiaEData(edicao.data)}
+                  {edicao.processadaEm && `, lida às ${HORARIO.format(new Date(edicao.processadaEm))}`}.{' '}
+                  {novas.length ? `${contar(novas.length, 'ato', 'atos')} da Eco Direito para revisar.` : 'Nada novo para a Eco Direito.'}
+                </>
+              )}
+            </p>
+          </Secao>
+        </aside>
       </div>
     </>
   )

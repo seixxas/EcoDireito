@@ -6,7 +6,7 @@ const PONTO: Record<Tom, string> = {
   ok: 'bg-ok',
   warn: 'bg-accent',
   danger: 'bg-danger',
-  info: 'bg-info',
+  info: 'bg-info/60',
   brand: 'bg-brand-500',
   neutral: 'bg-subtle',
 }

@@ -56,16 +56,20 @@ Quem usa são as sócias e a equipe da Eco Direito, todo dia, para saber **o que
 
 `Stat` continua existindo (agora sem caixa), mas prefira `Resumo`.
 
+`cn` só junta classes, não resolve conflito: não passe margem (`mt-*`) para quem já tem margem própria, como `Secao` (`mt-8`, sem margem quando é a primeira). Para mudar o espaço, embrulhe numa `div`.
+
+Texto de resumo: `contar(n, 'prazo', 'prazos')`, `juntar(['a', 'b', 'c'])` → "a, b e c" e `formatarDataLonga` → "terça, 3 de novembro" (`src/lib/formatar.ts`).
+
 ## Telas
 
 | Tela | Direção |
 |---|---|
-| Painel (`/`) | "Para hoje": uma lista única, em ordem de urgência, com prazos, publicações a revisar, parcelas a faturar e notas a cobrar. Ao lado, um resumo do financeiro em linhas (A) |
+| Hoje (`/`) | Feito. Uma lista em três grupos (Atrasado, Hoje, Próximos 7 dias) com os prazos da Eco Direito, publicações a revisar, parcelas a faturar e uma linha só para as notas atrasadas. Ao lado, o dinheiro em linhas e a edição do Diário. Os prazos da SVMA ficam em /prazos (A) |
 | Prazos | Agrupar por período (Vencidos, Esta semana, Próximas semanas, Mais adiante) em linhas compactas; cálculo e base legal em `Expansivel` (B) |
 | Processos / processo | Lista compacta. No processo: fases numa barra fina, dados em uma linha e abas Prazos · Linha do tempo · Cobrança (B) |
 | Diário Oficial | Linhas compactas (série, cliente/processo, como achou, prazo sugerido, ações); texto do ato em `Expansivel` (B) |
 | Faturamento e financeiro | Mês atual por padrão com navegação de mês; `Resumo` no topo; gráfico menor ou atrás de aba; DRE com grupos recolhíveis (C) |
-| Portal, login, usuários | A |
+| Portal, login, usuários | Feito. Portal: fase atual e próximo prazo numa caixa, etapas numa linha do tempo vertical. Usuários: lista com o que cada perfil pode, formulário recolhido. Login: fundo papel, sem sombra (A) |
 
 ## Textos
 

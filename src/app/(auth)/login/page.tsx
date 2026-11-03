@@ -7,23 +7,20 @@ export const metadata: Metadata = { title: 'Entrar' }
 export default async function PaginaLogin({ searchParams }: { searchParams: Promise<{ voltar?: string }> }) {
   const { voltar } = await searchParams
   return (
-    <main className="flex min-h-screen items-center justify-center bg-brand-900 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-6 flex items-center justify-center gap-2.5 text-white">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-brand-500">
-            <Leaf className="size-5" />
+        <div className="mb-10 flex items-center gap-2">
+          <span className="flex size-8 items-center justify-center rounded-md bg-brand-700 text-white">
+            <Leaf className="size-4" />
           </span>
-          <span className="leading-none">
-            <span className="block font-display text-xl font-semibold">eco direito</span>
-            <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-300">ambiental</span>
-          </span>
+          <span className="font-display text-xl font-semibold text-ink">Eco Direito</span>
         </div>
-        <div className="rounded-2xl bg-surface p-6 shadow-xl">
-          <h1 className="font-display text-xl font-semibold text-brand-900">Entrar</h1>
-          <p className="mb-5 mt-1 text-sm text-muted">Prazos e financeiro da Eco Direito.</p>
+        <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-ink">Entrar</h1>
+        <p className="mb-6 mt-1 text-muted">Prazos dos processos e financeiro do escritório.</p>
+        <div className="rounded-lg border border-line bg-surface p-5">
           <FormularioLogin voltar={voltar} />
         </div>
-        <p className="mt-4 text-center text-xs text-brand-300">Sistema desenvolvido pela Awer</p>
+        <p className="mt-6 text-xs text-subtle">Sistema desenvolvido pela Awer</p>
       </div>
     </main>
   )
