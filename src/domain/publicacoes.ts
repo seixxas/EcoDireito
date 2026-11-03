@@ -12,6 +12,8 @@ export type Ato = {
   processo: string
   documento: string
   texto: string
+  /** Endereço do ato no DOC-SP. Muda a cada download: abre o ato, não o identifica. */
+  link?: string
 }
 
 export const ORGAO_SVMA = 'Secretaria Municipal do Verde e do Meio Ambiente'

@@ -27,7 +27,8 @@ A caixa de entrada mostra o que está na tabela `publicacoes` (ou os atos fictí
 - Testes com uma edição fictícia no formato real. O arquivo real nunca entra no repositório (pode citar clientes).
 - `importarEdicao(data)` (`src/data/publicacoes.ts`): grava na caixa de entrada só os atos que `vincularAto` liga a cliente ou processo e registra a edição em `edicoes_diario`. Dia útil sem edição grava a linha com `erro`, para conferir (pode ser ponto facultativo).
 - Botão "Buscar no Diário" em `/publicacoes` (quem edita prazos): escolhe o dia, já vem no último dia útil. Falha do download aparece na tela.
-- Falta: agendar todo dia útil às 6h (`src/app/api/robo/**`), alerta de falha por e-mail (E7) e mostrar na tela o link do ato e o `erro` da edição (precisa de `link` e `erro` em `src/data/base.ts`).
+- A caixa de entrada mostra "Abrir no Diário Oficial" (link gravado pelo robô; os atos fictícios não têm) e o cartão "Edição lida" mostra a hora da leitura ou o `erro` da edição.
+- Falta: agendar todo dia útil às 6h (`src/app/api/robo/**`, sem `carregar()`: ler o db direto e proteger com `CRON_SECRET`) e alerta de falha por e-mail (E7).
 
 ## Evento sugerido (`eventoDoAto`)
 
