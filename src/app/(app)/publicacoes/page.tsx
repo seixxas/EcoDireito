@@ -6,10 +6,12 @@ import { PageHeader } from '@/components/ui/page-header'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { Stat } from '@/components/ui/stat'
 import { listarPublicacoes } from '@/data/publicacoes'
+import { exigirArea } from '@/data/sessao'
 import { TIPOS_PRAZO } from '@/domain/prazos'
 import { EVENTOS } from '@/domain/processos'
 import { COMO_ACHOU } from '@/domain/publicacoes'
 import { formatarData, formatarDiaEData } from '@/lib/formatar'
+import { pode } from '@/lib/permissoes'
 import { AcoesPublicacao } from './_components/acoes-publicacao'
 
 export const metadata: Metadata = { title: 'Diário Oficial' }
@@ -20,7 +22,8 @@ type Aba = keyof typeof ABAS
 export default async function PaginaPublicacoes({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
   const { aba: pedida } = await searchParams
   const aba: Aba = pedida && pedida in ABAS ? (pedida as Aba) : 'nova'
-  const { edicao, itens } = await listarPublicacoes()
+  const [{ edicao, itens }, usuario] = await Promise.all([listarPublicacoes(), exigirArea('prazos')])
+  const editar = pode(usuario.papel, 'prazos', 'editar')
   const lista = itens.filter((item) => item.ato.status === aba)
   const novas = itens.filter((item) => item.ato.status === 'nova')
 
@@ -104,11 +107,14 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
                   </>
                 )}
                 <div className="mt-3">
-                  {ato.status === 'nova' ? (
-                    <AcoesPublicacao temProcesso={Boolean(processo)} prazos={prazosSugeridos.length} />
-                  ) : (
-                    <p className="text-sm text-muted">{ato.status === 'confirmada' ? 'Confirmada pela equipe.' : `Descartada: ${ato.motivo}.`}</p>
-                  )}
+                  {ato.status === 'confirmada' && <p className="text-sm text-muted">Confirmada pela equipe.</p>}
+                  {ato.status === 'descartada' && <p className="text-sm text-muted">Descartada: {ato.motivo}.</p>}
+                  {ato.status === 'nova' &&
+                    (editar ? (
+                      <AcoesPublicacao id={ato.id} temProcesso={Boolean(processo)} temEvento={Boolean(evento)} prazos={prazosSugeridos.length} />
+                    ) : (
+                      <p className="text-sm text-muted">Esperando a revisão da equipe.</p>
+                    ))}
                 </div>
               </div>
             </div>

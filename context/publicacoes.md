@@ -1,7 +1,14 @@
 # Diário Oficial (publicações)
 
 Arquivos: `src/domain/publicacoes.ts`, `src/data/publicacoes.ts`, `src/app/(app)/publicacoes/`.
-Hoje a caixa de entrada usa publicações fictícias. O robô real ainda não existe.
+O robô real ainda não existe (E5): a caixa de entrada mostra o que está na tabela `publicacoes` (ou os atos fictícios, sem banco).
+
+## Caixa de entrada (E3)
+
+- **Confirmar**: a série do ato vira o evento (data do ato, origem `diario`, prazo escrito no texto em `diasNoAto`). Evento, fase do processo e status do ato vão num único `db.batch` (transação). Série sem evento (ex.: Notificação) só fica confirmada.
+- **Não é nosso**: descarta com motivo obrigatório.
+- **Sem processo cadastrado** (achado pelo CNPJ): "Cadastrar processo" abre `/processos/novo?ato=<id>` com cliente, nº SEI e fase preenchidos e volta para a caixa; o ato passa a casar pelo SEI e pode ser confirmado.
+- Só atos com status `nova` mudam: a action recusa ato já revisado ("Este ato já foi revisado").
 
 ## Fonte (testada em 28/10/2026)
 

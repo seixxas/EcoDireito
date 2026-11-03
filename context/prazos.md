@@ -29,6 +29,15 @@ Arquivos: `src/domain/processos.ts` (fases e eventos), `src/domain/prazos.ts` (r
 - Prazo escrito no próprio ato ("60 dias") substitui o padrão: campo `diasNoAto` do evento.
 - Feriados em `src/domain/feriados.ts` (nacionais, estaduais e municipais de SP, 2026 e 2027).
 
+## Edição (E3)
+
+- Clientes em `/processos/clientes`; processos em `/processos/novo` e `/processos/[id]/editar`. Gravações em `src/data/processos.ts`, actions em `src/app/(app)/processos/actions.ts`.
+- O nº SEI não se repete: é por ele que o Diário Oficial acha o processo. Formatos validados: SEI `6027.2026/0000021-3`, SIMPROC `2016-0.084.512-3`.
+- Evento manual: "Lançar evento" na linha do tempo do processo. Os prazos não são gravados; o motor recalcula na leitura.
+- Evento que já aconteceu leva o processo à fase dele (`faseDepoisDoEvento`). Evento planejado não muda a fase, e o processo nunca volta de fase sozinho: apagar um evento não mexe na fase (corrija em "Editar").
+- Apagar evento vindo do Diário Oficial devolve o ato para a caixa de entrada.
+- Só quem tem `prazos: editar` (sócia, equipe) vê os botões; o perfil financeiro só vê.
+
 ## Situação de um prazo
 
 `cumprido` (existe o evento que cumpre) · `vencido` · `hoje` · `proximo` (até 10 dias) · `no_prazo`.
