@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Card } from '@/components/ui/card'
 import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
 import { listarClientes } from '@/data/processos'
@@ -19,7 +18,7 @@ export default async function PaginaClientes() {
       <LinkVoltar href="/processos">Processos</LinkVoltar>
       <PageHeader
         titulo="Clientes"
-        descricao="O robô do Diário Oficial também procura o CNPJ de cada cliente, para achar processos que ainda não foram cadastrados."
+        resumo={`${itens.length} clientes. O robô do Diário Oficial também procura pelo CNPJ de cada um.`}
         acoes={
           editar && (
             <Link href="/processos/clientes/novo" className={classeBotao()}>
@@ -28,36 +27,34 @@ export default async function PaginaClientes() {
           )
         }
       />
-      <Card flush>
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>CNPJ ou CPF</th>
-              <th>Grupo econômico</th>
-              <th className="num">Processos</th>
-              {editar && <th />}
+      <table className="tabela">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>CNPJ ou CPF</th>
+            <th>Grupo econômico</th>
+            <th className="num">Processos</th>
+            {editar && <th />}
+          </tr>
+        </thead>
+        <tbody>
+          {itens.map(({ cliente, processos }) => (
+            <tr key={cliente.id}>
+              <td className="font-medium">{cliente.nome}</td>
+              <td className="whitespace-nowrap tabular-nums">{cliente.documento}</td>
+              <td className="text-muted">{cliente.grupo ?? '—'}</td>
+              <td className="num">{processos}</td>
+              {editar && (
+                <td className="text-right">
+                  <Link href={`/processos/clientes/${cliente.id}`} className="text-sm font-medium text-brand-700 hover:underline">
+                    Editar
+                  </Link>
+                </td>
+              )}
             </tr>
-          </thead>
-          <tbody>
-            {itens.map(({ cliente, processos }) => (
-              <tr key={cliente.id}>
-                <td className="font-medium">{cliente.nome}</td>
-                <td className="whitespace-nowrap font-mono text-xs">{cliente.documento}</td>
-                <td className="text-muted">{cliente.grupo ?? '—'}</td>
-                <td className="num">{processos}</td>
-                {editar && (
-                  <td className="text-right">
-                    <Link href={`/processos/clientes/${cliente.id}`} className="text-sm font-medium text-brand-700 hover:underline">
-                      Editar
-                    </Link>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+          ))}
+        </tbody>
+      </table>
     </>
   )
 }

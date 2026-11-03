@@ -9,9 +9,9 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 |---|---|---|
 | `/login` | Login | E-mail e senha; cada perfil cai na sua tela inicial |
 | `/` | Hoje | Lista por urgência (atrasado, hoje, próximos 7 dias): prazos, publicações a revisar, parcelas a faturar, notas atrasadas; ao lado, saldo e Diário |
-| `/prazos` | Prazos | Todos os prazos com cálculo explicado; filtros na URL (`?filtro=vencidos`) |
+| `/prazos` | Prazos | Prazos em aberto por período (vencidos, esta semana, próximas semanas, mais adiante), cálculo recolhido; `?filtro=orgao` e `?filtro=cumpridos` |
 | `/processos` | Processos | Lista com fase e próximo prazo; cadastrar processo (`/processos/novo`) |
-| `/processos/[id]` | Processo | 7 fases, prazos, linha do tempo (lançar e apagar evento) e parcelas do contrato; editar em `/processos/[id]/editar` |
+| `/processos/[id]` | Processo | Barra de fases e abas `?aba=` Prazos, Linha do tempo (lançar e apagar evento) e Cobrança (parcelas, "Emitir nota"); editar em `/processos/[id]/editar` |
 | `/processos/clientes` | Clientes | Lista, cadastro e edição de clientes |
 | `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; confirmar cria o evento, descartar pede motivo, cadastrar processo a partir do ato |
 | `/financeiro` | Faturamento | Notas, situação, faturado × recebido, parcelas prontas para faturar |
@@ -26,7 +26,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/usuarios` | Usuários | Sócias criam e removem acessos (equipe, contador, cliente) |
 | `/portal` e `/portal/[id]` | Portal do cliente | O cliente entra e vê só os próprios processos |
 
-- Redesign em andamento (guia em `context/interface.md`): base visual, menu claro, Hoje, login, portal e usuários prontos; prazos e Diário (sessão B) e financeiro (sessão C) em seguida.
+- Redesign em andamento (guia em `context/interface.md`): base visual, menu claro, Hoje, login, portal e usuários prontos; prazos, processos e Diário (sessão B) prontos na `feat/redesign-prazos`; financeiro (sessão C) em seguida.
 - Perfis (`src/lib/permissoes.ts`): sócia, financeiro, equipe, contador e cliente. O recorte do que cada um vê fica em `carregar()` (`src/data/base.ts`).
 - Domínio com testes (`npm test`); build de produção passando (`npm run build`).
 

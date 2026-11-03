@@ -1,106 +1,89 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { SituacaoPrazo } from '@/components/prazos/situacao-prazo'
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
+import { LinhaPrazo } from '@/components/prazos/linha-prazo'
+import { Expansivel, Vazio } from '@/components/ui/expansivel'
+import { Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
+import { Secao } from '@/components/ui/secao'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { hoje } from '@/data/hoje'
 import { listarPrazos, type PrazoComProcesso } from '@/data/processos'
-import { TIPOS_PRAZO, estaAberto } from '@/domain/prazos'
-import { diasEntre, type DataISO } from '@/lib/datas'
-import { formatarData, formatarDiaEData } from '@/lib/formatar'
+import { PERIODOS, estaAberto, periodoDoPrazo, type Periodo } from '@/domain/prazos'
+import { contar } from '@/lib/formatar'
 
 export const metadata: Metadata = { title: 'Prazos' }
 
-type Regra = (prazo: PrazoComProcesso, hoje: DataISO) => boolean
-const daEcoDireito: Regra = (p, h) => p.regra.tipo !== 'expectativa' && estaAberto(p, h)
+const VISTAS = { nossos: 'Nossos prazos', orgao: 'Aguardando a SVMA', cumpridos: 'Cumpridos' } as const
+type Vista = keyof typeof VISTAS
 
-const FILTROS = {
-  abertos: { rotulo: 'Em aberto', regra: daEcoDireito },
-  vencidos: { rotulo: 'Vencidos', regra: (p, h) => daEcoDireito(p, h) && p.vencimento < h },
-  semana: { rotulo: 'Próximos 7 dias', regra: (p, h) => daEcoDireito(p, h) && p.vencimento >= h && diasEntre(h, p.vencimento) <= 7 },
-  mes: { rotulo: 'Próximos 30 dias', regra: (p, h) => daEcoDireito(p, h) && p.vencimento >= h && diasEntre(h, p.vencimento) <= 30 },
-  orgao: { rotulo: 'Aguardando a SVMA', regra: (p, h) => p.regra.tipo === 'expectativa' && estaAberto(p, h) },
-  cumpridos: { rotulo: 'Cumpridos', regra: (p, h) => !estaAberto(p, h) },
-} satisfies Record<string, { rotulo: string; regra: Regra }>
+/** Cumpridos são histórico: só os mais recentes. */
+const CUMPRIDOS_NA_TELA = 20
 
-type Filtro = keyof typeof FILTROS
+function frase(vencidos: number, semana: number) {
+  const atrasados = vencidos ? contar(vencidos, 'prazo vencido', 'prazos vencidos') : 'Nenhum prazo vencido'
+  const proximos = semana ? contar(semana, 'vence', 'vencem') : 'nenhum vence'
+  return `${atrasados} e ${proximos} nesta semana.`
+}
 
 export default async function PaginaPrazos({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
-  const { filtro: pedido } = await searchParams
-  const filtro: Filtro = pedido && pedido in FILTROS ? (pedido as Filtro) : 'abertos'
+  const { filtro } = await searchParams
+  const vista: Vista = filtro && filtro in VISTAS ? (filtro as Vista) : 'nossos'
   const [dia, prazos] = await Promise.all([hoje(), listarPrazos()])
-  const lista = prazos.filter((p) => FILTROS[filtro].regra(p, dia))
-  if (filtro === 'cumpridos') lista.reverse()
 
-  const opcoes = Object.entries(FILTROS).map(([valor, { rotulo, regra }]) => ({
-    valor,
-    rotulo,
-    href: valor === 'abertos' ? '/prazos' : `/prazos?filtro=${valor}`,
-    contagem: prazos.filter((p) => regra(p, dia)).length,
-  }))
+  const abertos = prazos.filter((p) => estaAberto(p, dia))
+  const listas: Record<Vista, PrazoComProcesso[]> = {
+    nossos: abertos.filter((p) => p.regra.tipo !== 'expectativa'),
+    orgao: abertos.filter((p) => p.regra.tipo === 'expectativa'),
+    cumpridos: prazos.filter((p) => !estaAberto(p, dia)).sort((a, b) => (b.cumpridoEm ?? '').localeCompare(a.cumpridoEm ?? '')),
+  }
+  const periodosNossos = listas.nossos.map((p) => periodoDoPrazo(p.vencimento, dia))
+  const linha = (prazo: PrazoComProcesso) => <LinhaPrazo key={prazo.id} prazo={prazo} hoje={dia} processo={prazo.processo} cliente={prazo.cliente} />
 
   return (
     <>
       <PageHeader
         titulo="Prazos"
-        descricao="Todos os prazos dos processos, calculados a partir dos eventos. Prazo da Prefeitura conta em dias corridos a partir da publicação; se vencer em dia sem expediente, passa para o próximo dia útil (Lei 14.141/2006, art. 40)."
+        resumo={frase(periodosNossos.filter((p) => p === 'vencidos').length, periodosNossos.filter((p) => p === 'semana').length)}
       />
-      <div className="mb-4">
-        <SegmentedLinks opcoes={opcoes} ativo={filtro} />
+      <div className="mb-6">
+        <SegmentedLinks
+          ativo={vista}
+          opcoes={Object.entries(VISTAS).map(([valor, rotulo]) => ({
+            valor,
+            rotulo,
+            href: valor === 'nossos' ? '/prazos' : `/prazos?filtro=${valor}`,
+            contagem: listas[valor as Vista].length,
+          }))}
+        />
       </div>
-      <Card flush>
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Vencimento</th>
-              <th>Prazo</th>
-              <th>Processo</th>
-              <th>Responsável</th>
-              <th>Situação</th>
-            </tr>
-          </thead>
-          <tbody>
-            {lista.map((prazo) => (
-              <tr key={prazo.id}>
-                <td className="whitespace-nowrap">
-                  <p className="font-semibold">{formatarDiaEData(prazo.vencimento)}</p>
-                  <p className="text-xs text-subtle">{prazo.vencimento.slice(0, 4)}</p>
-                </td>
-                <td className="min-w-72">
-                  <p className="font-medium">{prazo.regra.titulo}</p>
-                  <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
-                    <Badge tom={prazo.regra.tipo === 'expectativa' ? 'info' : 'neutral'}>{TIPOS_PRAZO[prazo.regra.tipo]}</Badge>
-                    {prazo.regra.baseLegal}
-                  </p>
-                  <p className="mt-1 text-xs text-subtle">
-                    {prazo.cumpridoEm ? `Cumprido em ${formatarData(prazo.cumpridoEm)}. ` : ''}
-                    {prazo.explicacao}.
-                  </p>
-                </td>
-                <td className="min-w-56">
-                  <Link href={`/processos/${prazo.processo.id}`} className="font-medium text-brand-700 hover:underline">
-                    {prazo.processo.empreendimento}
-                  </Link>
-                  <p className="text-xs text-muted">{prazo.cliente.nome}</p>
-                </td>
-                <td className="whitespace-nowrap text-muted">{prazo.processo.responsavel}</td>
-                <td>
-                  <SituacaoPrazo prazo={prazo} hoje={dia} />
-                </td>
-              </tr>
-            ))}
-            {lista.length === 0 && (
-              <tr>
-                <td colSpan={5} className="py-10 text-center text-muted">
-                  Nenhum prazo neste filtro.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
+
+      {vista === 'cumpridos' ? (
+        <Secao titulo={listas.cumpridos.length > CUMPRIDOS_NA_TELA ? `Os ${CUMPRIDOS_NA_TELA} mais recentes` : undefined}>
+          <Lista>{listas.cumpridos.slice(0, CUMPRIDOS_NA_TELA).map(linha)}</Lista>
+        </Secao>
+      ) : (
+        (Object.keys(PERIODOS) as Periodo[]).map((periodo) => {
+          const doPeriodo = listas[vista].filter((p) => periodoDoPrazo(p.vencimento, dia) === periodo)
+          if (doPeriodo.length === 0) return null
+          const titulo = (
+            <>
+              {vista === 'orgao' && periodo === 'vencidos' ? 'Atrasados' : PERIODOS[periodo]}
+              <span className="ml-2 font-normal tabular-nums text-subtle">{doPeriodo.length}</span>
+            </>
+          )
+          return (
+            <Secao key={periodo} titulo={titulo}>
+              {periodo === 'adiante' ? (
+                <Expansivel resumo={`Mostrar ${doPeriodo.length === 1 ? 'o prazo' : `os ${doPeriodo.length} prazos`}`}>
+                  <Lista>{doPeriodo.map(linha)}</Lista>
+                </Expansivel>
+              ) : (
+                <Lista>{doPeriodo.map(linha)}</Lista>
+              )}
+            </Secao>
+          )
+        })
+      )}
+      {listas[vista].length === 0 && <Vazio>Nenhum prazo aqui.</Vazio>}
     </>
   )
 }

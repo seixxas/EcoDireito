@@ -1,4 +1,5 @@
-import { Badge, type Tom } from '@/components/ui/badge'
+import type { Tom } from '@/components/ui/badge'
+import { Situacao } from '@/components/ui/situacao'
 import { situacaoPrazo, type Prazo } from '@/domain/prazos'
 import type { DataISO } from '@/lib/datas'
 
@@ -21,5 +22,5 @@ export function descreverSituacao(prazo: Prazo, hoje: DataISO): { rotulo: string
 
 export function SituacaoPrazo({ prazo, hoje }: { prazo: Prazo; hoje: DataISO }) {
   const { rotulo, tom } = descreverSituacao(prazo, hoje)
-  return <Badge tom={tom}>{rotulo}</Badge>
+  return <Situacao tom={tom}>{rotulo}</Situacao>
 }

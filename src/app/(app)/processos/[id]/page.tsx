@@ -1,21 +1,27 @@
-import { ExternalLink, Newspaper, Plus, Trash2, UserPen } from 'lucide-react'
+import { ExternalLink, Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { SituacaoPrazo } from '@/components/prazos/situacao-prazo'
+import { LinhaPrazo } from '@/components/prazos/linha-prazo'
+import { descreverSituacao } from '@/components/prazos/situacao-prazo'
+import { Abas } from '@/components/ui/abas'
 import { Badge, type Tom } from '@/components/ui/badge'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
 import { Card } from '@/components/ui/card'
+import { Expansivel, Vazio } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
+import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
+import { Secao } from '@/components/ui/secao'
+import { Situacao } from '@/components/ui/situacao'
 import { hoje } from '@/data/hoje'
 import { obterProcesso } from '@/data/processos'
 import { exigirArea } from '@/data/sessao'
 import type { SituacaoParcela } from '@/domain/financeiro/parcelas'
-import { TIPOS_PRAZO, estaAberto, proximoPrazo } from '@/domain/prazos'
+import { estaAberto, proximoPrazo } from '@/domain/prazos'
 import { EVENTOS, FASES } from '@/domain/processos'
 import { cn } from '@/lib/cn'
-import { brl, formatarData, formatarDiaEData } from '@/lib/formatar'
+import { brl, formatarData } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
 import { FormularioEvento } from '../_components/formulario-evento'
 import { LinkVoltar } from '../_components/link-voltar'
@@ -30,177 +36,187 @@ const PARCELA: Record<SituacaoParcela, { rotulo: string; tom: Tom }> = {
   recebida: { rotulo: 'Recebida', tom: 'ok' },
 }
 
-export default async function PaginaProcesso({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default async function PaginaProcesso({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ aba?: string }> }) {
+  const [{ id }, { aba: pedida }] = await Promise.all([params, searchParams])
   const [dia, dados, usuario] = await Promise.all([hoje(), obterProcesso(id), exigirArea('prazos')])
   if (!dados) notFound()
   const { processo, cliente, prazos, parcelas } = dados
   const editar = pode(usuario.papel, 'prazos', 'editar')
+  const editarFinanceiro = pode(usuario.papel, 'financeiro', 'editar')
 
   const abertos = prazos.filter((p) => estaAberto(p, dia))
   const cumpridos = prazos.filter((p) => !estaAberto(p, dia)).reverse()
   const proximo = proximoPrazo(prazos, dia)
   const eventos = [...processo.eventos].sort((a, b) => b.data.localeCompare(a.data))
+  const fase = FASES[processo.faseAtual - 1]
+
+  const abas = [
+    { valor: 'prazos', rotulo: 'Prazos', contagem: abertos.length },
+    { valor: 'linha-do-tempo', rotulo: 'Linha do tempo', contagem: eventos.length },
+    ...(pode(usuario.papel, 'financeiro') ? [{ valor: 'cobranca', rotulo: 'Cobrança', contagem: parcelas.length }] : []),
+  ].map((a) => ({ ...a, href: a.valor === 'prazos' ? `/processos/${id}` : `/processos/${id}?aba=${a.valor}` }))
+  const aba = abas.find((a) => a.valor === pedida)?.valor ?? 'prazos'
+
+  const dadosDoProcesso = [
+    cliente.nome,
+    processo.endereco,
+    `SEI ${processo.numeroSei}`,
+    processo.numeroSimproc && `SIMPROC ${processo.numeroSimproc}`,
+    processo.numeroTca && `TCA ${processo.numeroTca}`,
+    processo.servico === 'manejo' ? 'Manejo' : 'Licenciamento',
+    processo.responsavel && `Responsável: ${processo.responsavel}`,
+  ].filter(Boolean)
 
   return (
     <>
       <LinkVoltar href="/processos">Processos</LinkVoltar>
       <PageHeader
         titulo={processo.empreendimento}
-        descricao={processo.endereco ? `${cliente.nome} · ${processo.endereco}` : cliente.nome}
+        resumo={`Fase ${fase.numero}, ${fase.nome}. ${proximo ? `Próximo prazo: ${proximo.regra.titulo} (${descreverSituacao(proximo, dia).rotulo.toLowerCase()}).` : 'Nenhum prazo em aberto.'}`}
         acoes={
-          <div className="flex gap-2">
+          <>
             {editar && (
               <Link href={`/processos/${processo.id}/editar`} className={classeBotao('secundario')}>
                 Editar
               </Link>
             )}
-            <Link
-              href={`/portal/${processo.id}`}
-              target="_blank"
-              className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3.5 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50"
-            >
+            <Link href={`/portal/${processo.id}`} target="_blank" className={classeBotao('secundario')}>
               Ver como o cliente vê <ExternalLink className="size-4" />
             </Link>
-          </div>
+          </>
         }
       />
 
-      <div className="mb-6 flex flex-wrap gap-2 text-xs">
-        <Badge tom="neutral">SEI {processo.numeroSei}</Badge>
-        {processo.numeroSimproc && <Badge tom="neutral">SIMPROC {processo.numeroSimproc}</Badge>}
-        {processo.numeroTca && <Badge tom="neutral">TCA {processo.numeroTca}</Badge>}
-        <Badge tom="brand">{processo.servico === 'manejo' ? 'Manejo' : 'Licenciamento'}</Badge>
-        <Badge tom="neutral">Responsável: {processo.responsavel}</Badge>
-      </div>
+      <p className="-mt-3 mb-5 text-sm text-muted">{dadosDoProcesso.join(' · ')}</p>
 
-      <ol className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
-        {FASES.map((fase) => {
-          const estado = fase.numero < processo.faseAtual ? 'feita' : fase.numero === processo.faseAtual ? 'atual' : 'futura'
-          return (
-            <li
-              key={fase.numero}
-              className={cn(
-                'rounded-xl border border-line border-t-4 bg-surface p-3',
-                estado === 'feita' && 'border-t-ok',
-                estado === 'atual' && 'border-t-accent shadow-sm',
-                estado === 'futura' && 'border-t-line',
-              )}
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-subtle">Fase {fase.numero}</p>
-              <p className="font-semibold leading-tight">{fase.nome}</p>
-              <p className="mt-1 text-xs text-muted">
-                {estado === 'feita' ? 'Concluída' : estado === 'futura' ? 'A iniciar' : proximo ? `Próximo prazo: ${formatarDiaEData(proximo.vencimento)}` : 'Em andamento'}
-              </p>
-            </li>
-          )
-        })}
+      <ol className="mb-6 grid grid-cols-7 gap-1" aria-label="Fases do processo">
+        {FASES.map((f) => (
+          <li key={f.numero} title={f.descricao}>
+            <span className={cn('block h-1.5 rounded-full', f.numero < fase.numero ? 'bg-ok' : f.numero === fase.numero ? 'bg-accent' : 'bg-line')} />
+            <span className={cn('mt-1.5 block text-xs leading-tight', f.numero === fase.numero ? 'font-medium text-ink' : 'hidden text-subtle sm:block')}>
+              {f.numero}. {f.nome}
+            </span>
+          </li>
+        ))}
       </ol>
 
-      <div className="grid gap-6 xl:grid-cols-5">
-        <Card titulo="Prazos" className="xl:col-span-3" flush>
-          <ul className="divide-y divide-line">
-            {[...abertos, ...cumpridos].map((prazo) => (
-              <li key={prazo.id} className={cn('px-5 py-3.5', !estaAberto(prazo, dia) && 'opacity-60')}>
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="font-medium">{prazo.regra.titulo}</p>
-                    <p className="text-xs text-muted">
-                      {TIPOS_PRAZO[prazo.regra.tipo]} · {prazo.regra.baseLegal}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <SituacaoPrazo prazo={prazo} hoje={dia} />
-                    <p className="mt-1 text-xs font-medium">{formatarData(prazo.vencimento)}</p>
-                  </div>
-                </div>
-                <p className="mt-1 text-xs text-subtle">{prazo.explicacao}.</p>
-              </li>
-            ))}
-          </ul>
-        </Card>
+      <Abas abas={abas} ativa={aba} />
 
-        <Card titulo="Linha do tempo" className="xl:col-span-2">
-          {editar && (
-            <details className="mb-5 rounded-xl border border-line p-3 open:bg-canvas">
-              <summary className={classeBotao('secundario', 'cursor-pointer list-none')}>
-                <Plus className="size-4" /> Lançar evento
-              </summary>
-              <div className="mt-3">
-                <FormularioEvento processoId={processo.id} dia={dia} />
-              </div>
-            </details>
+      {aba === 'prazos' && (
+        <>
+          <Lista>
+            {abertos.map((prazo) => (
+              <LinhaPrazo key={prazo.id} prazo={prazo} hoje={dia} />
+            ))}
+          </Lista>
+          {abertos.length === 0 && <Vazio>Nenhum prazo em aberto.</Vazio>}
+          {cumpridos.length > 0 && (
+            <Secao titulo="Cumpridos">
+              <Expansivel resumo={cumpridos.length === 1 ? 'Mostrar o prazo cumprido' : `Mostrar os ${cumpridos.length} prazos cumpridos`}>
+                <Lista>
+                  {cumpridos.map((prazo) => (
+                    <LinhaPrazo key={prazo.id} prazo={prazo} hoje={dia} />
+                  ))}
+                </Lista>
+              </Expansivel>
+            </Secao>
           )}
-          {eventos.length === 0 && <p className="text-sm text-muted">Nenhum evento ainda.</p>}
-          <ol className="space-y-4">
-            {eventos.map((evento) => {
-              const Icone = evento.origem === 'diario' ? Newspaper : UserPen
-              const planejado = evento.data > dia
-              return (
-                <li key={evento.id} className="flex gap-3">
-                  <span className={cn('mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full', evento.origem === 'diario' ? 'bg-info-soft text-info' : 'bg-brand-50 text-brand-700')}>
-                    <Icone className="size-3.5" />
-                  </span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">
-                      {EVENTOS[evento.tipo].nome} {planejado && <Badge tom="warn">planejado</Badge>}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {formatarData(evento.data)} · {evento.origem === 'diario' ? 'Diário Oficial' : 'lançado pela equipe'}
-                    </p>
-                  </div>
-                  {editar && (
-                    <details className="relative">
-                      <summary className="cursor-pointer list-none rounded p-1 text-subtle hover:text-danger" title="Apagar evento">
-                        <Trash2 className="size-3.5" />
-                      </summary>
-                      <form action={apagarEvento.bind(null, evento.id)} className="absolute right-0 z-10 mt-1 w-56 rounded-lg border border-line bg-surface p-3 shadow-sm">
-                        <p className="mb-2 text-xs text-muted">
-                          Os prazos gerados por ele somem, e os que ele cumpriu voltam a ficar em aberto.
-                          {evento.origem === 'diario' && ' O ato volta para a caixa de entrada do Diário Oficial.'}
-                        </p>
-                        <BotaoEnviar variante="perigo" className="w-full">
-                          Apagar evento
-                        </BotaoEnviar>
-                      </form>
-                    </details>
-                  )}
-                </li>
-              )
-            })}
-          </ol>
-        </Card>
-      </div>
+        </>
+      )}
 
-      <Card titulo="Contrato e cobrança" className="mt-6" flush>
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Parcela</th>
-              <th className="num">Valor</th>
-              <th>Libera quando</th>
-              <th>Situação</th>
-              <th>Nota fiscal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {parcelas.map(({ parcela, situacao, nota, liberadaEm }) => (
-              <tr key={parcela.id}>
-                <td className="font-medium">{parcela.descricao}</td>
-                <td className="num">{brl(parcela.valor)}</td>
-                <td className="text-muted">
-                  {EVENTOS[parcela.gatilho].nome}
-                  {liberadaEm && <span className="block text-xs text-subtle">aconteceu em {formatarData(liberadaEm)}</span>}
-                </td>
-                <td>
-                  <Badge tom={PARCELA[situacao].tom}>{PARCELA[situacao].rotulo}</Badge>
-                </td>
-                <td className="text-muted">{nota ? `NF ${nota.numero} · ${formatarData(nota.emissao)}` : '—'}</td>
-              </tr>
+      {aba === 'linha-do-tempo' && (
+        <>
+          {editar && (
+            <Expansivel resumo="Lançar evento" className="mb-4">
+              <Card className="max-w-xl">
+                <FormularioEvento processoId={processo.id} dia={dia} />
+              </Card>
+            </Expansivel>
+          )}
+          <Lista>
+            {eventos.map((evento) => (
+              <Linha key={evento.id} className="group">
+                <span className="w-24 shrink-0 tabular-nums text-muted">{formatarData(evento.data)}</span>
+                <span className="min-w-0 flex-1 text-ink">{EVENTOS[evento.tipo].nome}</span>
+                {evento.data > dia && <Situacao tom="warn">planejado</Situacao>}
+                <Badge>{evento.origem === 'diario' ? 'Diário Oficial' : 'Equipe'}</Badge>
+                {editar && (
+                  <details className="relative opacity-0 focus-within:opacity-100 group-hover:opacity-100 open:opacity-100">
+                    <summary className="cursor-pointer list-none rounded p-1 text-subtle hover:text-danger [&::-webkit-details-marker]:hidden" title="Apagar evento" aria-label="Apagar evento">
+                      <Trash2 className="size-4" />
+                    </summary>
+                    <form action={apagarEvento.bind(null, evento.id)} className="absolute right-0 z-10 mt-1 w-60 rounded-lg border border-line bg-surface p-3 shadow-sm">
+                      <p className="mb-2 text-xs text-muted">
+                        Os prazos gerados por ele somem, e os que ele cumpriu voltam a ficar em aberto.
+                        {evento.origem === 'diario' && ' O ato volta para a caixa de entrada do Diário Oficial.'}
+                      </p>
+                      <BotaoEnviar variante="perigo" className="w-full">
+                        Apagar evento
+                      </BotaoEnviar>
+                    </form>
+                  </details>
+                )}
+              </Linha>
             ))}
-          </tbody>
-        </table>
-      </Card>
+          </Lista>
+          {eventos.length === 0 && <Vazio>Nenhum evento ainda.</Vazio>}
+        </>
+      )}
+
+      {aba === 'cobranca' && (
+        <Secao
+          titulo="Contrato"
+          acao={
+            editarFinanceiro && (
+              <Link href={`/financeiro/contratos/${processo.id}`} className="text-sm font-medium text-brand-700 hover:underline">
+                Editar contrato
+              </Link>
+            )
+          }
+        >
+          {parcelas.length > 0 ? (
+            <table className="tabela">
+              <thead>
+                <tr>
+                  <th>Parcela</th>
+                  <th className="num">Valor</th>
+                  <th>Libera quando</th>
+                  <th>Situação</th>
+                  <th>Nota fiscal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {parcelas.map(({ parcela, situacao, nota, liberadaEm }) => (
+                  <tr key={parcela.id}>
+                    <td className="font-medium">{parcela.descricao}</td>
+                    <td className="num">{brl(parcela.valor)}</td>
+                    <td className="text-muted">
+                      {EVENTOS[parcela.gatilho].nome}
+                      {liberadaEm && <span className="block text-xs text-subtle">aconteceu em {formatarData(liberadaEm)}</span>}
+                    </td>
+                    <td>
+                      <Situacao tom={PARCELA[situacao].tom}>{PARCELA[situacao].rotulo}</Situacao>
+                    </td>
+                    <td className="text-muted">
+                      {nota ? (
+                        `NF ${nota.numero} · ${formatarData(nota.emissao)}`
+                      ) : situacao === 'liberada' && editarFinanceiro ? (
+                        <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="font-medium text-brand-700 hover:underline">
+                          Emitir nota
+                        </Link>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <Vazio>Nenhum contrato cadastrado para este processo.</Vazio>
+          )}
+        </Secao>
+      )}
     </>
   )
 }

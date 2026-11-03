@@ -25,10 +25,10 @@ export default async function PaginaNovoProcesso({ searchParams }: { searchParam
       {publicacao ? <LinkVoltar href="/publicacoes">Diário Oficial</LinkVoltar> : <LinkVoltar href="/processos">Processos</LinkVoltar>}
       <PageHeader
         titulo="Novo processo"
-        descricao={
+        resumo={
           publicacao
-            ? `A partir do ato de ${formatarData(publicacao.ato.data)} (${publicacao.ato.serie}). Depois de salvar, você volta ao Diário Oficial para confirmar o ato.`
-            : 'Com o processo cadastrado, o sistema calcula os prazos e acha os atos dele no Diário Oficial.'
+            ? `A partir do ato de ${formatarData(publicacao.ato.data)} (${publicacao.ato.serie}). Ao salvar, você volta ao Diário Oficial para confirmar.`
+            : 'É pelo nº SEI que o robô acha os atos do processo no Diário Oficial.'
         }
         acoes={
           <Link href={`/processos/clientes/novo?voltar=${encodeURIComponent(daqui)}`} className={classeBotao('secundario')}>

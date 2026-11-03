@@ -1,4 +1,4 @@
-import { diasEntre, somarDias, somarMeses, type DataISO } from '@/lib/datas'
+import { diasEntre, inicioDaSemana, somarDias, somarMeses, type DataISO } from '@/lib/datas'
 import { formatarData } from '@/lib/formatar'
 import { diaUtilAnterior, motivoSemExpediente, proximoDiaUtil, somarDiasUteis } from './feriados'
 import type { Evento, NumeroFase, Processo, TipoEvento } from './processos'
@@ -136,6 +136,23 @@ export function situacaoPrazo(prazo: Prazo, hoje: DataISO): { situacao: Situacao
 
 export function estaAberto(prazo: Prazo, hoje: DataISO) {
   return situacaoPrazo(prazo, hoje).situacao !== 'cumprido'
+}
+
+export const PERIODOS = {
+  vencidos: 'Vencidos',
+  semana: 'Esta semana',
+  proximas: 'Próximas semanas',
+  adiante: 'Mais adiante',
+} as const
+
+export type Periodo = keyof typeof PERIODOS
+
+/** Bloco da lista de prazos em aberto. "Esta semana" vai até domingo; "Próximas semanas" são as 4 seguintes. */
+export function periodoDoPrazo(vencimento: DataISO, hoje: DataISO): Periodo {
+  if (vencimento < hoje) return 'vencidos'
+  const domingo = somarDias(inicioDaSemana(hoje), 6)
+  if (vencimento <= domingo) return 'semana'
+  return vencimento <= somarDias(domingo, 28) ? 'proximas' : 'adiante'
 }
 
 /** Prazo da Eco Direito (não do órgão) que vence primeiro. */

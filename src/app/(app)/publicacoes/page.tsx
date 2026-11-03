@@ -1,18 +1,19 @@
-import { CircleCheck, ExternalLink, Search } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
+import { Expansivel, Vazio } from '@/components/ui/expansivel'
+import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
-import { Stat } from '@/components/ui/stat'
+import { Situacao } from '@/components/ui/situacao'
 import { hoje } from '@/data/hoje'
 import { listarPublicacoes } from '@/data/publicacoes'
 import { exigirArea } from '@/data/sessao'
 import { diaUtilAnterior, ehDiaUtil } from '@/domain/feriados'
-import { TIPOS_PRAZO } from '@/domain/prazos'
 import { EVENTOS } from '@/domain/processos'
 import { COMO_ACHOU } from '@/domain/publicacoes'
-import { formatarData, formatarDiaEData } from '@/lib/formatar'
+import { contar, formatarDataNaLista, formatarDiaEData } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
 import { AcoesPublicacao } from './_components/acoes-publicacao'
 import { BuscaEdicao } from './_components/busca-edicao'
@@ -20,9 +21,9 @@ import { BuscaEdicao } from './_components/busca-edicao'
 export const metadata: Metadata = { title: 'Diário Oficial' }
 
 const ABAS = { nova: 'Para revisar', confirmada: 'Confirmadas', descartada: 'Descartadas' } as const
+type Aba = keyof typeof ABAS
 
 const HORARIO = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
-type Aba = keyof typeof ABAS
 
 export default async function PaginaPublicacoes({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
   const { aba: pedida } = await searchParams
@@ -30,29 +31,25 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
   const [{ edicao, itens }, usuario, dia] = await Promise.all([listarPublicacoes(), exigirArea('prazos'), hoje()])
   const editar = pode(usuario.papel, 'prazos', 'editar')
   const lista = itens.filter((item) => item.ato.status === aba)
-  const novas = itens.filter((item) => item.ato.status === 'nova')
+  const novas = itens.filter((item) => item.ato.status === 'nova').length
+
+  const lida = edicao.processadaEm ? ` (lida em ${HORARIO.format(new Date(edicao.processadaEm)).replace(', ', ' às ')})` : ''
+  const paraRevisar = novas ? `${contar(novas, 'ato', 'atos')} para revisar` : 'nada para revisar'
 
   return (
     <>
       <PageHeader
         titulo="Diário Oficial"
-        descricao="O robô baixa a edição do Diário Oficial da Cidade, separa os atos da Secretaria do Verde e procura os processos e clientes da Eco Direito. Nada vira prazo sem alguém confirmar."
+        resumo={`Edição de ${formatarDiaEData(edicao.data)}${lida}: ${edicao.totalAtos.toLocaleString('pt-BR')} atos, ${edicao.atosSvma} da Secretaria do Verde e ${paraRevisar}.`}
         acoes={editar && <BuscaEdicao dia={ehDiaUtil(dia) ? dia : diaUtilAnterior(dia)} />}
       />
+      {edicao.erro && (
+        <p className="-mt-3 mb-5">
+          <Situacao tom="warn">{edicao.erro}</Situacao>
+        </p>
+      )}
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat
-          rotulo="Edição lida"
-          valor={formatarDiaEData(edicao.data)}
-          detalhe={edicao.erro ?? (edicao.processadaEm ? `lida em ${HORARIO.format(new Date(edicao.processadaEm)).replace(', ', ' às ')}` : 'a mais recente lida pelo robô')}
-          tom={edicao.erro ? 'warn' : 'brand'}
-        />
-        <Stat rotulo="Atos na edição" valor={edicao.totalAtos.toLocaleString('pt-BR')} detalhe="todos os órgãos da Prefeitura" />
-        <Stat rotulo="Da Secretaria do Verde" valor={edicao.atosSvma} detalhe="lidos um a um pelo robô" />
-        <Stat rotulo="Com clientes da Eco Direito" valor={novas.length} detalhe="esperando revisão" tom={novas.length ? 'warn' : 'ok'} />
-      </div>
-
-      <div className="mb-4">
+      <div className="mb-6">
         <SegmentedLinks
           ativo={aba}
           opcoes={Object.entries(ABAS).map(([valor, rotulo]) => ({
@@ -64,80 +61,67 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
         />
       </div>
 
-      <div className="space-y-4">
+      <Lista>
         {lista.map(({ ato, vinculo, evento, cliente, processo, prazosSugeridos }) => (
-          <article key={ato.id} className="rounded-2xl border border-line bg-surface p-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge tom="brand">{ato.serie}</Badge>
-              <span className="text-sm text-muted">
-                {formatarData(ato.data)} · {ato.unidade} · documento {ato.documento}
-              </span>
-              {ato.link && (
-                <a href={ato.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline">
-                  Abrir no Diário Oficial <ExternalLink className="size-3.5" />
-                </a>
-              )}
-              <Badge tom="info" className="ml-auto">
-                <Search className="size-3" /> Achado pelo {COMO_ACHOU[vinculo.comoAchou]}
-              </Badge>
-            </div>
-
-            <div className="mt-3 grid gap-5 lg:grid-cols-5">
-              <div className="lg:col-span-3">
-                <p className="text-sm">
-                  <span className="font-semibold">{cliente.nome}</span>
-                  {processo ? (
-                    <>
-                      {' · '}
-                      <Link href={`/processos/${processo.id}`} className="font-medium text-brand-700 hover:underline">
-                        {processo.empreendimento}
-                      </Link>
-                    </>
-                  ) : (
-                    <span className="text-warn"> · processo ainda não cadastrado (SEI {ato.processo})</span>
-                  )}
-                </p>
-                <p className="mt-2 max-h-72 overflow-y-auto whitespace-pre-line rounded-lg bg-canvas p-3 text-sm leading-relaxed text-muted">{ato.texto}</p>
-              </div>
-
-              <div className="lg:col-span-2">
-                {evento && (
-                  <>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-subtle">Ao confirmar</p>
-                    <p className="mt-1 flex items-center gap-1.5 text-sm font-medium">
-                      <CircleCheck className="size-4 text-ok" /> {EVENTOS[evento].nome}
-                    </p>
-                    <ul className="mt-2 space-y-2">
-                      {prazosSugeridos.map((prazo) => (
-                        <li key={prazo.titulo} className="rounded-lg border border-line p-2.5 text-sm">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-medium">{prazo.titulo}</span>
-                            <Badge tom={prazo.tipo === 'expectativa' ? 'info' : 'warn'}>{formatarData(prazo.vencimento)}</Badge>
-                          </div>
-                          <p className="mt-0.5 text-xs text-subtle">
-                            {TIPOS_PRAZO[prazo.tipo]} · {prazo.explicacao}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
+          // No celular a data vai para a linha de detalhes e as ações descem para baixo do texto.
+          <Linha key={ato.id} className="flex-wrap items-start gap-y-2 sm:flex-nowrap">
+            <span className="hidden w-24 shrink-0 tabular-nums text-muted sm:block">{formatarDataNaLista(ato.data, dia)}</span>
+            <div className="min-w-0 basis-full sm:basis-auto sm:flex-1">
+              <p className="flex flex-wrap items-baseline gap-x-2">
+                <Badge>{ato.serie}</Badge>
+                <span className="font-medium text-ink">{cliente.nome}</span>
+                {processo ? (
+                  <Link href={`/processos/${processo.id}`} className="text-brand-700 hover:underline">
+                    {processo.empreendimento}
+                  </Link>
+                ) : (
+                  <span className="text-warn">processo não cadastrado (SEI {ato.processo})</span>
                 )}
-                <div className="mt-3">
-                  {ato.status === 'confirmada' && <p className="text-sm text-muted">Confirmada pela equipe.</p>}
-                  {ato.status === 'descartada' && <p className="text-sm text-muted">Descartada: {ato.motivo}.</p>}
-                  {ato.status === 'nova' &&
-                    (editar ? (
-                      <AcoesPublicacao id={ato.id} temProcesso={Boolean(processo)} temEvento={Boolean(evento)} prazos={prazosSugeridos.length} />
-                    ) : (
-                      <p className="text-sm text-muted">Esperando a revisão da equipe.</p>
-                    ))}
-                </div>
+              </p>
+              {evento && (
+                <p className="mt-0.5 text-sm text-muted">
+                  Ao confirmar: {EVENTOS[evento].nome}
+                  {prazosSugeridos.map((prazo) => (
+                    <span key={prazo.titulo} title={prazo.explicacao}>
+                      {' · '}
+                      {prazo.titulo} até <span className="tabular-nums text-ink">{formatarDataNaLista(prazo.vencimento, dia)}</span>
+                    </span>
+                  ))}
+                </p>
+              )}
+              <div className="mt-0.5 flex flex-wrap items-baseline gap-x-3 text-xs text-muted">
+                <span className="tabular-nums sm:hidden">{formatarDataNaLista(ato.data, dia)}</span>
+                <span>Achado pelo {COMO_ACHOU[vinculo.comoAchou]}</span>
+                <span>{ato.unidade}</span>
+                {ato.link && (
+                  <a href={ato.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-brand-700 hover:underline">
+                    Abrir no Diário <ExternalLink className="size-3" />
+                  </a>
+                )}
+                <Expansivel resumo={<span className="text-xs">texto do ato</span>} className="open:basis-full">
+                  <p className="max-h-72 overflow-y-auto whitespace-pre-line rounded-md bg-rail p-3 text-sm leading-relaxed text-muted">{ato.texto}</p>
+                </Expansivel>
               </div>
             </div>
-          </article>
+            <div className="shrink-0">
+              {ato.status === 'confirmada' && <Situacao tom="ok">Confirmada</Situacao>}
+              {ato.status === 'descartada' && (
+                <>
+                  <Situacao>Descartada</Situacao>
+                  <p className="max-w-56 text-xs text-muted">{ato.motivo}</p>
+                </>
+              )}
+              {ato.status === 'nova' &&
+                (editar ? (
+                  <AcoesPublicacao id={ato.id} temProcesso={Boolean(processo)} />
+                ) : (
+                  <Situacao tom="warn">Esperando revisão</Situacao>
+                ))}
+            </div>
+          </Linha>
         ))}
-        {lista.length === 0 && <p className="rounded-2xl border border-line bg-surface p-10 text-center text-muted">Nada aqui.</p>}
-      </div>
+      </Lista>
+      {lista.length === 0 && <Vazio>Nada aqui.</Vazio>}
     </>
   )
 }

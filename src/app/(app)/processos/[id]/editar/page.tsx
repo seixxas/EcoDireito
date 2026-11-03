@@ -19,7 +19,7 @@ export default async function PaginaEditarProcesso({ params }: { params: Promise
   return (
     <>
       <LinkVoltar href={`/processos/${id}`}>{processo.empreendimento}</LinkVoltar>
-      <PageHeader titulo="Editar processo" descricao={`${eventos.length} eventos na linha do tempo. Eles não mudam aqui.`} />
+      <PageHeader titulo="Editar processo" resumo={`Os ${eventos.length} eventos não mudam aqui: use a linha do tempo do processo.`} />
       <Card>
         <FormularioProcesso clientes={clientes.map(({ cliente }) => ({ id: cliente.id, nome: cliente.nome }))} valores={processo} />
       </Card>
