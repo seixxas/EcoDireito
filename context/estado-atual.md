@@ -10,7 +10,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/login` | Login | E-mail e senha; cada perfil cai na sua tela inicial |
 | `/` | Hoje | Lista por urgência (atrasado, hoje, próximos 7 dias): prazos, publicações a revisar, parcelas a faturar, notas atrasadas; ao lado, saldo e Diário |
 | `/prazos` | Prazos | Prazos em aberto por período (vencidos, esta semana, próximas semanas, mais adiante), cálculo recolhido; `?filtro=orgao` e `?filtro=cumpridos`; busca (`?q=`) e filtro por responsável; 10 por página |
-| `/processos` | Processos | Lista com fase e próximo prazo; cadastrar processo (`/processos/novo`) |
+| `/processos` | Processos | Lista com fase e próximo prazo; busca (`?q=`) e filtro por fase (`?fase=`); cadastrar processo (`/processos/novo`) |
 | `/processos/[id]` | Processo | Barra das 8 fases clicável (`?fase=`) e abas: Etapas (checklist da fase, "Marcar como feita" com observação), Prazos, Linha do tempo (apagar evento) e Cobrança (parcelas, "Emitir nota"); editar em `/processos/[id]/editar` |
 | `/comercial` | Comercial | Em desenvolvimento: prévia do funil de propostas com dados de exemplo |
 | `/processos/clientes` | Clientes | Lista com busca por nome, CNPJ e grupo; cadastro e edição de clientes |
