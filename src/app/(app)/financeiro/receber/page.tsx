@@ -12,7 +12,7 @@ import { diasDeAtraso, resumoNotas, saldoAReceber, situacaoNota } from '@/domain
 import { cn } from '@/lib/cn'
 import { diasEntre } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
-import { brl, formatarDataCurta } from '@/lib/formatar'
+import { brl, contar, formatarDataCurta } from '@/lib/formatar'
 
 export const metadata: Metadata = { title: 'Contas a receber' }
 
@@ -55,14 +55,19 @@ export default async function PaginaReceber({ searchParams }: { searchParams: Pr
     <>
       <PageHeader
         titulo="Contas a receber"
-        resumo={`${brl(total)} em ${abertas.length} notas abertas; ${brl(resumo.atrasado)} já passou da previsão. Notas com retenção aparecem pelo líquido.`}
+        resumo={`${brl(total)} em ${contar(abertas.length, 'nota aberta', 'notas abertas')}; ${brl(resumo.atrasado)} já passou da previsão. Notas com retenção aparecem pelo líquido.`}
       />
 
       <Resumo className="mb-8">
-        <ItemResumo rotulo="A receber" valor={brl(total)} detalhe={`${abertas.length} notas`} />
-        <ItemResumo rotulo="Atrasado" valor={brl(resumo.atrasado)} detalhe={`${resumo.quantidadeAtrasadas} notas`} tom={resumo.atrasado ? 'danger' : 'neutral'} />
+        <ItemResumo rotulo="A receber" valor={brl(total)} detalhe={contar(abertas.length, 'nota', 'notas')} />
+        <ItemResumo
+          rotulo="Atrasado"
+          valor={brl(resumo.atrasado)}
+          detalhe={contar(resumo.quantidadeAtrasadas, 'nota', 'notas')}
+          tom={resumo.atrasado ? 'danger' : 'neutral'}
+        />
         <ItemResumo rotulo="Entra em 30 dias" valor={brl(proximos30)} detalhe="pela previsão" tom="ok" />
-        <ItemResumo rotulo="Prazo para receber" valor={`${resumo.prazoMedianoDias} dias`} detalhe="mediana, da emissão ao pagamento" />
+        <ItemResumo rotulo="Prazo para receber" valor={contar(resumo.prazoMedianoDias, 'dia', 'dias')} detalhe="mediana, da emissão ao pagamento" />
       </Resumo>
 
       <div className="mb-8 grid gap-8 lg:grid-cols-5">
@@ -115,29 +120,36 @@ export default async function PaginaReceber({ searchParams }: { searchParams: Pr
             <thead>
               <tr>
                 <th>Cliente</th>
-                <th>NF</th>
-                <th>Previsão</th>
+                <th className="hidden sm:table-cell">NF</th>
+                <th className="hidden sm:table-cell">Previsão</th>
                 <th className="num">Atraso</th>
                 <th className="num">Saldo</th>
-                <th>Situação</th>
+                <th className="hidden sm:table-cell">Situação</th>
               </tr>
             </thead>
             <tbody>
               {visiveis.map(({ nota, cliente, atraso, saldo }) => (
                 <tr key={nota.id}>
-                  <td className="min-w-60">
+                  <td className="sm:min-w-60">
                     {cliente.nome}
-                    <p className="text-xs text-subtle">{nota.descricao}</p>
+                    <p className="text-xs text-subtle">
+                      {nota.descricao}
+                      {/* No celular a coluna NF some; o link vem para cá. */}
+                      <Link href={`/financeiro/notas/${nota.id}`} className="text-brand-700 hover:underline sm:hidden">
+                        {' '}
+                        · NF {nota.numero}
+                      </Link>
+                    </p>
                   </td>
-                  <td className="font-mono text-xs">
+                  <td className="hidden tabular-nums sm:table-cell">
                     <Link href={`/financeiro/notas/${nota.id}`} className="text-brand-700 hover:underline">
                       {nota.numero}
                     </Link>
                   </td>
-                  <td className="whitespace-nowrap">{formatarDataCurta(nota.previsao)}</td>
-                  <td className={cn('num', atraso > 30 ? 'font-medium text-danger' : atraso > 0 && 'text-warn')}>{atraso ? `${atraso} dias` : '—'}</td>
+                  <td className="hidden whitespace-nowrap sm:table-cell">{formatarDataCurta(nota.previsao)}</td>
+                  <td className={cn('num', atraso > 30 ? 'font-medium text-danger' : atraso > 0 && 'text-warn')}>{atraso ? contar(atraso, 'dia', 'dias') : '—'}</td>
                   <td className="num font-medium">{brl(saldo)}</td>
-                  <td>
+                  <td className="hidden sm:table-cell">
                     <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
                   </td>
                 </tr>

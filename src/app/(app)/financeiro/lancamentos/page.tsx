@@ -10,7 +10,7 @@ import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
 import { cn } from '@/lib/cn'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
-import { brl, formatarDataCurta, formatarMes } from '@/lib/formatar'
+import { brl, contar, formatarDataCurta, formatarMes } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
 import { NavegacaoMes } from '../_components/navegacao-mes'
 import { excluirLancamento } from './actions'
@@ -30,7 +30,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
     <>
       <PageHeader
         titulo="Lançamentos"
-        resumo={`${doMes.length} lançamentos em ${formatarMes(mes)}: entraram ${brl(entradas)} e saíram ${brl(-saidas)}. A receita das notas entra sozinha com o recebimento.`}
+        resumo={`${contar(doMes.length, 'lançamento', 'lançamentos')} em ${formatarMes(mes)}: entraram ${brl(entradas)} e saíram ${brl(-saidas)}. A receita das notas entra sozinha com o recebimento.`}
         acoes={<NavegacaoMes mes={mes} meses={meses} href={(m) => (m === mesDe(dia) ? '/financeiro/lancamentos' : `/financeiro/lancamentos?mes=${m}`)} />}
       />
 
@@ -46,10 +46,10 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
         <table className="tabela">
           <thead>
             <tr>
-              <th>Data</th>
+              <th className="hidden sm:table-cell">Data</th>
               <th>Descrição</th>
-              <th>Conta</th>
-              <th>Competência</th>
+              <th className="hidden sm:table-cell">Conta</th>
+              <th className="hidden sm:table-cell">Competência</th>
               <th className="num">Valor</th>
               {editar && <th />}
             </tr>
@@ -57,9 +57,13 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
           <tbody>
             {doMes.map((lancamento) => (
               <tr key={lancamento.id}>
-                <td className="whitespace-nowrap">{formatarDataCurta(lancamento.data)}</td>
-                <td className="min-w-64">
+                <td className="hidden whitespace-nowrap sm:table-cell">{formatarDataCurta(lancamento.data)}</td>
+                <td className="sm:min-w-64">
                   {lancamento.descricao}
+                  {/* No celular, data e conta vêm embaixo da descrição. */}
+                  <span className="block text-xs text-muted sm:hidden">
+                    {formatarDataCurta(lancamento.data)} · {nomeDaConta(lancamento.contaId)}
+                  </span>
                   {lancamento.notaId && (
                     <Link href={`/financeiro/notas/${lancamento.notaId}`} className="block text-xs text-brand-700 hover:underline">
                       ver nota
@@ -71,9 +75,9 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                     </Link>
                   )}
                 </td>
-                <td className="text-muted">{nomeDaConta(lancamento.contaId)}</td>
+                <td className="hidden text-muted sm:table-cell">{nomeDaConta(lancamento.contaId)}</td>
                 {/* Só aparece quando a competência é outro mês: é a exceção que importa para a DRE. */}
-                <td className="whitespace-nowrap text-warn">{lancamento.competencia !== mes && formatarMes(lancamento.competencia)}</td>
+                <td className="hidden whitespace-nowrap text-warn sm:table-cell">{lancamento.competencia !== mes && formatarMes(lancamento.competencia)}</td>
                 <td className={cn('num font-medium', lancamento.valor > 0 && 'text-ok')}>{brl(lancamento.valor)}</td>
                 {editar && (
                   <td className="text-right">

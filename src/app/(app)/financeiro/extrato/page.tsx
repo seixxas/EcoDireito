@@ -12,7 +12,7 @@ import { exigirArea } from '@/data/sessao'
 import { chaveDaSugestao, notasParaCredito, sugerirTermo, type Sugestao } from '@/domain/financeiro/classificacao'
 import { valorLiquido } from '@/domain/financeiro/notas'
 import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
-import { brl, formatarData } from '@/lib/formatar'
+import { brl, contar, formatarData } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
 import { confirmarTodas, devolverLinha, excluirRegra } from './actions'
 import { FilaDoExtrato } from './_components/fila-do-extrato'
@@ -43,9 +43,9 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
         titulo="Extrato bancário"
         resumo={
           pendentes.length
-            ? `${pendentes.length} linhas a classificar, ${comSugestao} com sugestão pronta.`
+            ? `${contar(pendentes.length, 'linha', 'linhas')} a classificar, ${comSugestao} com sugestão pronta.`
             : lancadas
-              ? `Nada a classificar: as ${lancadas} linhas importadas já viraram lançamento.`
+              ? `Nada a classificar: tudo o que foi importado já virou lançamento (${contar(lancadas, 'linha', 'linhas')}).`
               : 'Importe o extrato do banco: cada linha vira lançamento, com sugestão de conta e de nota.'
         }
         acoes={
@@ -53,7 +53,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
           aba === 'fila' &&
           comSugestao > 0 && (
             <form action={confirmarTodas}>
-              <BotaoEnviar>Confirmar as {comSugestao} sugestões</BotaoEnviar>
+              <BotaoEnviar>{comSugestao === 1 ? 'Confirmar a sugestão' : `Confirmar as ${comSugestao} sugestões`}</BotaoEnviar>
             </form>
           )
         }

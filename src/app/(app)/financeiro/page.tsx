@@ -18,7 +18,7 @@ import { exigirArea } from '@/data/sessao'
 import { resumoNotas, situacaoNota, valorLiquido, type SituacaoNota } from '@/domain/financeiro/notas'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
-import { brl, formatarData, formatarDataCurta, formatarMes } from '@/lib/formatar'
+import { brl, contar, formatarData, formatarDataCurta, formatarMes } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
 import { NavegacaoMes } from './_components/navegacao-mes'
 
@@ -57,7 +57,7 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
         titulo="Faturamento"
         resumo={
           resumo.quantidade
-            ? `${brl(resumo.faturado)} em ${resumo.quantidade} notas em ${formatarMes(mes)}; ${brl(resumo.aReceber)} ainda a receber.`
+            ? `${brl(resumo.faturado)} em ${contar(resumo.quantidade, 'nota', 'notas')} em ${formatarMes(mes)}; ${brl(resumo.aReceber)} ainda a receber.`
             : `Nenhuma nota emitida em ${formatarMes(mes)}.`
         }
         acoes={
@@ -73,23 +73,29 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
       />
 
       <Resumo className="mb-8">
-        <ItemResumo rotulo="Faturado" valor={brl(resumo.faturado)} detalhe={`${resumo.quantidade} notas`} />
+        <ItemResumo rotulo="Faturado" valor={brl(resumo.faturado)} detalhe={contar(resumo.quantidade, 'nota', 'notas')} />
         <ItemResumo
           rotulo="Recebido"
           valor={brl(resumo.recebido)}
-          detalhe={resumo.prazoMedianoDias > 0 && `mediana de ${resumo.prazoMedianoDias} dias até receber`}
+          detalhe={resumo.prazoMedianoDias > 0 && `mediana de ${contar(resumo.prazoMedianoDias, 'dia', 'dias')} até receber`}
           tom={resumo.recebido ? 'ok' : 'neutral'}
         />
         <ItemResumo rotulo="A receber" valor={brl(resumo.aReceber)} />
-        <ItemResumo rotulo="Atrasado" valor={brl(resumo.atrasado)} detalhe={`${resumo.quantidadeAtrasadas} notas`} tom={resumo.atrasado ? 'danger' : 'neutral'} />
+        <ItemResumo
+          rotulo="Atrasado"
+          valor={brl(resumo.atrasado)}
+          detalhe={contar(resumo.quantidadeAtrasadas, 'nota', 'notas')}
+          tom={resumo.atrasado ? 'danger' : 'neutral'}
+        />
       </Resumo>
 
       {parcelas.length > 0 && (
         <Secao titulo={`Prontas para faturar · ${brl(somar(parcelas.map(({ parcela }) => parcela.valor)))}`} className="mb-8">
           <Lista>
             {parcelas.map(({ parcela, processo, cliente, liberadaEm }) => (
-              <Linha key={parcela.id}>
-                <div className="min-w-0 flex-1">
+              <Linha key={parcela.id} className="flex-wrap gap-y-2">
+                {/* No celular, valor e botão descem para a linha de baixo em vez de espremer o nome. */}
+                <div className="min-w-0 flex-1 basis-60">
                   <Link href={`/processos/${processo.id}`} className="font-medium text-ink hover:text-brand-700">
                     {processo.empreendimento}
                   </Link>
@@ -142,32 +148,36 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
               <thead>
                 <tr>
                   <th>NF</th>
-                  <th>Emissão</th>
+                  <th className="hidden sm:table-cell">Emissão</th>
                   <th>Cliente e serviço</th>
                   <th className="num">Líquido</th>
-                  <th>Previsão</th>
-                  <th>Situação</th>
+                  <th className="hidden sm:table-cell">Previsão</th>
+                  <th className="hidden sm:table-cell">Situação</th>
                 </tr>
               </thead>
               <tbody>
                 {lista.map(({ nota, cliente }) => (
                   <tr key={nota.id} className={nota.cancelada ? 'text-subtle line-through decoration-subtle/50' : undefined}>
-                    <td className="font-mono text-xs">
+                    <td className="tabular-nums">
                       <Link href={`/financeiro/notas/${nota.id}`} className="text-brand-700 hover:underline">
                         {nota.numero}
                       </Link>
                     </td>
-                    <td className="whitespace-nowrap">{formatarDataCurta(nota.emissao)}</td>
-                    <td className="min-w-72">
+                    <td className="hidden whitespace-nowrap sm:table-cell">{formatarDataCurta(nota.emissao)}</td>
+                    <td className="sm:min-w-72">
                       {cliente.nome}
                       <p className="text-xs text-subtle">{nota.descricao}</p>
+                      {/* No celular a coluna Situação some; ela vem para baixo do cliente. */}
+                      <span className="sm:hidden">
+                        <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
+                      </span>
                     </td>
                     <td className="num font-medium">
                       {brl(valorLiquido(nota))}
                       {nota.retencao > 0 && <p className="text-xs font-normal text-subtle">de {brl(nota.valor)}</p>}
                     </td>
-                    <td className="whitespace-nowrap">{formatarData(nota.previsao)}</td>
-                    <td>
+                    <td className="hidden whitespace-nowrap sm:table-cell">{formatarData(nota.previsao)}</td>
+                    <td className="hidden sm:table-cell">
                       <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
                     </td>
                   </tr>
