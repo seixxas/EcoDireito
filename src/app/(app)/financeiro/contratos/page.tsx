@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
-import { Stat } from '@/components/ui/stat'
+import { ItemResumo, Resumo } from '@/components/ui/resumo'
 import { listarContratos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import type { SituacaoParcela } from '@/domain/financeiro/parcelas'
@@ -26,15 +26,15 @@ export default async function PaginaContratos() {
     <>
       <PageHeader
         titulo="Contratos"
-        descricao="As parcelas de cada processo e o evento que libera cada uma. Quando o evento é lançado no processo, a parcela fica pronta para faturar."
+        resumo={`${brl(total(todas, 'liberada'))} pronto para faturar. A parcela fica pronta quando o evento dela é lançado no processo.`}
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat rotulo="Contratado" valor={brl(total(todas))} detalhe={`${contratos.filter((c) => c.parcelas.length).length} contratos`} tom="brand" />
-        <Stat rotulo="Faturado" valor={brl(total(todas, 'faturada', 'recebida'))} tom="ok" />
-        <Stat rotulo="Pronto para faturar" valor={brl(total(todas, 'liberada'))} detalhe="evento já aconteceu" tom="warn" />
-        <Stat rotulo="Aguardando evento" valor={brl(total(todas, 'aguardando'))} />
-      </div>
+      <Resumo className="mb-6">
+        <ItemResumo rotulo="Contratado" valor={brl(total(todas))} detalhe={`${contratos.filter((c) => c.parcelas.length).length} contratos`} />
+        <ItemResumo rotulo="Faturado" valor={brl(total(todas, 'faturada', 'recebida'))} tom="ok" />
+        <ItemResumo rotulo="Pronto para faturar" valor={brl(total(todas, 'liberada'))} detalhe="evento já aconteceu" tom="warn" />
+        <ItemResumo rotulo="Aguardando evento" valor={brl(total(todas, 'aguardando'))} />
+      </Resumo>
 
       <Card flush>
         <table className="tabela">

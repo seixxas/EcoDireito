@@ -1,11 +1,13 @@
 'use client'
 
 import { useActionState } from 'react'
-import { Badge, type Tom } from '@/components/ui/badge'
+import type { Tom } from '@/components/ui/badge'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
+import { Expansivel, Vazio } from '@/components/ui/expansivel'
 import { Campo, Entrada, MensagemFormulario, Selecao } from '@/components/ui/form'
+import { Situacao } from '@/components/ui/situacao'
 import { cn } from '@/lib/cn'
-import { brl, formatarData } from '@/lib/formatar'
+import { brl, formatarDataCurta } from '@/lib/formatar'
 import { SelecaoConta } from '../../_components/selecao-conta'
 import { classificarLinha, confirmarSugestao, ignorarLinha } from '../actions'
 
@@ -25,18 +27,18 @@ export type LinhaDaFila = {
 }
 
 export function FilaDoExtrato({ linhas, processos, notas, editar }: { linhas: LinhaDaFila[]; processos: Opcao[]; notas: Opcao[]; editar: boolean }) {
-  if (!linhas.length) return <p className="px-5 py-10 text-center text-muted">Nada a classificar. Importe um extrato para começar.</p>
+  if (!linhas.length) return <Vazio>Nada a classificar. Importe um extrato para começar.</Vazio>
   return (
-    <ul className="divide-y divide-line">
+    <ul className="divide-y divide-line border-y border-line">
       {linhas.map((linha) => (
-        <li key={linha.id} className="px-5 py-4">
+        <li key={linha.id} className="py-3">
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <span className="w-20 text-sm text-muted">{formatarData(linha.data)}</span>
-            <span className="min-w-48 flex-1 text-sm text-ink">{linha.descricao}</span>
-            <span className={cn('text-sm font-semibold tabular-nums', linha.valor > 0 && 'text-ok')}>{brl(linha.valor)}</span>
+            <span className="w-20 text-muted">{formatarDataCurta(linha.data)}</span>
+            <span className="min-w-48 flex-1 text-ink">{linha.descricao}</span>
+            <span className={cn('font-medium tabular-nums', linha.valor > 0 && 'text-ok')}>{brl(linha.valor)}</span>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2 sm:pl-24">
-            <Badge tom={linha.sugestao?.tom ?? 'neutral'}>{linha.sugestao?.texto ?? 'Sem sugestão'}</Badge>
+          <div className="mt-1.5 flex flex-wrap items-center gap-3 sm:pl-24">
+            <Situacao tom={linha.sugestao?.tom ?? 'neutral'}>{linha.sugestao?.texto ?? 'Sem sugestão'}</Situacao>
             {editar && linha.sugestao && (
               <form action={confirmarSugestao}>
                 <input type="hidden" name="linhaId" value={linha.id} />
@@ -49,17 +51,16 @@ export function FilaDoExtrato({ linhas, processos, notas, editar }: { linhas: Li
             {editar && (
               <form action={ignorarLinha}>
                 <input type="hidden" name="linhaId" value={linha.id} />
-                <button title="Tira da fila sem lançar (ex.: transferência entre contas da empresa)" className="rounded-lg px-2 py-1 text-sm text-muted hover:bg-canvas hover:text-ink">
+                <button title="Tira da fila sem lançar (ex.: transferência entre contas da empresa)" className="rounded-md px-2 py-1 text-sm text-muted hover:bg-rail hover:text-ink">
                   Ignorar
                 </button>
               </form>
             )}
           </div>
           {editar && (
-            <details className="mt-2 sm:pl-24">
-              <summary className="cursor-pointer text-sm font-medium text-brand-700">{linha.sugestao ? 'Lançar de outro jeito' : 'Classificar'}</summary>
+            <Expansivel resumo={linha.sugestao ? 'Lançar de outro jeito' : 'Classificar'} className="mt-1.5 sm:pl-24">
               <FormularioClassificacao linha={linha} processos={processos} notas={notas} />
-            </details>
+            </Expansivel>
           )}
         </li>
       ))}
@@ -73,7 +74,7 @@ function FormularioClassificacao({ linha, processos, notas }: { linha: LinhaDaFi
   const posicao = (nota: Opcao) => (linha.candidatas.includes(nota.id) ? linha.candidatas.indexOf(nota.id) : linha.candidatas.length)
 
   return (
-    <form action={acao} className="mt-3 grid gap-3 rounded-xl bg-canvas p-4 md:grid-cols-2">
+    <form action={acao} className="grid gap-3 rounded-lg border border-line bg-surface p-4 md:grid-cols-2">
       <input type="hidden" name="linhaId" value={linha.id} />
       {linha.valor > 0 && (
         <Campo rotulo="É o recebimento da nota" erro={erros.notaId} dica="Escolha a nota ou, se o crédito não for de nota, a conta." className="md:col-span-2">

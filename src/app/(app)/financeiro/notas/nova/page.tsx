@@ -22,10 +22,7 @@ export default async function PaginaNovaNota({ searchParams }: { searchParams: P
       <Link href="/financeiro" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
         <ArrowLeft className="size-4" /> Faturamento
       </Link>
-      <PageHeader
-        titulo="Registrar nota fiscal"
-        descricao="Lance aqui a nota já emitida no site da Prefeitura. O ISS (5%) e a retenção na fonte (5,5%) são calculados pelo valor."
-      />
+      <PageHeader titulo="Registrar nota fiscal" resumo="A nota já emitida no site da Prefeitura. ISS (5%) e retenção (5,5%) saem do valor." />
 
       {deParcela && (
         <p className="mb-4 max-w-3xl rounded-lg bg-warn-soft px-4 py-3 text-sm text-ink">

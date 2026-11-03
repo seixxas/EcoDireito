@@ -3,9 +3,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
-import { SituacaoNotaBadge } from '@/components/financeiro/situacao-nota'
+import { SituacaoDaNota } from '@/components/financeiro/situacao-nota'
 import { Card } from '@/components/ui/card'
+import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
+import { Secao } from '@/components/ui/secao'
 import { obterNota } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import { motivoParaNaoCancelar, situacaoNota, valorLiquido } from '@/domain/financeiro/notas'
@@ -20,8 +22,8 @@ export const metadata: Metadata = { title: 'Nota fiscal' }
 function Dado({ rotulo, children }: { rotulo: string; children: ReactNode }) {
   return (
     <div>
-      <dt className="text-xs text-muted">{rotulo}</dt>
-      <dd className="mt-0.5 text-sm text-ink">{children}</dd>
+      <dt className="text-sm text-muted">{rotulo}</dt>
+      <dd className="mt-0.5 text-ink">{children}</dd>
     </div>
   )
 }
@@ -38,35 +40,61 @@ export default async function PaginaNota({ params }: { params: Promise<{ id: str
       <Link href="/financeiro" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
         <ArrowLeft className="size-4" /> Faturamento
       </Link>
-      <PageHeader titulo={`NF ${nota.numero}`} descricao={cliente.nome} acoes={<SituacaoNotaBadge situacao={situacaoNota(nota, dia)} />} />
+      <PageHeader
+        titulo={`NF ${nota.numero}`}
+        resumo={
+          <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
+            {cliente.nome} <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
+          </span>
+        }
+      />
 
-      <div className="grid gap-6 xl:grid-cols-3">
-        <Card titulo="Nota" className="xl:col-span-2">
-          <dl className="grid gap-5 sm:grid-cols-3">
-            <div className="sm:col-span-3">
-              <Dado rotulo="Serviço">{nota.descricao}</Dado>
-            </div>
-            <Dado rotulo="Emissão">{formatarData(nota.emissao)}</Dado>
-            <Dado rotulo="Previsão de pagamento">{formatarData(nota.previsao)}</Dado>
-            <Dado rotulo="Processo">
-              {processo ? (
-                <Link href={`/processos/${processo.id}`} className="text-brand-700 hover:underline">
-                  {processo.empreendimento}
-                </Link>
-              ) : (
-                '—'
-              )}
-              {parcela && <span className="block text-xs text-muted">{parcela.descricao}</span>}
-            </Dado>
-            <Dado rotulo="Valor">{brl(nota.valor)}</Dado>
-            <Dado rotulo="ISS">{brl(nota.iss)}</Dado>
-            <Dado rotulo="Retenção na fonte">{nota.retencao ? brl(nota.retencao) : '—'}</Dado>
-            <Dado rotulo="Líquido a receber">
-              <span className="font-semibold">{brl(valorLiquido(nota))}</span>
-            </Dado>
-            <Dado rotulo="Recebido">{nota.recebimento ? `${brl(nota.recebimento.valor)} em ${formatarData(nota.recebimento.data)}` : '—'}</Dado>
-          </dl>
-        </Card>
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Secao titulo="Nota">
+            <dl className="grid gap-x-6 gap-y-4 border-t border-line pt-4 sm:grid-cols-3">
+              <div className="sm:col-span-3">
+                <Dado rotulo="Serviço">{nota.descricao}</Dado>
+              </div>
+              <Dado rotulo="Emissão">{formatarData(nota.emissao)}</Dado>
+              <Dado rotulo="Previsão de pagamento">{formatarData(nota.previsao)}</Dado>
+              <Dado rotulo="Processo">
+                {processo ? (
+                  <Link href={`/processos/${processo.id}`} className="text-brand-700 hover:underline">
+                    {processo.empreendimento}
+                  </Link>
+                ) : (
+                  '—'
+                )}
+                {parcela && <span className="block text-sm text-muted">{parcela.descricao}</span>}
+              </Dado>
+              <Dado rotulo="Valor">{brl(nota.valor)}</Dado>
+              <Dado rotulo="ISS">{brl(nota.iss)}</Dado>
+              <Dado rotulo="Retenção na fonte">{nota.retencao ? brl(nota.retencao) : '—'}</Dado>
+              <Dado rotulo="Líquido a receber">
+                <span className="font-semibold">{brl(valorLiquido(nota))}</span>
+              </Dado>
+              <Dado rotulo="Recebido">{nota.recebimento ? `${brl(nota.recebimento.valor)} em ${formatarData(nota.recebimento.data)}` : '—'}</Dado>
+            </dl>
+          </Secao>
+
+          {lancamentos.length > 0 && (
+            <Secao titulo="No caixa">
+              <Lista>
+                {lancamentos.map((lancamento) => (
+                  <Linha key={lancamento.id}>
+                    <span className="w-24 text-muted">{formatarData(lancamento.data)}</span>
+                    <span className="min-w-0 flex-1">
+                      {lancamento.descricao}
+                      <span className="block text-sm text-muted">{nomeDaConta(lancamento.contaId)}</span>
+                    </span>
+                    <span className="font-medium tabular-nums">{brl(lancamento.valor)}</span>
+                  </Linha>
+                ))}
+              </Lista>
+            </Secao>
+          )}
+        </div>
 
         {editar && !nota.cancelada && (
           <div className="space-y-6">
@@ -75,30 +103,13 @@ export default async function PaginaNota({ params }: { params: Promise<{ id: str
             </Card>
             {!motivoParaNaoCancelar(nota) && (
               <Card titulo="Cancelar nota">
-                <p className="mb-3 text-sm text-muted">Use quando a nota foi cancelada na Prefeitura. Ela continua na lista, riscada.</p>
+                <p className="mb-3 text-sm text-muted">Quando a nota foi cancelada na Prefeitura. Ela continua na lista, riscada.</p>
                 <BotaoCancelarNota notaId={nota.id} numero={nota.numero} />
               </Card>
             )}
           </div>
         )}
       </div>
-
-      {lancamentos.length > 0 && (
-        <Card titulo="No caixa" className="mt-6" flush>
-          <table className="tabela">
-            <tbody>
-              {lancamentos.map((lancamento) => (
-                <tr key={lancamento.id}>
-                  <td className="whitespace-nowrap">{formatarData(lancamento.data)}</td>
-                  <td>{lancamento.descricao}</td>
-                  <td className="text-muted">{nomeDaConta(lancamento.contaId)}</td>
-                  <td className="num font-medium">{brl(lancamento.valor)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-      )}
     </>
   )
 }

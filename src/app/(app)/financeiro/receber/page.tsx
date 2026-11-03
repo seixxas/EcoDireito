@@ -1,32 +1,39 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { SituacaoNotaBadge } from '@/components/financeiro/situacao-nota'
+import { SituacaoDaNota } from '@/components/financeiro/situacao-nota'
 import { Card } from '@/components/ui/card'
+import { Vazio } from '@/components/ui/expansivel'
+import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
-import { Stat } from '@/components/ui/stat'
+import { ItemResumo, Resumo } from '@/components/ui/resumo'
+import { Secao } from '@/components/ui/secao'
 import { listarNotas } from '@/data/financeiro'
 import { diasDeAtraso, resumoNotas, saldoAReceber, situacaoNota } from '@/domain/financeiro/notas'
 import { cn } from '@/lib/cn'
 import { diasEntre } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
-import { brl, formatarData } from '@/lib/formatar'
+import { brl, formatarDataCurta } from '@/lib/formatar'
 
 export const metadata: Metadata = { title: 'Contas a receber' }
 
 const FAIXAS = [
   { rotulo: 'A vencer', de: -Infinity, ate: 0, cor: 'bg-brand-300' },
-  { rotulo: '1 a 15 dias de atraso', de: 1, ate: 15, cor: 'bg-accent' },
+  { rotulo: '1 a 15 dias de atraso', de: 1, ate: 15, cor: 'bg-accent/50' },
   { rotulo: '16 a 30 dias', de: 16, ate: 30, cor: 'bg-accent' },
   { rotulo: '31 a 60 dias', de: 31, ate: 60, cor: 'bg-danger/70' },
   { rotulo: 'Mais de 60 dias', de: 61, ate: Infinity, cor: 'bg-danger' },
 ]
 
-export default async function PaginaReceber() {
-  const { hoje: dia, notas } = await listarNotas()
+/** As mais atrasadas primeiro; o resto fica atrás de "ver todas". */
+const PRIMEIRAS = 15
+
+export default async function PaginaReceber({ searchParams }: { searchParams: Promise<{ todas?: string }> }) {
+  const [{ todas }, { hoje: dia, notas }] = await Promise.all([searchParams, listarNotas()])
   const abertas = notas
     .filter(({ nota }) => saldoAReceber(nota, dia) > 0)
     .map((item) => ({ ...item, atraso: diasDeAtraso(item.nota, dia), saldo: saldoAReceber(item.nota, dia) }))
     .sort((a, b) => b.atraso - a.atraso || a.nota.previsao.localeCompare(b.nota.previsao))
+  const visiveis = todas ? abertas : abertas.slice(0, PRIMEIRAS)
 
   const resumo = resumoNotas(notas.map(({ nota }) => nota), dia)
   const total = somar(abertas.map((a) => a.saldo))
@@ -46,84 +53,100 @@ export default async function PaginaReceber() {
 
   return (
     <>
-      <PageHeader titulo="Contas a receber" descricao="O que os clientes ainda devem, por tempo de atraso. Notas com retenção na fonte já aparecem pelo valor líquido." />
+      <PageHeader
+        titulo="Contas a receber"
+        resumo={`${brl(total)} em ${abertas.length} notas abertas; ${brl(resumo.atrasado)} já passou da previsão. Notas com retenção aparecem pelo líquido.`}
+      />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat rotulo="Total a receber" valor={brl(total)} detalhe={`${abertas.length} notas em aberto`} tom="brand" />
-        <Stat rotulo="Atrasado" valor={brl(resumo.atrasado)} detalhe={`${resumo.quantidadeAtrasadas} notas`} tom="danger" />
-        <Stat rotulo="Entra em 30 dias" valor={brl(proximos30)} detalhe="pela previsão de pagamento" tom="ok" />
-        <Stat rotulo="Prazo para receber" valor={`${resumo.prazoMedianoDias} dias`} detalhe="mediana, da emissão ao pagamento" />
+      <Resumo className="mb-8">
+        <ItemResumo rotulo="A receber" valor={brl(total)} detalhe={`${abertas.length} notas`} />
+        <ItemResumo rotulo="Atrasado" valor={brl(resumo.atrasado)} detalhe={`${resumo.quantidadeAtrasadas} notas`} tom={resumo.atrasado ? 'danger' : 'neutral'} />
+        <ItemResumo rotulo="Entra em 30 dias" valor={brl(proximos30)} detalhe="pela previsão" tom="ok" />
+        <ItemResumo rotulo="Prazo para receber" valor={`${resumo.prazoMedianoDias} dias`} detalhe="mediana, da emissão ao pagamento" />
+      </Resumo>
+
+      <div className="mb-8 grid gap-8 lg:grid-cols-5">
+        <div className="lg:col-span-3">
+          <Secao titulo="Por tempo de atraso">
+            <div className="flex h-3 overflow-hidden rounded-full bg-rail">
+              {faixas.map((faixa) => (
+                <div key={faixa.rotulo} title={`${faixa.rotulo}: ${brl(faixa.valor)}`} className={faixa.cor} style={{ width: `${total ? (faixa.valor / total) * 100 : 0}%` }} />
+              ))}
+            </div>
+            <ul className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+              {faixas.map((faixa) => (
+                <li key={faixa.rotulo} className="flex items-baseline gap-2 text-sm">
+                  <span className={cn('size-2.5 shrink-0 translate-y-px rounded-full', faixa.cor)} />
+                  <span className="flex-1">
+                    {faixa.rotulo} <span className="text-subtle">· {faixa.quantidade}</span>
+                  </span>
+                  <span className="font-medium tabular-nums">{brl(faixa.valor)}</span>
+                </li>
+              ))}
+            </ul>
+          </Secao>
+        </div>
+        <div className="lg:col-span-2">
+          <Secao titulo="Quem mais deve">
+            <Lista>
+              {porGrupo.slice(0, 6).map(([nome, valor]) => (
+                <Linha key={nome}>
+                  <span className="min-w-0 flex-1 truncate">{nome}</span>
+                  <span className="font-medium tabular-nums">{brl(valor)}</span>
+                </Linha>
+              ))}
+            </Lista>
+          </Secao>
+        </div>
       </div>
 
-      <div className="mb-6 grid gap-6 xl:grid-cols-5">
-        <Card titulo="Por tempo de atraso" className="xl:col-span-3">
-          <ul className="space-y-3">
-            {faixas.map((faixa) => (
-              <li key={faixa.rotulo}>
-                <div className="flex justify-between text-sm">
-                  <span>
-                    {faixa.rotulo} <span className="text-subtle">· {faixa.quantidade} notas</span>
-                  </span>
-                  <span className="font-semibold tabular-nums">{brl(faixa.valor)}</span>
-                </div>
-                <div className="mt-1 h-2.5 rounded-full bg-canvas">
-                  <div className={cn('h-full rounded-full', faixa.cor)} style={{ width: `${total ? (faixa.valor / total) * 100 : 0}%` }} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Card>
-        <Card titulo="Por cliente ou grupo" className="xl:col-span-2" flush>
+      <Secao
+        titulo={todas ? `Notas em aberto (${abertas.length})` : 'Notas em aberto, as mais atrasadas primeiro'}
+        acao={
+          abertas.length > PRIMEIRAS && (
+            <Link href={todas ? '/financeiro/receber' : '/financeiro/receber?todas=1'} scroll={false} className="text-sm text-brand-700 hover:underline">
+              {todas ? `Mostrar só as ${PRIMEIRAS} primeiras` : `Ver todas (${abertas.length})`}
+            </Link>
+          )
+        }
+      >
+        <Card flush>
           <table className="tabela">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>NF</th>
+                <th>Previsão</th>
+                <th className="num">Atraso</th>
+                <th className="num">Saldo</th>
+                <th>Situação</th>
+              </tr>
+            </thead>
             <tbody>
-              {porGrupo.slice(0, 8).map(([nome, valor]) => (
-                <tr key={nome}>
-                  <td>{nome}</td>
-                  <td className="num font-medium">{brl(valor)}</td>
+              {visiveis.map(({ nota, cliente, atraso, saldo }) => (
+                <tr key={nota.id}>
+                  <td className="min-w-60">
+                    {cliente.nome}
+                    <p className="text-xs text-subtle">{nota.descricao}</p>
+                  </td>
+                  <td className="font-mono text-xs">
+                    <Link href={`/financeiro/notas/${nota.id}`} className="text-brand-700 hover:underline">
+                      {nota.numero}
+                    </Link>
+                  </td>
+                  <td className="whitespace-nowrap">{formatarDataCurta(nota.previsao)}</td>
+                  <td className={cn('num', atraso > 30 ? 'font-medium text-danger' : atraso > 0 && 'text-warn')}>{atraso ? `${atraso} dias` : '—'}</td>
+                  <td className="num font-medium">{brl(saldo)}</td>
+                  <td>
+                    <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {abertas.length === 0 && <Vazio>Nenhuma nota em aberto.</Vazio>}
         </Card>
-      </div>
-
-      <Card titulo="Notas em aberto" flush>
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>NF</th>
-              <th>Emissão</th>
-              <th>Previsão</th>
-              <th className="num">Atraso</th>
-              <th className="num">Saldo</th>
-              <th>Situação</th>
-            </tr>
-          </thead>
-          <tbody>
-            {abertas.map(({ nota, cliente, atraso, saldo }) => (
-              <tr key={nota.id}>
-                <td className="min-w-60">
-                  {cliente.nome}
-                  <p className="text-xs text-subtle">{nota.descricao}</p>
-                </td>
-                <td className="font-mono text-xs">
-                  <Link href={`/financeiro/notas/${nota.id}`} className="text-brand-700 hover:underline">
-                    {nota.numero}
-                  </Link>
-                </td>
-                <td className="whitespace-nowrap">{formatarData(nota.emissao)}</td>
-                <td className="whitespace-nowrap">{formatarData(nota.previsao)}</td>
-                <td className={cn('num', atraso > 30 ? 'font-semibold text-danger' : atraso > 0 && 'text-warn')}>{atraso ? `${atraso} dias` : '—'}</td>
-                <td className="num font-medium">{brl(saldo)}</td>
-                <td>
-                  <SituacaoNotaBadge situacao={situacaoNota(nota, dia)} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+      </Secao>
     </>
   )
 }
