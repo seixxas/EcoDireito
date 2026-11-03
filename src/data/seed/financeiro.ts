@@ -102,7 +102,9 @@ function gerarNotas(a: Aleatorio, hoje: DataISO, meses: string[], processos: Pro
     const retem = CLIENTES.find((c) => c.id === clienteId)!.retem && descricao !== DESCRICAO_TAXAS
     const retencao = retem ? Math.round(valor * RETENCAO) : 0
     const previsao = somarDias(emissao, a.escolher(PRAZOS_PAGAMENTO))
-    const recebimento = sortearRecebimento(a, hoje, emissao, previsao, valor - retencao)
+    // Notas de antes do histórico (parcelas antigas de contrato) já foram pagas.
+    const recebimento =
+      emissao < `${meses[0]}-01` ? { data: previsao, valor: valor - retencao } : sortearRecebimento(a, hoje, emissao, previsao, valor - retencao)
     notas.push({ emissao, clienteId, descricao, valor, iss: Math.round(valor * ALIQUOTA_ISS), retencao, previsao, recebimento, ...extra })
     return valor
   }
