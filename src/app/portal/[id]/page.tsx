@@ -1,8 +1,10 @@
-import { CalendarClock, Check, Leaf, TriangleAlert } from 'lucide-react'
+import { CalendarClock, Check, Leaf, LogOut, TriangleAlert } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { sair } from '@/app/(auth)/actions'
 import { hoje } from '@/data/hoje'
 import { obterProcesso } from '@/data/processos'
+import { exigirUsuario } from '@/data/sessao'
 import { proximoPrazo } from '@/domain/prazos'
 import { FASES } from '@/domain/processos'
 import { cn } from '@/lib/cn'
@@ -21,8 +23,9 @@ function contagem(dias: number) {
 /** O que a construtora vê: só leitura, a fase do processo e o próximo prazo. */
 export default async function Portal({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [dia, dados] = await Promise.all([hoje(), obterProcesso(id)])
-  if (!dados) notFound()
+  const [usuario, dia, dados] = await Promise.all([exigirUsuario(), hoje(), obterProcesso(id)])
+  // A construtora só vê os próprios processos; a equipe vê todos (para conferir a visão do cliente).
+  if (!dados || (usuario.papel === 'cliente' && usuario.clienteId !== dados.processo.clienteId)) notFound()
   const { processo, prazos } = dados
   const fase = FASES[processo.faseAtual - 1]
   const proximo = proximoPrazo(prazos, dia)
@@ -35,7 +38,16 @@ export default async function Portal({ params }: { params: Promise<{ id: string 
           <span className="flex items-center gap-2 font-display text-lg font-semibold">
             <Leaf className="size-5" /> eco direito
           </span>
-          <span className="text-sm text-brand-100">por awer.co</span>
+          <span className="flex items-center gap-4 text-sm text-brand-100">
+            por awer.co
+            {usuario.papel === 'cliente' && (
+              <form action={sair}>
+                <button className="flex items-center gap-1.5 rounded-lg px-2 py-1 hover:bg-white/10">
+                  <LogOut className="size-4" /> Sair
+                </button>
+              </form>
+            )}
+          </span>
         </div>
         <div className="mx-auto max-w-6xl px-5 pt-6">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-100">Eco Direito Ambiental · Acompanhamento de processo</p>

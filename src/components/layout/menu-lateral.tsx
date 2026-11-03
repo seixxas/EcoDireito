@@ -8,6 +8,7 @@ import {
   HandCoins,
   LayoutDashboard,
   Leaf,
+  LogOut,
   Newspaper,
   Receipt,
   type LucideIcon,
@@ -15,26 +16,29 @@ import {
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Suspense } from 'react'
+import { sair } from '@/app/(auth)/actions'
 import { cn } from '@/lib/cn'
+import { PAPEIS, pode, type Area, type Papel } from '@/lib/permissoes'
 
-type Item = { href: string; rotulo: string; icone: LucideIcon }
+type Item = { href: string; rotulo: string; icone: LucideIcon; area: Area }
+export type UsuarioDoMenu = { nome: string; papel: Papel }
 
 const GRUPOS: { titulo?: string; itens: Item[] }[] = [
   {
     itens: [
-      { href: '/', rotulo: 'Painel', icone: LayoutDashboard },
-      { href: '/prazos', rotulo: 'Prazos', icone: CalendarClock },
-      { href: '/processos', rotulo: 'Processos', icone: FolderKanban },
-      { href: '/publicacoes', rotulo: 'Diário Oficial', icone: Newspaper },
+      { href: '/', rotulo: 'Painel', icone: LayoutDashboard, area: 'prazos' },
+      { href: '/prazos', rotulo: 'Prazos', icone: CalendarClock, area: 'prazos' },
+      { href: '/processos', rotulo: 'Processos', icone: FolderKanban, area: 'prazos' },
+      { href: '/publicacoes', rotulo: 'Diário Oficial', icone: Newspaper, area: 'prazos' },
     ],
   },
   {
     titulo: 'Financeiro',
     itens: [
-      { href: '/financeiro', rotulo: 'Faturamento', icone: Receipt },
-      { href: '/financeiro/receber', rotulo: 'Contas a receber', icone: HandCoins },
-      { href: '/financeiro/dre', rotulo: 'DRE', icone: ChartColumn },
-      { href: '/financeiro/fluxo', rotulo: 'Fluxo de caixa', icone: ChartLine },
+      { href: '/financeiro', rotulo: 'Faturamento', icone: Receipt, area: 'financeiro' },
+      { href: '/financeiro/receber', rotulo: 'Contas a receber', icone: HandCoins, area: 'financeiro' },
+      { href: '/financeiro/dre', rotulo: 'DRE', icone: ChartColumn, area: 'financeiro' },
+      { href: '/financeiro/fluxo', rotulo: 'Fluxo de caixa', icone: ChartLine, area: 'financeiro' },
     ],
   },
 ]
@@ -62,25 +66,28 @@ function Marca() {
 }
 
 /** O menu lê a URL; no Next 16 isso precisa de Suspense. Enquanto isso, mostra o menu sem item ativo. */
-export function MenuLateral() {
+export function MenuLateral({ usuario }: { usuario?: UsuarioDoMenu }) {
   return (
-    <Suspense fallback={<Menu pathname="" />}>
-      <MenuNaRota />
+    <Suspense fallback={<Menu pathname="" usuario={usuario} />}>
+      <MenuNaRota usuario={usuario} />
     </Suspense>
   )
 }
 
-function MenuNaRota() {
-  return <Menu pathname={usePathname()} />
+function MenuNaRota({ usuario }: { usuario?: UsuarioDoMenu }) {
+  return <Menu pathname={usePathname()} usuario={usuario} />
 }
 
-function Menu({ pathname }: { pathname: string }) {
+function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu }) {
+  const visivel = (item: Item) => !usuario || pode(usuario.papel, item.area)
+  const grupos = GRUPOS.map((g) => ({ ...g, itens: g.itens.filter(visivel) })).filter((g) => g.itens.length)
+
   return (
     <>
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-brand-900 px-4 py-6 lg:flex">
         <Marca />
         <nav className="mt-8 flex flex-1 flex-col gap-6">
-          {GRUPOS.map((grupo, i) => (
+          {grupos.map((grupo, i) => (
             <div key={i}>
               {grupo.titulo && <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-300">{grupo.titulo}</p>}
               <ul className="flex flex-col gap-0.5">
@@ -102,30 +109,48 @@ function Menu({ pathname }: { pathname: string }) {
             </div>
           ))}
         </nav>
-        <div className="rounded-xl bg-white/6 p-3">
-          <div className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-full bg-accent font-semibold text-brand-900">E</span>
-            <span className="text-sm leading-tight">
-              <span className="block font-semibold text-white">Elaine</span>
-              <span className="block text-brand-300">Sócia</span>
-            </span>
+        {usuario && (
+          <div className="rounded-xl bg-white/6 p-3">
+            <div className="flex items-center gap-3">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent font-semibold text-brand-900">{usuario.nome.at(0)}</span>
+              <span className="min-w-0 flex-1 text-sm leading-tight">
+                <span className="block truncate font-semibold text-white">{usuario.nome}</span>
+                <span className="block text-brand-300">{PAPEIS[usuario.papel].nome}</span>
+              </span>
+              <form action={sair}>
+                <button title="Sair" className="rounded-lg p-2 text-brand-300 hover:bg-white/10 hover:text-white">
+                  <LogOut className="size-4" />
+                </button>
+              </form>
+            </div>
+            <p className="mt-3 rounded-md bg-accent/15 px-2 py-1 text-center text-[11px] font-semibold text-accent">Dados fictícios para demonstração</p>
           </div>
-          <p className="mt-3 rounded-md bg-accent/15 px-2 py-1 text-center text-[11px] font-semibold text-accent">Dados fictícios para demonstração</p>
-        </div>
+        )}
       </aside>
 
       <header className="sticky top-0 z-10 bg-brand-900 px-4 py-3 lg:hidden">
-        <Marca />
+        <div className="flex items-center justify-between">
+          <Marca />
+          {usuario && (
+            <form action={sair}>
+              <button className="flex items-center gap-1.5 text-sm text-brand-100">
+                <LogOut className="size-4" /> Sair
+              </button>
+            </form>
+          )}
+        </div>
         <nav className="-mx-4 mt-3 flex gap-1 overflow-x-auto px-4">
-          {TODOS.map(({ href, rotulo }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn('whitespace-nowrap rounded-lg px-3 py-1.5 text-sm', ativo(pathname, href) ? 'bg-white/15 text-white' : 'text-brand-100/80')}
-            >
-              {rotulo}
-            </Link>
-          ))}
+          {grupos
+            .flatMap((g) => g.itens)
+            .map(({ href, rotulo }) => (
+              <Link
+                key={href}
+                href={href}
+                className={cn('whitespace-nowrap rounded-lg px-3 py-1.5 text-sm', ativo(pathname, href) ? 'bg-white/15 text-white' : 'text-brand-100/80')}
+              >
+                {rotulo}
+              </Link>
+            ))}
         </nav>
       </header>
     </>
