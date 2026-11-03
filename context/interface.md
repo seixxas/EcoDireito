@@ -10,6 +10,7 @@ Quem usa são as sócias e a equipe da Eco Direito, todo dia, para saber **o que
 7. **Clicável parece clicável.** Linha que abre algo tem fundo no hover e setinha (`Linha href`); link em texto usa a classe `link` (sublinhado); filtro é controle com borda (`SegmentedLinks`); recolhido é botãozinho (`Expansivel`).
 3. **Menos scroll.**
    - Lista com mais de 10 itens é paginada (`paginar` + `Paginacao`, 10 por página, `?pagina=` na URL). O contador do filtro e o "11–20 de 83" sempre batem com o total.
+   - Lista longa tem busca (`Busca`, `?q=`) pelo nome da empresa e o que mais a pessoa procura ali. Busca e filtros se somam e a paginação conta o resultado filtrado.
    - Detalhe longo (texto do ato, cálculo do prazo, movimentos) fica recolhido em `Expansivel`.
    - Página com várias partes usa abas (`Abas`), não seções empilhadas.
 4. **Status discreto.** Situação é ponto colorido + texto (`Situacao`). Pílula colorida (`Badge`) só para etiqueta neutra (tipo, origem). Vermelho só para o que está vencido ou atrasado.
@@ -50,6 +51,7 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 | `Secao({ titulo, acao?, children })` | Bloco de conteúdo sem caixa: título pequeno e conteúdo |
 | `Lista` / `Linha({ href?, children })` | Lista em caixa branca; com `href`, a linha inteira é link (hover + setinha) |
 | `Paginacao({ ...paginar(itens, pagina), href })` | "11–20 de 83" e botões de página; some com uma página só |
+| `Busca({ valor, placeholder, manter, limpar })` | Caixa de busca na URL (`?q=`), acima da lista; filtre com `combina(q, ...textos)` (`src/lib/buscar.ts`, ignora acento e maiúscula). Buscar volta para a página 1 |
 | `Situacao({ tom, children })` | Status: ponto + texto |
 | `Badge({ tom })` | Etiqueta neutra (tipo, origem) |
 | `Abas({ abas, ativa })` | Abas por URL (`?aba=`), sublinhadas |
