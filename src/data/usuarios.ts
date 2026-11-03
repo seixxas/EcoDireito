@@ -3,8 +3,10 @@ import { hashPassword } from 'better-auth/crypto'
 import { asc, eq } from 'drizzle-orm'
 import { db, exigirBanco, schema, temBanco } from '@/db'
 import { ehPapel, type Papel } from '@/lib/permissoes'
+import { exigirArea } from './sessao'
 
 export async function listarUsuarios() {
+  await exigirArea('usuarios')
   if (!temBanco) return []
   const linhas = await db
     .select({ id: schema.user.id, nome: schema.user.name, email: schema.user.email, papel: schema.user.papel, cliente: schema.clientes.nome })
