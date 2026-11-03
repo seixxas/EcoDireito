@@ -1,4 +1,4 @@
-import { CircleCheck, Search } from 'lucide-react'
+import { CircleCheck, ExternalLink, Search } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
@@ -20,6 +20,8 @@ import { BuscaEdicao } from './_components/busca-edicao'
 export const metadata: Metadata = { title: 'Diário Oficial' }
 
 const ABAS = { nova: 'Para revisar', confirmada: 'Confirmadas', descartada: 'Descartadas' } as const
+
+const HORARIO = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 type Aba = keyof typeof ABAS
 
 export default async function PaginaPublicacoes({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
@@ -39,7 +41,12 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat rotulo="Edição lida" valor={formatarDiaEData(edicao.data)} detalhe="a mais recente lida pelo robô" tom="brand" />
+        <Stat
+          rotulo="Edição lida"
+          valor={formatarDiaEData(edicao.data)}
+          detalhe={edicao.erro ?? (edicao.processadaEm ? `lida em ${HORARIO.format(new Date(edicao.processadaEm)).replace(', ', ' às ')}` : 'a mais recente lida pelo robô')}
+          tom={edicao.erro ? 'warn' : 'brand'}
+        />
         <Stat rotulo="Atos na edição" valor={edicao.totalAtos.toLocaleString('pt-BR')} detalhe="todos os órgãos da Prefeitura" />
         <Stat rotulo="Da Secretaria do Verde" valor={edicao.atosSvma} detalhe="lidos um a um pelo robô" />
         <Stat rotulo="Com clientes da Eco Direito" valor={novas.length} detalhe="esperando revisão" tom={novas.length ? 'warn' : 'ok'} />
@@ -65,6 +72,11 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
               <span className="text-sm text-muted">
                 {formatarData(ato.data)} · {ato.unidade} · documento {ato.documento}
               </span>
+              {ato.link && (
+                <a href={ato.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline">
+                  Abrir no Diário Oficial <ExternalLink className="size-3.5" />
+                </a>
+              )}
               <Badge tom="info" className="ml-auto">
                 <Search className="size-3" /> Achado pelo {COMO_ACHOU[vinculo.comoAchou]}
               </Badge>

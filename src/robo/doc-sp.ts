@@ -2,7 +2,6 @@ import { z } from 'zod'
 import { ORGAO_SVMA, type Ato } from '@/domain/publicacoes'
 import type { DataISO } from '@/lib/datas'
 
-/** O link do DOC-SP muda a cada download: serve para abrir o ato, não para identificá-lo. */
 export type AtoColetado = Ato & { link: string }
 
 export type Edicao = { data: DataISO; totalAtos: number; atos: AtoColetado[] }
