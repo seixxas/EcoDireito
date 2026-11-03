@@ -11,6 +11,7 @@ A caixa de entrada mostra o que está na tabela `publicacoes` (ou os atos fictí
 - **Não é nosso**: descarta com motivo obrigatório.
 - **Sem processo cadastrado** (achado pelo CNPJ): "Cadastrar processo" abre `/processos/novo?ato=<id>` com cliente, nº SEI e fase preenchidos e volta para a caixa; o ato passa a casar pelo SEI e pode ser confirmado.
 - Só atos com status `nova` mudam: a action recusa ato já revisado ("Este ato já foi revisado").
+- **Busca** (`?q=`): texto e série do ato, nº SEI (do ato e do processo), cliente, grupo e empreendimento. Vale nas três abas, e o contador de cada aba mostra o resultado da busca.
 
 ## Fonte (conferida em 02/11/2026 com as edições de 23, 27 e 29/10)
 
