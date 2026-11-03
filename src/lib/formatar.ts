@@ -48,6 +48,11 @@ export function formatarDiaEData(data: DataISO) {
   return `${DIAS[diaDaSemana(data)]}, ${formatarDataCurta(data)}`
 }
 
+/** Em listas: "ter, 03/11" no ano de hoje; com o ano ("04/01/2027") fora dele, para não parecer que vence já. */
+export function formatarDataNaLista(data: DataISO, hoje: DataISO) {
+  return data.slice(0, 4) === hoje.slice(0, 4) ? formatarDiaEData(data) : formatarData(data)
+}
+
 /** 'AAAA-MM' → out/26 */
 export function formatarMes(mes: string) {
   return `${MESES[Number(mes.slice(5, 7)) - 1]}/${mes.slice(2, 4)}`

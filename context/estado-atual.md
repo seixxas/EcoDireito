@@ -9,9 +9,9 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 |---|---|---|
 | `/login` | Login | E-mail e senha; cada perfil cai na sua tela inicial |
 | `/` | Painel | Prazos vencidos e próximos, Diário Oficial, parcelas a faturar (com "Emitir nota"), notas atrasadas, saldo |
-| `/prazos` | Prazos | Todos os prazos com cálculo explicado; filtros na URL (`?filtro=vencidos`) |
+| `/prazos` | Prazos | Prazos em aberto por período (vencidos, esta semana, próximas semanas, mais adiante), cálculo recolhido; `?filtro=orgao` e `?filtro=cumpridos` |
 | `/processos` | Processos | Lista com fase e próximo prazo; cadastrar processo (`/processos/novo`) |
-| `/processos/[id]` | Processo | 7 fases, prazos, linha do tempo (lançar e apagar evento) e parcelas do contrato; editar em `/processos/[id]/editar` |
+| `/processos/[id]` | Processo | Barra de fases e abas `?aba=` Prazos, Linha do tempo (lançar e apagar evento) e Cobrança (parcelas, "Emitir nota"); editar em `/processos/[id]/editar` |
 | `/processos/clientes` | Clientes | Lista, cadastro e edição de clientes |
 | `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; confirmar cria o evento, descartar pede motivo, cadastrar processo a partir do ato |
 | `/financeiro` | Faturamento | Notas, situação, faturado × recebido, parcelas prontas para faturar |

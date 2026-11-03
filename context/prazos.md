@@ -42,6 +42,14 @@ Arquivos: `src/domain/processos.ts` (fases e eventos), `src/domain/prazos.ts` (r
 
 `cumprido` (existe o evento que cumpre) · `vencido` · `hoje` · `proximo` (até 10 dias) · `no_prazo`.
 
+Na tela, situação é ponto + texto (`SituacaoPrazo`); prazo do órgão atrasado fica âmbar ("SVMA atrasada"), nunca vermelho.
+
+## Tela de prazos
+
+- Vistas: nossos prazos (padrão), aguardando a SVMA (`?filtro=orgao`) e cumpridos (`?filtro=cumpridos`, só os 20 mais recentes).
+- Em aberto, agrupados por `periodoDoPrazo`: vencidos, esta semana (até domingo), próximas semanas (as 4 seguintes) e mais adiante (recolhido).
+- Cada prazo é uma `LinhaPrazo` (`src/components/prazos/linha-prazo.tsx`), a mesma da aba Prazos do processo. Data de outro ano aparece com o ano (`formatarDataNaLista`).
+
 ## Pontos a validar com a Eco Direito
 
 - O Alvará conta da emissão (Portaria SVMA 105/2024, art. 51) e não da publicação, como diz o passo a passo. O sistema usa a emissão.
