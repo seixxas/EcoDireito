@@ -33,7 +33,7 @@ Atualizado em 2026-11-02. Vale para todas as sessões. Ao terminar uma etapa, ma
 | E2 Login e perfis ✅ | Login por e-mail e senha, perfis, menu e rotas por perfil, portal com usuário cliente, tela de usuários | E1 | A |
 | E3 Edição de prazos ✅ | Clientes, processos, eventos, caixa de entrada gravada (testada no Neon) | E1 | B |
 | E4 Edição financeira | Notas, recebimentos, lançamentos, contratos | E1 | C |
-| E5 Robô do Diário Oficial | Coletor real do DOC-SP + botão "buscar agora" gravando na caixa de entrada. **Feita** na `feat/robo-doc-sp`: coletor testado contra o site real e "Buscar no Diário" gravando; falta testar a gravação no Neon | lógica: nada; gravação: E1 | B |
+| E5 Robô do Diário Oficial ✅ | Coletor real do DOC-SP + botão "Buscar no Diário" gravando na caixa de entrada (testado com o site real e no Neon). Agendamento diário fica para depois | lógica: nada; gravação: E1 | B |
 | E6 Extrato bancário | Importar OFX/CSV, regras de classificação, conciliação | lógica: nada; telas: E1 | C |
 | E7 Alertas por e-mail | Resend, resumo diário e lembretes | E2 | depois |
 | E8 Financeiro avançado | Cartão, fechamento mensal, margem por projeto, Simples | E4, E6 | depois |
