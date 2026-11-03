@@ -26,7 +26,8 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/usuarios` | Usuários | Sócias criam e removem acessos (equipe, contador, cliente) |
 | `/portal` e `/portal/[id]` | Portal do cliente | O cliente entra e vê só os próprios processos |
 
-- Redesign pronto na `main` local (guia em `context/interface.md`): menu claro, Hoje, prazos, processo em abas, Diário, financeiro, portal, login e usuários. Ainda não está no ar: o push espera a aprovação do usuário.
+- Modo escuro (botão lua/sol no pé do menu), menu verde e paginação de 10 itens (`src/lib/paginar.ts`).
+- Redesign no ar desde 03/11 (guia em `context/interface.md`): Hoje, prazos, processo em abas, Diário, financeiro, portal, login e usuários.
 - Perfis (`src/lib/permissoes.ts`): sócia, financeiro, equipe, contador e cliente. O recorte do que cada um vê fica em `carregar()` (`src/data/base.ts`).
 - Domínio com testes (`npm test`); build de produção passando (`npm run build`).
 

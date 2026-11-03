@@ -1,5 +1,6 @@
 import { Leaf } from 'lucide-react'
 import type { Metadata } from 'next'
+import { BotaoTema } from '@/components/layout/botao-tema'
 import { FormularioLogin } from './_components/formulario-login'
 
 export const metadata: Metadata = { title: 'Entrar' }
@@ -7,10 +8,11 @@ export const metadata: Metadata = { title: 'Entrar' }
 export default async function PaginaLogin({ searchParams }: { searchParams: Promise<{ voltar?: string }> }) {
   const { voltar } = await searchParams
   return (
-    <main className="flex min-h-screen items-center justify-center bg-canvas px-4">
+    <main className="relative flex min-h-screen items-center justify-center bg-canvas px-4">
+      <BotaoTema comRotulo className="absolute right-4 top-4 text-sm text-muted hover:text-ink" />
       <div className="w-full max-w-sm">
         <div className="mb-10 flex items-center gap-2">
-          <span className="flex size-8 items-center justify-center rounded-md bg-brand-700 text-white">
+          <span className="flex size-8 items-center justify-center rounded-md bg-brand-700 text-on-brand">
             <Leaf className="size-4" />
           </span>
           <span className="font-display text-xl font-semibold text-ink">Eco Direito</span>

@@ -81,8 +81,8 @@ export default async function Portal({ params }: { params: Promise<{ id: string 
                     <span
                       className={cn(
                         'flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
-                        estado === 'feita' && 'bg-ok text-white',
-                        estado === 'atual' && 'bg-brand-700 text-white ring-4 ring-brand-100',
+                        estado === 'feita' && 'bg-ok text-on-brand',
+                        estado === 'atual' && 'bg-brand-700 text-on-brand ring-4 ring-brand-100',
                         estado === 'futura' && 'bg-surface text-subtle ring-1 ring-line',
                       )}
                     >

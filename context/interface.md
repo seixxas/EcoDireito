@@ -6,9 +6,10 @@ Quem usa são as sócias e a equipe da Eco Direito, todo dia, para saber **o que
 ## Princípios
 
 1. **Uma pergunta por tela.** O topo responde a pergunta da tela numa frase ("1 prazo vencido e 8 nesta semana"). Nada de fileira de cartões de KPI.
-2. **Lista antes de cartão.** Conteúdo em linhas separadas por fio fino, dentro de uma `Secao`. Caixa (`Card`) só para formulário ou bloco que precisa se destacar.
+2. **Lista antes de cartão.** Conteúdo em linhas dentro de uma caixa branca (`Lista`), numa `Secao`. Nada de fileira de cartões soltos.
+7. **Clicável parece clicável.** Linha que abre algo tem fundo no hover e setinha (`Linha href`); link em texto usa a classe `link` (sublinhado); filtro é controle com borda (`SegmentedLinks`); recolhido é botãozinho (`Expansivel`).
 3. **Menos scroll.**
-   - Mostre o recorte útil (mês atual, próximos 30 dias, os 10 primeiros) e deixe o resto atrás de "ver todos" ou de um filtro.
+   - Lista com mais de 10 itens é paginada (`paginar` + `Paginacao`, 10 por página, `?pagina=` na URL). O contador do filtro e o "11–20 de 83" sempre batem com o total.
    - Detalhe longo (texto do ato, cálculo do prazo, movimentos) fica recolhido em `Expansivel`.
    - Página com várias partes usa abas (`Abas`), não seções empilhadas.
 4. **Status discreto.** Situação é ponto colorido + texto (`Situacao`). Pílula colorida (`Badge`) só para etiqueta neutra (tipo, origem). Vermelho só para o que está vencido ou atrasado.
@@ -17,7 +18,7 @@ Quem usa são as sócias e a equipe da Eco Direito, todo dia, para saber **o que
 
 ## Identidade
 
-- Fundo papel (`canvas`), conteúdo em branco só quando agrupa. Verde da marca em detalhes (menu ativo, botão principal, links). Âmbar (`accent`) só para "atenção".
+- Fundo papel (`canvas`), conteúdo em caixas brancas (`surface`) com borda. Verde da marca em detalhes (menu ativo, botão principal, links). Âmbar (`accent`) só para "atenção".
 - Fontes: Bricolage Grotesque só no título da página (`font-display`); todo o resto em IBM Plex Sans.
 - Tamanho base 15 px (`text-sm` foi ajustado para 15 px e `text-xs` para 13 px em `globals.css`).
 - Cantos `rounded-lg` (caixas) e `rounded-md` (botões, campos). Sem sombra, a não ser em menu suspenso.
@@ -29,10 +30,14 @@ Quem usa são as sócias e a equipe da Eco Direito, todo dia, para saber **o que
 | `brand-50` a `brand-900` | marca |
 | `ok`, `warn`, `danger`, `info` (+ `-soft`) | situação |
 | `accent` | atenção (âmbar) |
+| `on-brand` | texto sobre fundo `brand-700` (botão principal) |
+| `nav`, `nav-ink`, `nav-muted` | menu lateral verde (igual nos dois modos) |
+
+Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`globals.css`); o botão `BotaoTema` (lua/sol) fica no pé do menu, no portal e no login e guarda a escolha no navegador. Use só tokens: nada de `text-white`, `bg-white` ou cor em hex fora do menu. Na escala da marca, `brand-700` é o verde de texto e de botão nos dois modos. Variante `dark:` disponível para exceções.
 
 ## Layout
 
-- Menu lateral claro, estreito, com os grupos Prazos, Financeiro e Administração. Usuário e "Sair" no pé.
+- Menu lateral verde escuro (`nav`), estreito, com os grupos Processos, Financeiro e Administração. Usuário, tema e "Sair" no pé.
 - Área de conteúdo com `max-w-6xl`. Tabela larga pode usar a largura toda.
 - `PageHeader`: título + frase-resumo (`resumo`) + ações à direita. A `descricao` longa sai; se for essencial, use uma frase curta.
 
@@ -43,12 +48,13 @@ Quem usa são as sócias e a equipe da Eco Direito, todo dia, para saber **o que
 | `PageHeader({ titulo, resumo?, acoes? })` | Topo da página. `resumo` é a frase que responde a pergunta da tela |
 | `Resumo` + `ItemResumo({ rotulo, valor, detalhe?, tom? })` | Até 4 números numa faixa única, sem cartões |
 | `Secao({ titulo, acao?, children })` | Bloco de conteúdo sem caixa: título pequeno e conteúdo |
-| `Lista` / `Linha({ href?, children })` | Lista de linhas com fio; com `href`, a linha inteira é link |
+| `Lista` / `Linha({ href?, children })` | Lista em caixa branca; com `href`, a linha inteira é link (hover + setinha) |
+| `Paginacao({ ...paginar(itens, pagina), href })` | "11–20 de 83" e botões de página; some com uma página só |
 | `Situacao({ tom, children })` | Status: ponto + texto |
 | `Badge({ tom })` | Etiqueta neutra (tipo, origem) |
 | `Abas({ abas, ativa })` | Abas por URL (`?aba=`), sublinhadas |
-| `SegmentedLinks` | Filtros por URL (mesmo visual das abas) |
-| `Expansivel({ resumo, children })` | Conteúdo recolhido (texto do ato, cálculo, movimentos) |
+| `SegmentedLinks` | Filtros por URL, controle com borda e ativo preenchido |
+| `Expansivel({ resumo, children })` | Conteúdo recolhido atrás de um botãozinho (texto do ato, cálculo, movimentos) |
 | `Vazio({ children })` | Lista vazia |
 | `Card` | Formulário ou bloco que precisa de caixa |
 | Tabela | `<table className="tabela">`; coluna de valor com `num` |

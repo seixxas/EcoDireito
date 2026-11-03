@@ -14,7 +14,7 @@ export function Abas({ abas, ativa, className }: { abas: Aba[]; ativa: string; c
           scroll={false}
           className={cn(
             'whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors',
-            aba.valor === ativa ? 'border-brand-700 text-ink' : 'border-transparent text-muted hover:text-ink',
+            aba.valor === ativa ? 'border-brand-700 text-ink' : 'border-transparent text-muted hover:border-brand-300 hover:text-ink',
           )}
         >
           {aba.rotulo}

@@ -15,7 +15,7 @@ export function GraficoFluxo({ dados, altura = 300 }: { dados: PontoFluxo[]; alt
       <Tooltip
         formatter={(valor) => brl(Number(valor))}
         cursor={{ fill: 'var(--color-canvas)' }}
-        contentStyle={{ borderRadius: 12, borderColor: 'var(--color-line)', fontSize: 13 }}
+        contentStyle={{ borderRadius: 8, borderColor: 'var(--color-line)', background: 'var(--color-surface)', color: 'var(--color-ink)', fontSize: 13 }}
       />
       <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
       <ReferenceLine y={0} stroke="var(--color-subtle)" />

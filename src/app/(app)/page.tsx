@@ -172,7 +172,7 @@ export default async function Hoje() {
             <Secao
               titulo="Próximos 7 dias"
               acao={
-                <Link href="/prazos" className="text-sm text-brand-700 hover:underline">
+                <Link href="/prazos" className="link text-sm">
                   Todos os prazos
                 </Link>
               }
@@ -191,12 +191,12 @@ export default async function Hoje() {
             <Secao
               titulo="Dinheiro"
               acao={
-                <Link href="/financeiro" className="text-sm text-brand-700 hover:underline">
+                <Link href="/financeiro" className="link text-sm">
                   Financeiro
                 </Link>
               }
             >
-              <dl className="divide-y divide-line border-y border-line">
+              <dl className="divide-y divide-line rounded-lg border border-line bg-surface px-4">
                 <Valor rotulo="Saldo em conta" valor={brl(caixa.saldoHoje)} detalhe={`mais ${brl(caixa.aplicado)} aplicados`} />
                 <Valor rotulo="A receber" valor={brl(geral.aReceber)} />
                 <Valor rotulo="Atrasado" valor={brl(geral.atrasado)} perigo={geral.atrasado > 0} />
@@ -208,12 +208,12 @@ export default async function Hoje() {
           <Secao
             titulo="Diário Oficial"
             acao={
-              <Link href="/publicacoes" className="text-sm text-brand-700 hover:underline">
+              <Link href="/publicacoes" className="link text-sm">
                 Abrir
               </Link>
             }
           >
-            <p className="text-muted">
+            <p className="rounded-lg border border-line bg-surface p-4 text-muted">
               {edicao.erro ? (
                 <span className="text-warn">{edicao.erro}</span>
               ) : (

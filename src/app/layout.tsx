@@ -11,9 +11,15 @@ export const metadata: Metadata = {
   description: 'Prazos e financeiro da Eco Direito Ambiental',
 }
 
+/** Aplica o tema salvo antes da primeira pintura (sem piscar o claro). Guia: preventing-flash-before-hydration. */
+const TEMA_SALVO = `(function(){try{var t=localStorage.getItem("tema");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${plex.variable} ${bricolage.variable} antialiased`}>
+    <html lang="pt-BR" data-theme="light" className={`${plex.variable} ${bricolage.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: TEMA_SALVO }} />
+      </head>
       <body className="min-h-screen font-sans">{children}</body>
     </html>
   )

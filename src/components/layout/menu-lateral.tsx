@@ -22,6 +22,7 @@ import { usePathname } from 'next/navigation'
 import { Suspense } from 'react'
 import { sair } from '@/app/(auth)/actions'
 import { cn } from '@/lib/cn'
+import { BotaoTema } from './botao-tema'
 import { PAPEIS, pode, type Area, type Papel } from '@/lib/permissoes'
 
 type Item = { href: string; rotulo: string; icone: LucideIcon; area: Area }
@@ -66,10 +67,10 @@ function ativo(pathname: string, href: string) {
 function Marca() {
   return (
     <Link href="/" className="flex items-center gap-2">
-      <span className="flex size-7 items-center justify-center rounded-md bg-brand-700 text-white">
+      <span className="flex size-7 items-center justify-center rounded-md bg-brand-500 text-white">
         <Leaf className="size-4" />
       </span>
-      <span className="font-display text-lg font-semibold leading-none text-ink">Eco Direito</span>
+      <span className="font-display text-lg font-semibold leading-none text-white">Eco Direito</span>
     </Link>
   )
 }
@@ -94,14 +95,14 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
 
   return (
     <>
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-rail px-3 py-5 lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-nav px-3 py-5 lg:flex">
         <div className="px-2">
           <Marca />
         </div>
         <nav className="mt-6 flex flex-1 flex-col gap-5 overflow-y-auto">
           {grupos.map((grupo, i) => (
             <div key={i}>
-              {grupo.titulo && <p className="mb-1 px-2 text-xs text-subtle">{grupo.titulo}</p>}
+              {grupo.titulo && <p className="mb-1 px-2 text-xs text-nav-muted">{grupo.titulo}</p>}
               <ul className="flex flex-col gap-px">
                 {grupo.itens.map(({ href, rotulo, icone: Icone }) => (
                   <li key={href}>
@@ -109,10 +110,10 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
                       href={href}
                       className={cn(
                         'flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors',
-                        ativo(pathname, href) ? 'bg-surface font-medium text-ink ring-1 ring-line' : 'text-muted hover:bg-surface/60 hover:text-ink',
+                        ativo(pathname, href) ? 'bg-white/12 font-medium text-white' : 'text-nav-ink/85 hover:bg-white/6 hover:text-white',
                       )}
                     >
-                      <Icone className={cn('size-4', ativo(pathname, href) ? 'text-brand-700' : 'text-subtle')} />
+                      <Icone className={cn('size-4', ativo(pathname, href) ? 'text-white' : 'text-nav-muted')} />
                       {rotulo}
                     </Link>
                   </li>
@@ -122,36 +123,40 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
           ))}
         </nav>
         {usuario && (
-          <div className="border-t border-line px-2 pt-3">
+          <div className="border-t border-white/10 px-2 pt-3">
             <div className="flex items-center gap-2.5">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-900">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-nav">
                 {usuario.nome.at(0)}
               </span>
               <span className="min-w-0 flex-1 text-sm leading-tight">
-                <span className="block truncate font-medium text-ink">{usuario.nome}</span>
-                <span className="block text-xs text-muted">{PAPEIS[usuario.papel].nome}</span>
+                <span className="block truncate font-medium text-white">{usuario.nome}</span>
+                <span className="block text-xs text-nav-muted">{PAPEIS[usuario.papel].nome}</span>
               </span>
+              <BotaoTema className="text-nav-muted hover:bg-white/10 hover:text-white" />
               <form action={sair}>
-                <button title="Sair" className="rounded-md p-1.5 text-subtle hover:bg-surface hover:text-ink">
+                <button title="Sair" className="rounded-md p-1.5 text-nav-muted hover:bg-white/10 hover:text-white">
                   <LogOut className="size-4" />
                 </button>
               </form>
             </div>
-            <p className="mt-2 text-xs text-warn">Dados fictícios para demonstração</p>
+            <p className="mt-2 text-xs text-accent">Dados fictícios para demonstração</p>
           </div>
         )}
       </aside>
 
-      <header className="sticky top-0 z-10 border-b border-line bg-rail px-4 py-3 lg:hidden">
+      <header className="sticky top-0 z-10 bg-nav px-4 py-3 lg:hidden">
         <div className="flex items-center justify-between">
           <Marca />
-          {usuario && (
-            <form action={sair}>
-              <button className="flex items-center gap-1.5 text-sm text-muted">
-                <LogOut className="size-4" /> Sair
-              </button>
-            </form>
-          )}
+          <div className="flex items-center gap-3">
+            <BotaoTema className="text-nav-ink" />
+            {usuario && (
+              <form action={sair}>
+                <button className="flex items-center gap-1.5 text-sm text-nav-ink">
+                  <LogOut className="size-4" /> Sair
+                </button>
+              </form>
+            )}
+          </div>
         </div>
         <nav className="-mx-4 mt-3 flex gap-1 overflow-x-auto px-4">
           {grupos
@@ -162,7 +167,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
                 href={href}
                 className={cn(
                   'whitespace-nowrap rounded-md px-2.5 py-1 text-sm',
-                  ativo(pathname, href) ? 'bg-surface font-medium text-ink ring-1 ring-line' : 'text-muted',
+                  ativo(pathname, href) ? 'bg-white/15 font-medium text-white' : 'text-nav-ink/85',
                 )}
               >
                 {rotulo}
