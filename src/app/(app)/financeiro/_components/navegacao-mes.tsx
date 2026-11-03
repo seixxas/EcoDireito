@@ -40,7 +40,8 @@ export function NavegacaoMes({ mes, meses, href, todos }: { mes: string; meses: 
       {seta(meses[i + 1], 'Próximo mês', ChevronRight)}
       {todos && (
         <Link href={href(TODOS_OS_MESES)} scroll={false} className="link ml-2 whitespace-nowrap text-sm">
-          todos os meses
+          {/* No celular, ao lado do botão "Registrar nota", o texto inteiro não cabe. */}
+          todos<span className="hidden sm:inline"> os meses</span>
         </Link>
       )}
     </nav>

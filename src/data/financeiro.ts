@@ -8,6 +8,7 @@ import type { LinhaExtrato } from '@/domain/financeiro/extrato'
 import { gerarOfx, linhasDeExemplo } from '@/domain/financeiro/extrato-exemplo'
 import { fluxoMensal, movimentosPrevistos, projetarSemanas, type Recorrente } from '@/domain/financeiro/fluxo'
 import type { EdicaoLancamento, Lancamento } from '@/domain/financeiro/lancamentos'
+import { lucratividade } from '@/domain/financeiro/lucratividade'
 import { ALIQUOTA_ISS, resumoNotas, type NotaFiscal } from '@/domain/financeiro/notas'
 import { situacaoDoContrato, situacaoParcela, type Parcela } from '@/domain/financeiro/parcelas'
 import type { ContaId } from '@/domain/financeiro/plano-de-contas'
@@ -114,6 +115,28 @@ export async function dadosParaNovaNota(parcelaId?: string) {
 export async function listarLancamentos() {
   const { hoje, processos, financeiro } = await carregar()
   return { hoje, meses: financeiro.meses, lancamentos: financeiro.lancamentos, processos }
+}
+
+/** Lucratividade de cada projeto com proposta aceita. O custo da equipe é simulado (veja `lucratividade.ts`). */
+export async function lucratividadePorProjeto() {
+  const { hoje, clientes, processos, contratos, financeiro } = await carregar()
+  const contratado = (processoId: string) => somar(contratos.find((c) => c.processoId === processoId)?.parcelas.map((p) => p.valor) ?? [])
+  return processos
+    .filter((processo) => situacaoDoContrato(processo, hoje) === 'fechado')
+    .map((processo) => ({
+      processo,
+      cliente: clientes.find((c) => c.id === processo.clienteId)!,
+      ...lucratividade({ processo, contratado: contratado(processo.id), notas: financeiro.notas, lancamentos: financeiro.lancamentos, hoje }),
+    }))
+}
+
+/** Um projeto da lucratividade, com as notas dele. */
+export async function lucratividadeDoProjeto(processoId: string) {
+  const [projetos, { hoje, financeiro }] = await Promise.all([lucratividadePorProjeto(), carregar()])
+  const projeto = projetos.find((p) => p.processo.id === processoId)
+  if (!projeto) return undefined
+  const notas = financeiro.notas.filter((n) => n.processoId === processoId).sort((a, b) => b.emissao.localeCompare(a.emissao))
+  return { hoje, ...projeto, notas }
 }
 
 /** O lançamento com a nota e a linha do extrato de onde veio (a descrição original do banco). */

@@ -19,7 +19,7 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 ## Telas (redesign de 03/11, guia em `interface.md`)
 
 - Lançamentos: a observação aparece embaixo da descrição. A competência não tem coluna: só aparece, embaixo da descrição e em destaque, quando não é o mês do pagamento ("Competência set/26 · mês anterior ao pagamento", `textoDaCompetencia`), com a explicação no pé da tabela. A mesma explicação vai na tela do lançamento e na dica do campo.
-- Faturamento e Lançamentos abrem no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`) e "todos os meses" (`?mes=todos`, útil com a busca). Faturamento: parcelas prontas para faturar em lista e abas "Notas do mês" · "Faturado × recebido no ano" (`?aba=grafico`).
+- Faturamento e Lançamentos abrem no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`) e "todos os meses" (`?mes=todos`, útil com a busca). Faturamento: parcelas prontas para faturar em lista e abas "Notas do mês" · "Faturado × recebido" (`?aba=grafico`) · "Lucratividade por projeto" (`?aba=lucratividade`).
 - Contratos: o contrato nasce com a proposta (as parcelas são o preço dela), mas a lista e os totais ("Contratado", "Aguardando evento" etc.) só contam processo com proposta aceita (`situacaoDoContrato`, que segue a `situacaoDaProposta` do Comercial: aceite até hoje e sem recusa). Propostas em aberto aparecem numa linha à parte, com link para o Comercial; recusadas (`proposta_recusada`) ficam de fora.
 - Contas a receber: atraso numa barra só, com as faixas clicáveis (`?faixa=`); notas em aberto das mais atrasadas para as menos, com busca (empresa, grupo, nº da NF, serviço, processo) e situação (`?situacao=atrasadas|a-vencer|parcial`). Busca, situação e faixa se somam; cada filtro conta o que os outros deixam passar. Embaixo, "Maiores saldos a receber" por empresa ou grupo (inclui o que ainda vai vencer); clicar filtra a lista.
 - Tabelas e listas paginadas de 10 em 10 (`paginar` + `Paginacao`, `?pagina=`, mantendo mês, situação e aba): notas do Faturamento, Contas a receber, Lançamentos, Contratos e as três abas do Extrato. Linha que abre detalhe tem setinha no fim (`AbrirLinha`); link no meio do texto usa a classe `link`.
@@ -29,13 +29,22 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 - Busca (`Busca`, `?q=`, sem acento nem maiúscula): Faturamento (cliente, grupo, NF, serviço, processo; resumo e contagens seguem a busca), Contas a receber, Lançamentos, Contratos (processo, cliente, grupo, nº SEI) e Extrato. Busca e filtros se somam e a paginação conta o resultado.
 - Situação da nota é ponto + texto (`SituacaoDaNota`, em `components/financeiro/situacao-nota.tsx`).
 
+## Lucratividade por projeto (simulação)
+
+- Aba do Faturamento e detalhe em `/financeiro/lucratividade/[processoId]`. Regras em `src/domain/financeiro/lucratividade.ts` (com teste).
+- Entram os processos com proposta aceita. Por projeto: contrato (soma das parcelas), faturado (notas não canceladas), recebido, custos diretos (saídas com o processo, por conta) e equipe.
+- **Equipe é simulada**: horas = faturado em R$ mil × horas por mil (licenciamento 1,5; manejo 2,5) × uma variação de 0,7 a 1,3 tirada do id do processo, vezes R$ 95/h. Troca pelo registro de horas quando existir.
+- Margem = faturado − custos diretos − equipe, sobre o faturado: boa a partir de 40%, atenção de 20% a 40%, ruim abaixo de 20%. Sem faturamento, sem margem (vai para o fim da lista).
+- Resumo: margem média ponderada pelo faturado, receita × custo, mais e menos lucrativo. Busca e filtro por margem (`?margem=boa|atencao|ruim`), paginação.
+- Detalhe: barras de receita × custo (custo por conta, equipe listrada), custos por conta com link para os lançamentos (`/financeiro/lancamentos?mes=todos&processo=&conta=`) e as notas do projeto. Selo "Simulação" e a frase do que é estimado nas duas telas.
+
 ## Edição
 
 | Tela | O que faz |
 |---|---|
 | `/financeiro/notas/nova` | Registra a nota já emitida no site da Prefeitura. Com `?parcela=<id>` (botão "Registrar nota" da parcela liberada), já liga cliente, processo e parcela. |
 | `/financeiro/notas/[id]` | Detalhe da nota; registrar ou corrigir o recebimento; cancelar. |
-| `/financeiro/lancamentos` | Lançamentos do mês (ou de todos os meses) com busca (descrição, observação, conta, processo, valor) e filtro de conta; `?regime=competencia` filtra o mês pela competência (link da DRE). Lançamento manual (despesa ou receita) com conta, competência, processo e observação. |
+| `/financeiro/lancamentos` | Lançamentos do mês (ou de todos os meses) com busca (descrição, observação, conta, processo, valor), filtro de conta e de processo (`?processo=`, link da lucratividade); `?regime=competencia` filtra o mês pela competência (link da DRE). Lançamento manual (despesa ou receita) com conta, competência, processo e observação. |
 | `/financeiro/lancamentos/[id]` | Detalhe com a descrição original do extrato e a competência explicada; edita descrição, conta, competência, processo e observação; apaga. |
 | `/financeiro/contratos` | Contratado, faturado e a faturar por processo. `/financeiro/contratos/[processoId]` inclui, edita e apaga parcelas. |
 
