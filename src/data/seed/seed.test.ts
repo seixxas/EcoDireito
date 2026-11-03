@@ -24,6 +24,13 @@ describe('dados fictícios', () => {
     }
   })
 
+  it('trazem observações de exemplo, a maior parte nos lançamentos mais recentes', () => {
+    const comObservacao = base.financeiro.lancamentos.filter((l) => l.observacao)
+    expect(comObservacao.length).toBeGreaterThanOrEqual(10)
+    expect(comObservacao.length).toBeLessThanOrEqual(16)
+    expect(comObservacao.filter((l) => l.data >= '2026-10-01').length).toBeGreaterThanOrEqual(comObservacao.length / 2)
+  })
+
   it('mostram prazos em todas as situações', () => {
     const situacoes = new Set(base.processos.flatMap((p) => gerarPrazos(p).map((prazo) => situacaoPrazo(prazo, hoje).situacao)))
     expect([...situacoes].sort()).toEqual(['cumprido', 'hoje', 'no_prazo', 'proximo', 'vencido'])

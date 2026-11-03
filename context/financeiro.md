@@ -18,6 +18,7 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 
 ## Telas (redesign de 03/11, guia em `interface.md`)
 
+- Lançamentos: a observação aparece embaixo da descrição. A competência não tem coluna: só aparece, embaixo da descrição e em destaque, quando não é o mês do pagamento ("Competência set/26 · mês anterior ao pagamento", `textoDaCompetencia`), com a explicação no pé da tabela. A mesma explicação vai na tela do lançamento e na dica do campo.
 - Faturamento e Lançamentos abrem no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`) e "todos os meses" (`?mes=todos`, útil com a busca). Faturamento: parcelas prontas para faturar em lista e abas "Notas do mês" · "Faturado × recebido no ano" (`?aba=grafico`).
 - Contas a receber: atraso numa barra só, com as faixas clicáveis (`?faixa=`); notas em aberto das mais atrasadas para as menos, com busca (empresa, grupo, nº da NF, serviço, processo) e situação (`?situacao=atrasadas|a-vencer|parcial`). Busca, situação e faixa se somam; cada filtro conta o que os outros deixam passar. Embaixo, "Maiores saldos a receber" por empresa ou grupo (inclui o que ainda vai vencer); clicar filtra a lista.
 - Tabelas e listas paginadas de 10 em 10 (`paginar` + `Paginacao`, `?pagina=`, mantendo mês, situação e aba): notas do Faturamento, Contas a receber, Lançamentos, Contratos e as três abas do Extrato. Linha que abre detalhe tem setinha no fim (`AbrirLinha`); link no meio do texto usa a classe `link`.
@@ -34,7 +35,7 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 | `/financeiro/notas/nova` | Registra a nota já emitida no site da Prefeitura. Com `?parcela=<id>` (botão "Registrar nota" da parcela liberada), já liga cliente, processo e parcela. |
 | `/financeiro/notas/[id]` | Detalhe da nota; registrar ou corrigir o recebimento; cancelar. |
 | `/financeiro/lancamentos` | Lançamentos do mês (ou de todos os meses) com busca (descrição, observação, conta, processo, valor) e filtro de conta; `?regime=competencia` filtra o mês pela competência (link da DRE). Lançamento manual (despesa ou receita) com conta, competência, processo e observação. |
-| `/financeiro/lancamentos/[id]` | Detalhe com a descrição original do extrato; edita descrição, conta, competência, processo e observação; apaga. |
+| `/financeiro/lancamentos/[id]` | Detalhe com a descrição original do extrato e a competência explicada; edita descrição, conta, competência, processo e observação; apaga. |
 | `/financeiro/contratos` | Contratado, faturado e a faturar por processo. `/financeiro/contratos/[processoId]` inclui, edita e apaga parcelas. |
 
 Regras (em `src/domain/financeiro/notas.ts` e `lancamentos.ts`, com teste):

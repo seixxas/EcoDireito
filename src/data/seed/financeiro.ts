@@ -236,11 +236,37 @@ function equilibrarCaixa(lista: Rascunho<Lancamento>[]) {
   return { lancamentos, aplicado }
 }
 
+/**
+ * Observações de exemplo (o campo serve para o que a descrição do banco não diz).
+ * Vão nos lançamentos mais recentes de cada descrição, sem sortear nada: notas, valores e o extrato de exemplo não mudam.
+ */
+const OBSERVACOES: { descricao: string; quantos: number; texto: (processo?: Processo) => string }[] = [
+  { descricao: 'Despesas gerais', quantos: 1, texto: () => 'PIX para o Guilherme: festa de fim de ano da equipe' },
+  { descricao: 'Combustível e transporte', quantos: 1, texto: () => 'Reembolso de táxi da vistoria do Jequitibá Campo Belo' },
+  { descricao: 'Copa e café', quantos: 2, texto: () => 'Copa: café e água do mês' },
+  { descricao: 'Viveiro Mata Nativa · manejo e plantio', quantos: 2, texto: (p) => `Viveiro: mudas do plantio do ${p?.empreendimento ?? 'cliente'}` },
+  { descricao: 'ART · CREA', quantos: 2, texto: (p) => `ART do relatório de manejo${p ? ` · ${p.empreendimento}` : ''}` },
+  { descricao: 'DAS · Simples Nacional', quantos: 3, texto: () => 'Imposto do faturamento do mês anterior (por isso a competência)' },
+  { descricao: 'Tarifas bancárias', quantos: 1, texto: () => 'Pacote de serviços e PIX acima do limite' },
+  { descricao: 'Material de escritório', quantos: 1, texto: () => 'Toner e papel para a impressora' },
+  { descricao: 'Manutenção de veículo', quantos: 1, texto: () => 'Revisão dos 30 mil km da picape' },
+  { descricao: 'Empréstimo à Ambiente Legal', quantos: 1, texto: () => 'Mútuo: devolver até o fim do trimestre' },
+]
+
+function comObservacoes(lancamentos: Lancamento[], processos: Processo[]): Lancamento[] {
+  const observacoes = new Map<string, string>()
+  for (const regra of OBSERVACOES) {
+    const recentes = lancamentos.filter((l) => l.descricao === regra.descricao).slice(-regra.quantos)
+    for (const l of recentes) observacoes.set(l.id, regra.texto(processos.find((p) => p.id === l.processoId)))
+  }
+  return lancamentos.map((l) => (observacoes.has(l.id) ? { ...l, observacao: observacoes.get(l.id) } : l))
+}
+
 export function gerarFinanceiro(hoje: DataISO, processos: Processo[], contratos: Contrato[]) {
   const a = criarAleatorio(2026)
   const inicio = somarMeses(`${mesDe(hoje)}-01`, -MESES_DE_HISTORICO)
   const meses = mesesEntre(mesDe(inicio), mesDe(hoje))
   const notas = gerarNotas(a, hoje, meses, processos, contratos)
   const { lancamentos, aplicado } = equilibrarCaixa(gerarLancamentos(a, hoje, meses, notas, processos))
-  return { inicio, meses, notas, lancamentos, saldoInicial: SALDO_INICIAL, aplicado }
+  return { inicio, meses, notas, lancamentos: comObservacoes(lancamentos, processos), saldoInicial: SALDO_INICIAL, aplicado }
 }

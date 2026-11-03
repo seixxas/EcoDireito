@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { montarDre } from './dre'
 import { diasDaSemana, movimentosPrevistos, projetarSemanas } from './fluxo'
 import type { Processo } from '../processos'
-import { alteracoesDoLancamento, errosDoLancamento, mesDoLancamento, type Lancamento } from './lancamentos'
+import { alteracoesDoLancamento, errosDoLancamento, mesDoLancamento, mesesDaCompetencia, type Lancamento } from './lancamentos'
 import { errosDaNota, errosDoRecebimento, montarNota, motivoParaNaoCancelar, resumoNotas, situacaoNota, type NotaFiscal } from './notas'
 
 const nota = (parcial: Partial<NotaFiscal>): NotaFiscal => ({
@@ -135,6 +135,13 @@ describe('edição do lançamento', () => {
   it('no lançamento de uma nota, só a observação', () => {
     expect(alteracoesDoLancamento({ ...pix, notaId: 'n1' }, edicao)).toEqual({ observacao: 'festa X' })
     expect(alteracoesDoLancamento({ ...pix, notaId: 'n1' }, { ...edicao, observacao: '   ' })).toEqual({ observacao: undefined })
+  })
+
+  it('mede a competência em meses a partir do mês do pagamento', () => {
+    expect(mesesDaCompetencia({ data: '2026-11-20', competencia: '2026-11' })).toBe(0)
+    expect(mesesDaCompetencia({ data: '2026-11-20', competencia: '2026-10' })).toBe(-1)
+    expect(mesesDaCompetencia({ data: '2027-01-10', competencia: '2026-12' })).toBe(-1)
+    expect(mesesDaCompetencia({ data: '2026-11-20', competencia: '2027-02' })).toBe(3)
   })
 
   it('cai no mês da data (caixa) ou da competência', () => {
