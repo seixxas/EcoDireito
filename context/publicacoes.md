@@ -5,7 +5,9 @@ A caixa de entrada mostra o que está na tabela `publicacoes` (ou os atos fictí
 
 ## Caixa de entrada (E3)
 
-- **Confirmar**: a série do ato vira o evento (data do ato, origem `diario`, prazo escrito no texto em `diasNoAto`). Evento, fase do processo e status do ato vão num único `db.batch` (transação). Série sem evento (ex.: Notificação) só fica confirmada.
+- **Confirmar**: o ato vira o evento (`eventoDoAto`; data do ato, origem `diario`). Evento, fase do processo e status do ato vão num único `db.batch` (transação). O evento tem id fixo `diario-<id do ato>`: duas confirmações ao mesmo tempo gravam um só. Série sem evento (ex.: Notificação) só fica confirmada.
+- **Prazo escrito no ato** (`prazoDoAto` → `diasNoAto`): só no Comunique-se e só na frase "prazo de (até) N dias". Em extrato e despacho, "N dias" costuma ser vigência ou validade e alongaria o prazo da cláusula. "Dias úteis" é lido como corridos (só antecipa).
+- Limite conhecido: o vínculo é recalculado a cada leitura. Se o CNPJ ou o nº SEI de um cadastro mudar depois da importação, o ato gravado pode sumir da caixa.
 - **Não é nosso**: descarta com motivo obrigatório.
 - **Sem processo cadastrado** (achado pelo CNPJ): "Cadastrar processo" abre `/processos/novo?ato=<id>` com cliente, nº SEI e fase preenchidos e volta para a caixa; o ato passa a casar pelo SEI e pode ser confirmado.
 - Só atos com status `nova` mudam: a action recusa ato já revisado ("Este ato já foi revisado").

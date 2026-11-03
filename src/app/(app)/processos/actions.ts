@@ -7,9 +7,9 @@ import { gravarCliente, gravarEvento, gravarProcesso, obterProcesso, removerEven
 import { exigirArea } from '@/data/sessao'
 import { EVENTOS, FASES, TIPOS_EVENTO, type NumeroFase } from '@/domain/processos'
 import { campo, lerFormulario, valoresDoFormulario, type EstadoFormulario } from '@/lib/formulario'
+import { caminhoInterno } from '@/lib/permissoes'
 
-/** Só caminhos internos ("//site" levaria para fora). */
-const destino = (voltar: string | undefined, padrao: string) => (voltar?.startsWith('/') && !voltar.startsWith('//') ? voltar : padrao)
+const destino = (voltar: string | undefined, padrao: string) => (voltar && caminhoInterno(voltar) ? voltar : padrao)
 
 const esquemaCliente = z.object({
   id: campo.opcional(),
