@@ -115,7 +115,7 @@ export default async function Hoje() {
         resumo={`${data.charAt(0).toUpperCase()}${data.slice(1)}. ${pendencias.length ? `${juntar(pendencias)}.` : 'Nada pendente.'}`}
       />
 
-      <div className="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="grid grid-cols-1 gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div>
           {!temAtrasado && !temHoje && !semana.length && <Vazio>Nenhum prazo, publicação ou cobrança pede atenção agora.</Vazio>}
 
