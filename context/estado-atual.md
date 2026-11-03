@@ -8,9 +8,10 @@ Atualizado em 2026-11-02. Tudo roda com dados fictícios em memória (`src/data/
 |---|---|---|
 | `/` | Painel | Prazos vencidos e próximos, Diário Oficial, parcelas a faturar, notas atrasadas, saldo |
 | `/prazos` | Prazos | Todos os prazos com cálculo explicado; filtros na URL (`?filtro=vencidos`) |
-| `/processos` | Processos | Lista com fase e próximo prazo |
-| `/processos/[id]` | Processo | 7 fases, prazos, linha do tempo e parcelas do contrato |
-| `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; confirmar só na tela |
+| `/processos` | Processos | Lista com fase e próximo prazo; cadastrar processo (`/processos/novo`) |
+| `/processos/[id]` | Processo | 7 fases, prazos, linha do tempo (lançar e apagar evento) e parcelas do contrato; editar em `/processos/[id]/editar` |
+| `/processos/clientes` | Clientes | Lista, cadastro e edição de clientes |
+| `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; confirmar cria o evento, descartar pede motivo, cadastrar processo a partir do ato |
 | `/financeiro` | Faturamento | Notas, situação, faturado × recebido, parcelas prontas para faturar |
 | `/financeiro/receber` | Contas a receber | Atraso por faixa e por grupo econômico |
 | `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`) |

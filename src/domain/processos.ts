@@ -44,6 +44,14 @@ export const EVENTOS = {
 
 export type TipoEvento = keyof typeof EVENTOS
 
+export const TIPOS_EVENTO = Object.keys(EVENTOS) as [TipoEvento, ...TipoEvento[]]
+
+/** Evento que já aconteceu leva o processo à fase dele. Evento planejado não muda a fase, e o processo nunca volta de fase sozinho. */
+export function faseDepoisDoEvento(faseAtual: NumeroFase, evento: { tipo: TipoEvento; data: DataISO }, hoje: DataISO): NumeroFase {
+  if (evento.data > hoje) return faseAtual
+  return Math.max(faseAtual, EVENTOS[evento.tipo].fase) as NumeroFase
+}
+
 export type Evento = {
   id: string
   tipo: TipoEvento
