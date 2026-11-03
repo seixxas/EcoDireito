@@ -50,7 +50,7 @@ export function vincularAto(ato: Ato, processos: Processo[], clientes: Cliente[]
   if (porSimproc) return { comoAchou: 'simproc', clienteId: porSimproc.clienteId, processoId: porSimproc.id }
 
   const cnpjs = (ato.texto.match(CNPJ) ?? []).map(soDigitos)
-  const cliente = clientes.find((c) => cnpjs.includes(soDigitos(c.cnpj)))
+  const cliente = clientes.find((c) => cnpjs.includes(soDigitos(c.documento)))
   if (cliente) return { comoAchou: 'cnpj', clienteId: cliente.id }
 }
 

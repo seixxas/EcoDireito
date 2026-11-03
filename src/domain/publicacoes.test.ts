@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Cliente, Processo } from './processos'
 import { ORGAO_SVMA, extrairDiasDoTexto, vincularAto, type Ato } from './publicacoes'
 
-const clientes: Cliente[] = [{ id: 'c1', nome: 'Aurora SPE', cnpj: '12.345.678/0001-95' }]
+const clientes: Cliente[] = [{ id: 'c1', nome: 'Aurora SPE', documento: '12.345.678/0001-95' }]
 const processos: Processo[] = [
   {
     id: 'p1',

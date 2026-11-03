@@ -58,7 +58,8 @@ export type Servico = 'licenciamento' | 'manejo'
 export type Cliente = {
   id: string
   nome: string
-  cnpj: string
+  /** CNPJ (empresa) ou CPF (pessoa física). */
+  documento: string
   /** Incorporadora dona da SPE. */
   grupo?: string
 }

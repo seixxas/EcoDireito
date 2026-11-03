@@ -100,8 +100,12 @@ export function gerarPrazos(processo: Processo, regras = REGRAS_SVMA): Prazo[] {
     const usados = new Set<string>()
     for (const evento of eventos) {
       if (evento.tipo !== regra.gatilho) continue
+      // Na antecedência, o evento que cumpre (o aviso) vem antes da data planejada.
       const cumprimento = eventos.find(
-        (e) => e.tipo === regra.cumpridoPor && e.data >= evento.data && !usados.has(e.id),
+        (e) =>
+          e.tipo === regra.cumpridoPor &&
+          (regra.direcao === 'antes' ? e.data <= evento.data : e.data >= evento.data) &&
+          !usados.has(e.id),
       )
       if (cumprimento) usados.add(cumprimento.id)
       prazos.push({

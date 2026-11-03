@@ -64,4 +64,15 @@ describe('gerarPrazos', () => {
     expect(situacaoPrazo(segundo, '2026-11-12').situacao).toBe('proximo')
     expect(situacaoPrazo(segundo, '2026-11-25').situacao).toBe('vencido')
   })
+
+  it('aviso enviado antes da data planejada cumpre a antecedência', () => {
+    const [aviso] = gerarPrazos({
+      ...processo,
+      eventos: [
+        { id: 'e1', tipo: 'aviso_corte_enviado', data: '2026-10-01', origem: 'manual' },
+        { id: 'e2', tipo: 'corte_planejado', data: '2026-10-20', origem: 'manual' },
+      ],
+    })
+    expect(aviso.cumpridoEm).toBe('2026-10-01')
+  })
 })
