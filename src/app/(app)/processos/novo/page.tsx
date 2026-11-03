@@ -14,9 +14,9 @@ import { LinkVoltar } from '../_components/link-voltar'
 export const metadata: Metadata = { title: 'Novo processo' }
 
 /** `?ato=<id>` abre o cadastro a partir de um ato do Diário Oficial (cliente e nº SEI já preenchidos). */
-export default async function PaginaNovoProcesso({ searchParams }: { searchParams: Promise<{ ato?: string }> }) {
+export default async function PaginaNovoProcesso({ searchParams }: { searchParams: Promise<{ ato?: string; cliente?: string }> }) {
   await exigirArea('prazos', 'editar')
-  const { ato } = await searchParams
+  const { ato, cliente } = await searchParams
   const [clientes, publicacao] = await Promise.all([listarClientes(), ato ? obterPublicacao(ato) : undefined])
   const daqui = ato ? `/processos/novo?ato=${encodeURIComponent(ato)}` : '/processos/novo'
 
@@ -40,7 +40,7 @@ export default async function PaginaNovoProcesso({ searchParams }: { searchParam
         <FormularioProcesso
           clientes={clientes.map(({ cliente }) => ({ id: cliente.id, nome: cliente.nome }))}
           valores={{
-            clienteId: publicacao?.cliente.id,
+            clienteId: publicacao?.cliente.id ?? cliente,
             numeroSei: publicacao?.ato.processo,
             faseAtual: publicacao?.evento && EVENTOS[publicacao.evento].fase,
           }}

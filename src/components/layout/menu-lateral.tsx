@@ -14,6 +14,7 @@ import {
   ListTodo,
   LogOut,
   Newspaper,
+  Radar,
   Receipt,
   Users,
   type LucideIcon,
@@ -31,7 +32,13 @@ export type UsuarioDoMenu = { nome: string; papel: Papel }
 
 const GRUPOS: { titulo?: string; itens: Item[] }[] = [
   { itens: [{ href: '/', rotulo: 'Hoje', icone: ListTodo, area: 'prazos' }] },
-  { titulo: 'Comercial', itens: [{ href: '/comercial', rotulo: 'Propostas', icone: Handshake, area: 'comercial' }] },
+  {
+    titulo: 'Comercial',
+    itens: [
+      { href: '/comercial', rotulo: 'Propostas', icone: Handshake, area: 'comercial' },
+      { href: '/comercial/prospeccao', rotulo: 'Prospecção', icone: Radar, area: 'comercial', emBreve: true },
+    ],
+  },
   {
     titulo: 'Processos',
     itens: [

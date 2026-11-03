@@ -10,6 +10,7 @@ Atualizado em 2026-11-02. Vale para todas as sessões. Ao terminar uma etapa, ma
 | Base | Histórico de alterações (quem mudou o quê), multiempresa (Ambiente Legal) | Depois |
 | Comercial | Proposta como fase 1 do processo: criar, documento para PDF, enviada, aprovada ou recusada; funil e retornos no Hoje | Pronto |
 | Comercial | Enviar a proposta por e-mail pelo sistema, versões da proposta, modelos de texto editáveis | Depois |
+| Comercial | Prospecção: oportunidades de alvarás novos no Diário, SPEs de grupos clientes, GeoSampa (hoje só a prévia) | Depois |
 | Prazos | Motor de prazos com regras da SVMA e feriados | Pronto |
 | Prazos | Cadastrar e editar clientes e processos | **Hoje** (E3) |
 | Prazos | Lançar evento manual (gera ou cumpre prazos), apagar evento errado | **Hoje** (E3) |
