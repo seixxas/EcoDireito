@@ -14,14 +14,27 @@ export async function listarUsuarios() {
   return linhas.map((linha) => ({ ...linha, papel: (ehPapel(linha.papel) ? linha.papel : 'equipe') as Papel }))
 }
 
-/** Cria o login com senha (sem e-mail de convite por enquanto). */
-export async function criarUsuario(dados: { nome: string; email: string; papel: Papel; clienteId?: string; senha: string }) {
+const EMAIL_EM_USO = { erro: 'Já existe um usuário com esse e-mail.' }
+
+/** Cria o login com senha (sem e-mail de convite por enquanto). O e-mail fica em minúsculas, como o login procura. */
+export async function criarUsuario(dados: { nome: string; email: string; papel: Papel; clienteId?: string; senha: string }): Promise<{ erro?: string }> {
   exigirBanco()
-  const [existente] = await db.select({ id: schema.user.id }).from(schema.user).where(eq(schema.user.email, dados.email))
-  if (existente) return { erro: 'Já existe um usuário com esse e-mail.' }
+  const email = dados.email.trim().toLowerCase()
+  const [existente] = await db.select({ id: schema.user.id }).from(schema.user).where(eq(schema.user.email, email))
+  if (existente) return EMAIL_EM_USO
+
   const id = randomUUID()
-  await db.insert(schema.user).values({ id, name: dados.nome, email: dados.email, emailVerified: true, papel: dados.papel, clienteId: dados.clienteId })
-  await db.insert(schema.account).values({ id: randomUUID(), accountId: id, providerId: 'credential', userId: id, password: await hashPassword(dados.senha) })
+  try {
+    // Usuário e senha juntos: sem a conta de senha, o usuário ficaria sem conseguir entrar.
+    await db.batch([
+      db.insert(schema.user).values({ id, name: dados.nome, email, emailVerified: true, papel: dados.papel, clienteId: dados.clienteId }),
+      db.insert(schema.account).values({ id: randomUUID(), accountId: id, providerId: 'credential', userId: id, password: await hashPassword(dados.senha) }),
+    ])
+  } catch (erro) {
+    // Dois cadastros ao mesmo tempo com o mesmo e-mail: o índice único do banco segura o segundo.
+    if (String(erro).includes('user_email_unique')) return EMAIL_EM_USO
+    throw erro
+  }
   return {}
 }
 

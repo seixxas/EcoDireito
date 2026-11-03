@@ -19,6 +19,11 @@ export function pode(papel: Papel, area: Area, acesso: Acesso = 'ver') {
   return acesso === 'ver' ? nivel !== 'nada' : nivel === 'editar'
 }
 
+/** Só caminhos do próprio site: "/x", nunca "//outro.com" ou "/\outro.com" (o navegador trataria como outro site). */
+export function caminhoInterno(caminho: string) {
+  return /^\/(?![/\\])/.test(caminho)
+}
+
 /** Primeira tela depois do login. */
 export function inicioDoPapel(papel: Papel) {
   if (papel === 'cliente') return '/portal'

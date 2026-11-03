@@ -5,6 +5,7 @@ import { sair } from '@/app/(auth)/actions'
 import { hoje } from '@/data/hoje'
 import { obterProcesso } from '@/data/processos'
 import { exigirUsuario } from '@/data/sessao'
+import { pode } from '@/lib/permissoes'
 import { proximoPrazo } from '@/domain/prazos'
 import { FASES } from '@/domain/processos'
 import { cn } from '@/lib/cn'
@@ -24,8 +25,9 @@ function contagem(dias: number) {
 export default async function Portal({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const [usuario, dia, dados] = await Promise.all([exigirUsuario(), hoje(), obterProcesso(id)])
-  // A construtora só vê os próprios processos; a equipe vê todos (para conferir a visão do cliente).
-  if (!dados || (usuario.papel === 'cliente' && usuario.clienteId !== dados.processo.clienteId)) notFound()
+  // A construtora só vê os próprios processos; quem acompanha prazos vê todos (para conferir a visão do cliente).
+  const podeVer = usuario.papel === 'cliente' ? usuario.clienteId === dados?.processo.clienteId : pode(usuario.papel, 'prazos')
+  if (!dados || !podeVer) notFound()
   const { processo, prazos } = dados
   const fase = FASES[processo.faseAtual - 1]
   const proximo = proximoPrazo(prazos, dia)

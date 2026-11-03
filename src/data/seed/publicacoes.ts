@@ -6,6 +6,9 @@ import { CLIENTES } from './clientes'
 
 export type StatusPublicacao = 'nova' | 'confirmada' | 'descartada'
 
+/** A edição mais recente lida pelo robô. `processadaEm` é ISO; `erro` aparece quando o download falhou ou não houve edição. */
+export type EdicaoDiario = { data: DataISO; totalAtos: number; atosSvma: number; erro?: string; processadaEm?: string }
+
 const documento = (id: string) => CLIENTES.find((c) => c.id === id)!.documento
 
 /** Atos fictícios no formato real do DOC-SP (texto em caixa alta, como a SVMA publica). */
@@ -62,6 +65,6 @@ export function gerarAtos(hoje: DataISO) {
 
   return {
     atos,
-    edicao: { data: edicao, totalAtos: a.inteiro(2_550, 2_900), atosSvma: a.inteiro(52, 74) },
+    edicao: { data: edicao, totalAtos: a.inteiro(2_550, 2_900), atosSvma: a.inteiro(52, 74) } as EdicaoDiario,
   }
 }
