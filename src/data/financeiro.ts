@@ -13,6 +13,7 @@ import type { ContaId } from '@/domain/financeiro/plano-de-contas'
 import type { Cliente } from '@/domain/processos'
 import { carregar } from './base'
 import { listarParcelasLiberadas } from './processos'
+import { exigirArea } from './sessao'
 import { ALIQUOTA_SIMPLES, FIXAS, OCASIONAIS } from './seed/financeiro'
 
 /** Notas do período do histórico, com cliente e processo. */
@@ -219,6 +220,8 @@ export type LinhaDoExtrato = typeof schema.extratoLinhas.$inferSelect
 
 /** Linhas do extrato e regras. Sem banco, tudo vazio: não há extrato fictício. */
 async function extratoERegras() {
+  // Leitura direta no banco, fora de carregar(): a guarda tem de estar aqui.
+  await exigirArea('financeiro')
   if (!temBanco) return { linhas: [], regras: [] }
   const [linhas, regras] = await Promise.all([
     db.select().from(schema.extratoLinhas).orderBy(desc(schema.extratoLinhas.data)),

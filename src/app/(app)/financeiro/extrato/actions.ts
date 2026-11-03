@@ -57,7 +57,8 @@ export async function confirmarTodas() {
 
 const esquemaClassificacao = z.object({
   linhaId: campo.texto(),
-  notaId: campo.opcional(),
+  /** Só aparece em linha de crédito. */
+  notaId: campo.opcional().optional(),
   contaId: z.union([z.literal(''), contaId]).transform((valor) => valor || undefined),
   processoId: campo.opcional(),
   lembrar: z
