@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Cliente } from '../processos'
-import { notasParaCredito, regraPara, sugerir, sugerirTermo, type Regra } from './classificacao'
+import { notasParaCredito, regraPara, sugerir, sugerirParaTodas, sugerirTermo, type Regra } from './classificacao'
 import { decodificar, lerExtrato, type Leitura } from './extrato'
 import type { Lancamento } from './lancamentos'
 import type { NotaFiscal } from './notas'
@@ -145,5 +145,20 @@ describe('classificação', () => {
     expect(sugerir({ data: '2026-10-19', descricao: 'VIVEIRO', valor: -125_000 }, contexto)).toMatchObject({ tipo: 'regra', regra: { id: 'r1' } })
     expect(sugerir({ data: '2026-10-16', descricao: 'PIX', valor: 945_000 }, contexto)).toMatchObject({ tipo: 'nota' })
     expect(sugerir({ data: '2026-10-16', descricao: 'PIX', valor: 1 }, contexto)).toBeUndefined()
+  })
+
+  it('na fila inteira, não sugere a mesma nota para dois créditos iguais', () => {
+    const contexto = { lancamentosSemExtrato: [], notas: [nota({})], clientes, regras }
+    const fila = sugerirParaTodas(
+      [
+        { data: '2026-10-20', descricao: 'PIX', valor: 945_000 },
+        { data: '2026-10-16', descricao: 'PIX', valor: 945_000 },
+      ],
+      contexto,
+    )
+    expect(fila.map(({ linha, sugestao }) => [linha.data, sugestao?.tipo])).toEqual([
+      ['2026-10-16', 'nota'],
+      ['2026-10-20', undefined],
+    ])
   })
 })

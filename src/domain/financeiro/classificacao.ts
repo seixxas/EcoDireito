@@ -59,14 +59,13 @@ export function notasParaCredito(credito: Movimento, notas: NotaFiscal[], client
     )
 }
 
+type Contexto = { lancamentosSemExtrato: Lancamento[]; notas: NotaFiscal[]; clientes: Cliente[]; regras: Regra[] }
+
 /**
  * Primeiro procura um lançamento já feito à mão (mesmo valor, até 3 dias de diferença), para não lançar duas vezes.
  * Depois, se for crédito, a nota que ele paga. Por último, as regras.
  */
-export function sugerir(
-  linha: Movimento,
-  contexto: { lancamentosSemExtrato: Lancamento[]; notas: NotaFiscal[]; clientes: Cliente[]; regras: Regra[] },
-): Sugestao | undefined {
+export function sugerir(linha: Movimento, contexto: Contexto): Sugestao | undefined {
   const lancamento = contexto.lancamentosSemExtrato
     .filter((l) => l.valor === linha.valor && Math.abs(diasEntre(l.data, linha.data)) <= DIAS_DE_FOLGA)
     .sort((a, b) => Math.abs(diasEntre(a.data, linha.data)) - Math.abs(diasEntre(b.data, linha.data)))[0]
@@ -77,4 +76,17 @@ export function sugerir(
 
   const regra = regraPara(linha.descricao, contexto.regras)
   return regra && { tipo: 'regra', regra }
+}
+
+/** Sugere para a fila inteira, da linha mais antiga para a mais nova, sem usar o mesmo lançamento ou a mesma nota duas vezes. */
+export function sugerirParaTodas<T extends Movimento>(linhas: T[], contexto: Contexto) {
+  let { lancamentosSemExtrato, notas } = contexto
+  return [...linhas]
+    .sort((a, b) => a.data.localeCompare(b.data))
+    .map((linha) => {
+      const sugestao = sugerir(linha, { ...contexto, lancamentosSemExtrato, notas })
+      if (sugestao?.tipo === 'lancamento') lancamentosSemExtrato = lancamentosSemExtrato.filter((l) => l !== sugestao.lancamento)
+      if (sugestao?.tipo === 'nota') notas = notas.filter((n) => n !== sugestao.nota)
+      return { linha, sugestao }
+    })
 }
