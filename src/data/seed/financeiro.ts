@@ -262,11 +262,36 @@ function comObservacoes(lancamentos: Lancamento[], processos: Processo[]): Lanca
   return lancamentos.map((l) => (observacoes.has(l.id) ? { ...l, observacao: observacoes.get(l.id) } : l))
 }
 
+/** Que parte do faturado de cada projeto vira custo direto (ART e prestadores), na ordem dos processos. Dá margens variadas. */
+const PARTE_EM_CUSTOS = [0.18, 0.35, 0.5, 0.25, 0.62, 0.3, 0.12, 0.42, 0.28, 0.55, 0.2, 0.38, 0.68, 0.22]
+
+/**
+ * O gerador sorteia o processo de cada custo entre todos, até proposta sem aceite, e a margem por projeto sairia sem sentido.
+ * Aqui cada custo vai para um projeto que já faturou e já tinha o aceite na data, até a parte do faturado de `PARTE_EM_CUSTOS`;
+ * o que sobra fica sem processo (obra de cliente não cadastrado). Não sorteia nada: notas, valores e o extrato de exemplo não mudam.
+ */
+function custosPorProjeto(lancamentos: Lancamento[], notas: NotaFiscal[], processos: Processo[]): Lancamento[] {
+  const faturado = new Map<string, Centavos>()
+  for (const n of notas) if (!n.cancelada && n.processoId) faturado.set(n.processoId, (faturado.get(n.processoId) ?? 0) + n.valor)
+  const projetos = processos.flatMap((p, i) => {
+    const aceite = p.eventos.find((e) => e.tipo === 'aceite_proposta')?.data
+    const total = faturado.get(p.id)
+    return aceite && total ? [{ id: p.id, aceite, restante: Math.round(total * PARTE_EM_CUSTOS[i % PARTE_EM_CUSTOS.length]) }] : []
+  })
+  return lancamentos.map((l) => {
+    if (!l.processoId || l.valor >= 0) return l
+    const [escolhido] = projetos.filter((p) => p.aceite <= l.data && p.restante >= -l.valor / 2).sort((x, y) => y.restante - x.restante)
+    if (!escolhido) return { ...l, processoId: undefined }
+    escolhido.restante += l.valor
+    return { ...l, processoId: escolhido.id }
+  })
+}
+
 export function gerarFinanceiro(hoje: DataISO, processos: Processo[], contratos: Contrato[]) {
   const a = criarAleatorio(2026)
   const inicio = somarMeses(`${mesDe(hoje)}-01`, -MESES_DE_HISTORICO)
   const meses = mesesEntre(mesDe(inicio), mesDe(hoje))
   const notas = gerarNotas(a, hoje, meses, processos, contratos)
   const { lancamentos, aplicado } = equilibrarCaixa(gerarLancamentos(a, hoje, meses, notas, processos))
-  return { inicio, meses, notas, lancamentos: comObservacoes(lancamentos, processos), saldoInicial: SALDO_INICIAL, aplicado }
+  return { inicio, meses, notas, lancamentos: comObservacoes(custosPorProjeto(lancamentos, notas, processos), processos), saldoInicial: SALDO_INICIAL, aplicado }
 }

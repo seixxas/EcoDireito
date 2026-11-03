@@ -26,6 +26,7 @@ para a demonstração fazer sentido.
 - `p11`: o Extrato do TCA dele está na caixa de entrada de hoje (achado pelo nº SEI).
 - `p13`: processo antigo; o Comunique-se de hoje só cita o nº SIMPROC no texto.
 - Caixa de entrada: dois atos de clientes sem processo cadastrado (achados pelo CNPJ) e um descartado.
+- Custos de projeto (ART e prestadores): o gerador sorteia o processo, mas `custosPorProjeto` os redistribui só para projetos que já faturaram e já tinham o aceite na data, até a parte do faturado em `PARTE_EM_CUSTOS` (margens variadas para a lucratividade); o resto fica sem processo. Sem sortear nada.
 - Lançamentos: uns 15 com observação de exemplo (`OBSERVACOES` em `src/data/seed/financeiro.ts`), nos mais recentes de cada descrição. A escolha não usa o gerador aleatório: notas, valores e o extrato de exemplo não mudam.
 
 ## Para mudar a demonstração
