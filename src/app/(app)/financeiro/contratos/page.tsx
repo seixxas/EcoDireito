@@ -1,12 +1,15 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Busca } from '@/components/ui/busca'
 import { Card } from '@/components/ui/card'
+import { Vazio } from '@/components/ui/expansivel'
 import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
 import { ItemResumo, Resumo } from '@/components/ui/resumo'
 import { listarContratos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import type { SituacaoParcela } from '@/domain/financeiro/parcelas'
+import { combina } from '@/lib/buscar'
 import { somar } from '@/lib/dinheiro'
 import { brl, contar } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
@@ -19,11 +22,17 @@ type Item = Awaited<ReturnType<typeof listarContratos>>[number]['parcelas'][numb
 const total = (parcelas: Item[], ...situacoes: SituacaoParcela[]) =>
   somar(parcelas.filter((p) => !situacoes.length || situacoes.includes(p.situacao)).map((p) => p.parcela.valor))
 
-export default async function PaginaContratos({ searchParams }: { searchParams: Promise<{ pagina?: string }> }) {
-  const [{ pagina }, usuario, contratos] = await Promise.all([searchParams, exigirArea('financeiro'), listarContratos()])
+export default async function PaginaContratos({ searchParams }: { searchParams: Promise<{ q?: string; pagina?: string }> }) {
+  const [filtros, usuario, contratos] = await Promise.all([searchParams, exigirArea('financeiro'), listarContratos()])
   const editar = pode(usuario.papel, 'financeiro', 'editar')
   const todas = contratos.flatMap((c) => c.parcelas)
-  const paginado = paginar(contratos, pagina)
+  const q = filtros.q?.trim() || undefined
+  const encontrados = contratos.filter(({ processo, cliente }) => combina(q, processo.empreendimento, cliente.nome, cliente.grupo, processo.numeroSei))
+  const paginado = paginar(encontrados, filtros.pagina)
+  const link = (pagina: number) => {
+    const params = new URLSearchParams({ ...(q && { q }), ...(pagina > 1 && { pagina: String(pagina) }) })
+    return params.size ? `/financeiro/contratos?${params}` : '/financeiro/contratos'
+  }
 
   return (
     <>
@@ -39,6 +48,7 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
         <ItemResumo rotulo="Aguardando evento" valor={brl(total(todas, 'aguardando'))} />
       </Resumo>
 
+      <Busca valor={q} placeholder="Buscar processo, cliente, grupo ou nº SEI" limpar="/financeiro/contratos" className="mb-3" />
       <Card flush>
         <table className="tabela">
           <thead>
@@ -80,8 +90,9 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
             ))}
           </tbody>
         </table>
+        {encontrados.length === 0 && <Vazio>Nenhum processo com “{q}”.</Vazio>}
       </Card>
-      <Paginacao {...paginado} href={(n) => `/financeiro/contratos?pagina=${n}`} />
+      <Paginacao {...paginado} href={link} />
     </>
   )
 }

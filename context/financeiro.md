@@ -18,12 +18,13 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 
 ## Telas (redesign de 03/11, guia em `interface.md`)
 
-- Faturamento e Lançamentos abrem no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`). Faturamento: parcelas prontas para faturar em lista e abas "Notas do mês" · "Faturado × recebido no ano" (`?aba=grafico`).
+- Faturamento e Lançamentos abrem no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`) e "todos os meses" (`?mes=todos`, útil com a busca). Faturamento: parcelas prontas para faturar em lista e abas "Notas do mês" · "Faturado × recebido no ano" (`?aba=grafico`).
 - Contas a receber: atraso numa barra só, com as faixas clicáveis (`?faixa=`); notas em aberto das mais atrasadas para as menos, com busca (empresa, grupo, nº da NF, serviço, processo) e situação (`?situacao=atrasadas|a-vencer|parcial`). Busca, situação e faixa se somam; cada filtro conta o que os outros deixam passar. Embaixo, "Maiores saldos a receber" por empresa ou grupo (inclui o que ainda vai vencer); clicar filtra a lista.
 - Tabelas e listas paginadas de 10 em 10 (`paginar` + `Paginacao`, `?pagina=`, mantendo mês, situação e aba): notas do Faturamento, Contas a receber, Lançamentos, Contratos e as três abas do Extrato. Linha que abre detalhe tem setinha no fim (`AbrirLinha`); link no meio do texto usa a classe `link`.
 - DRE: custos, despesas e "fora da DRE" começam recolhidos (só o total do grupo). Cada valor de conta (mês ou total) abre os lançamentos que o formam: `/financeiro/lancamentos?mes=&conta=` (+ `regime=competencia` na DRE por competência, que filtra pela competência). Na competência, a receita vem das notas emitidas e o link vai para o Faturamento do mês.
 - Fluxo: abas "Próximas 8 semanas" · "Realizado por mês" (`?aba=realizado`); movimentos da semana recolhidos.
-- Extrato: importação compacta e abas "A classificar" · "Regras" · "Ignoradas" (`?aba=`).
+- Extrato: importação compacta e abas "A classificar" · "Regras" · "Ignoradas" (`?aba=`). A busca vale nas três abas (descrição, valor e o texto da sugestão: NF, cliente, conta); "Confirmar as sugestões" confirma só as que estavam na tela (com a busca, as encontradas).
+- Busca (`Busca`, `?q=`, sem acento nem maiúscula): Faturamento (cliente, grupo, NF, serviço, processo; resumo e contagens seguem a busca), Contas a receber, Lançamentos, Contratos (processo, cliente, grupo, nº SEI) e Extrato. Busca e filtros se somam e a paginação conta o resultado.
 - Situação da nota é ponto + texto (`SituacaoDaNota`, em `components/financeiro/situacao-nota.tsx`).
 
 ## Edição

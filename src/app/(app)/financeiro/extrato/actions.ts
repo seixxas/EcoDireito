@@ -49,11 +49,16 @@ export async function confirmarSugestao(formData: FormData) {
   refresh()
 }
 
-export async function confirmarTodas() {
+/**
+ * Confirma as sugestões que estavam na tela (com a busca, só as encontradas). Cada `item` é "linhaId chave":
+ * a linha cuja sugestão mudou desde então fica para a próxima, como no "Confirmar" de uma linha.
+ */
+export async function confirmarTodas(formData: FormData) {
   await exigirArea('financeiro', 'editar')
+  const naTela = new Set(formData.getAll('item').map(String))
   const fila = await filaDoExtrato()
   await aplicarSugestoes(
-    fila.pendentes.flatMap(({ linha, sugestao }) => (sugestao ? [{ linha, sugestao }] : [])),
+    fila.pendentes.flatMap(({ linha, sugestao }) => (sugestao && naTela.has(`${linha.id} ${chaveDaSugestao(sugestao)}`) ? [{ linha, sugestao }] : [])),
     fila.clientes,
   )
   refresh()
