@@ -26,12 +26,25 @@ export type ComoAchou = keyof typeof COMO_ACHOU
 
 export type Vinculo = { comoAchou: ComoAchou; clienteId: string; processoId?: string }
 
-export const SERIE_PARA_EVENTO: Record<string, TipoEvento> = {
+const SERIE_PARA_EVENTO: Record<string, TipoEvento> = {
   'Comunique-se': 'comunique_se',
-  'Extrato do TCA': 'tca_publicado',
   'Despacho Autorizatório': 'parte_tecnica_aprovada',
-  'Certificado de Recebimento Provisório': 'crp_emitido',
-  'Certificado de Recebimento Definitivo': 'certificado_definitivo',
+}
+
+/** Na série "Extrato" o DOC-SP publica o extrato do TCA e os dois certificados: só o começo do texto separa (visto nas edições de outubro/2026). */
+const EXTRATOS: [RegExp, TipoEvento][] = [
+  [/RECEBIMENTO DEFINITIVO/, 'certificado_definitivo'],
+  [/RECEBIMENTO PROVIS[ÓO]RIO/, 'crp_emitido'],
+  [/EXTRATO DO TERMO DE COMPROMISSO AMBIENTAL/, 'tca_publicado'],
+]
+
+/** O evento que o ato sugere ao ser confirmado, se houver. */
+export function eventoDoAto(ato: Pick<Ato, 'serie' | 'texto'>): TipoEvento | undefined {
+  if (ato.serie.startsWith('Extrato')) {
+    const inicio = ato.texto.slice(0, 300).toUpperCase()
+    return EXTRATOS.find(([padrao]) => padrao.test(inicio))?.[1]
+  }
+  return SERIE_PARA_EVENTO[ato.serie]
 }
 
 const SIMPROC = /\b\d{4}-0\.\d{3}\.\d{3}-\d\b/g

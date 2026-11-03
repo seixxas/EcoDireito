@@ -23,7 +23,7 @@ src/
     (app)/                     área interna com menu lateral (loading.tsx = Suspense)
       page.tsx                 Painel
       prazos/                  vencimentos de todos os processos
-      processos/ + [id]/       lista e detalhe do processo
+      processos/ + [id]/       lista e detalhe do processo; novo, editar e clientes/
       publicacoes/             caixa de entrada do Diário Oficial
       financeiro/              faturamento (notas)
       financeiro/receber/      contas a receber
@@ -40,6 +40,7 @@ src/
   db/                          conexão, schema por área e seed do banco
   data/                        acesso a dados (banco; sem banco, seed em memória)
     seed/                      geradores de dados fictícios
+  robo/                        coletores de fontes externas (DOC-SP), sem banco: baixam e convertem para o domínio
   lib/                         datas, dinheiro, formatação, cn
 ```
 
