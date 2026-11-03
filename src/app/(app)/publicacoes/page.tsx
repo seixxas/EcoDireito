@@ -13,7 +13,7 @@ import { exigirArea } from '@/data/sessao'
 import { diaUtilAnterior, ehDiaUtil } from '@/domain/feriados'
 import { EVENTOS } from '@/domain/processos'
 import { COMO_ACHOU } from '@/domain/publicacoes'
-import { formatarDataNaLista, formatarDiaEData } from '@/lib/formatar'
+import { contar, formatarDataNaLista, formatarDiaEData } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
 import { AcoesPublicacao } from './_components/acoes-publicacao'
 import { BuscaEdicao } from './_components/busca-edicao'
@@ -34,7 +34,7 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
   const novas = itens.filter((item) => item.ato.status === 'nova').length
 
   const lida = edicao.processadaEm ? ` (lida em ${HORARIO.format(new Date(edicao.processadaEm)).replace(', ', ' às ')})` : ''
-  const paraRevisar = novas === 0 ? 'nada para revisar' : novas === 1 ? '1 ato para revisar' : `${novas} atos para revisar`
+  const paraRevisar = novas ? `${contar(novas, 'ato', 'atos')} para revisar` : 'nada para revisar'
 
   return (
     <>

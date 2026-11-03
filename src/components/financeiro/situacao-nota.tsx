@@ -1,4 +1,5 @@
-import { Badge, type Tom } from '@/components/ui/badge'
+import type { Tom } from '@/components/ui/badge'
+import { Situacao } from '@/components/ui/situacao'
 import type { SituacaoNota } from '@/domain/financeiro/notas'
 
 export const SITUACOES_NOTA: Record<SituacaoNota, { rotulo: string; tom: Tom }> = {
@@ -9,7 +10,7 @@ export const SITUACOES_NOTA: Record<SituacaoNota, { rotulo: string; tom: Tom }> 
   cancelada: { rotulo: 'Cancelada', tom: 'neutral' },
 }
 
-export function SituacaoNotaBadge({ situacao }: { situacao: SituacaoNota }) {
+export function SituacaoDaNota({ situacao }: { situacao: SituacaoNota }) {
   const { rotulo, tom } = SITUACOES_NOTA[situacao]
-  return <Badge tom={tom}>{rotulo}</Badge>
+  return <Situacao tom={tom}>{rotulo}</Situacao>
 }

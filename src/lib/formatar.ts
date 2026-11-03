@@ -53,6 +53,24 @@ export function formatarDataNaLista(data: DataISO, hoje: DataISO) {
   return data.slice(0, 4) === hoje.slice(0, 4) ? formatarDiaEData(data) : formatarData(data)
 }
 
+const DIAS_LONGOS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
+const MESES_LONGOS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+
+/** terça, 3 de novembro */
+export function formatarDataLonga(data: DataISO) {
+  return `${DIAS_LONGOS[diaDaSemana(data)]}, ${Number(data.slice(8, 10))} de ${MESES_LONGOS[Number(data.slice(5, 7)) - 1]}`
+}
+
+/** contar(1, 'prazo', 'prazos') → "1 prazo"; contar(3, …) → "3 prazos" */
+export function contar(n: number, singular: string, plural: string) {
+  return `${n} ${n === 1 ? singular : plural}`
+}
+
+/** ['a', 'b', 'c'] → "a, b e c" */
+export function juntar(partes: string[]) {
+  return partes.length < 2 ? (partes[0] ?? '') : `${partes.slice(0, -1).join(', ')} e ${partes.at(-1)}`
+}
+
 /** 'AAAA-MM' → out/26 */
 export function formatarMes(mes: string) {
   return `${MESES[Number(mes.slice(5, 7)) - 1]}/${mes.slice(2, 4)}`

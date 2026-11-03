@@ -8,6 +8,7 @@ import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { hoje } from '@/data/hoje'
 import { listarPrazos, type PrazoComProcesso } from '@/data/processos'
 import { PERIODOS, estaAberto, periodoDoPrazo, type Periodo } from '@/domain/prazos'
+import { contar } from '@/lib/formatar'
 
 export const metadata: Metadata = { title: 'Prazos' }
 
@@ -18,9 +19,9 @@ type Vista = keyof typeof VISTAS
 const CUMPRIDOS_NA_TELA = 20
 
 function frase(vencidos: number, semana: number) {
-  const atrasados = vencidos === 0 ? 'Nenhum prazo vencido' : vencidos === 1 ? '1 prazo vencido' : `${vencidos} prazos vencidos`
-  const proximos = semana === 0 ? 'nenhum vence nesta semana' : semana === 1 ? '1 vence nesta semana' : `${semana} vencem nesta semana`
-  return `${atrasados} e ${proximos}.`
+  const atrasados = vencidos ? contar(vencidos, 'prazo vencido', 'prazos vencidos') : 'Nenhum prazo vencido'
+  const proximos = semana ? contar(semana, 'vence', 'vencem') : 'nenhum vence'
+  return `${atrasados} e ${proximos} nesta semana.`
 }
 
 export default async function PaginaPrazos({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {

@@ -2,10 +2,11 @@ import { ArrowLeft, Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Badge, type Tom } from '@/components/ui/badge'
+import type { Tom } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
+import { Situacao } from '@/components/ui/situacao'
 import { listarContratos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import type { SituacaoParcela } from '@/domain/financeiro/parcelas'
@@ -36,7 +37,7 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
       </Link>
       <PageHeader
         titulo={processo.empreendimento}
-        descricao={`${cliente.nome} · contrato de ${brl(somar(parcelas.map((p) => p.parcela.valor)))}`}
+        resumo={`${cliente.nome} · contrato de ${brl(somar(parcelas.map((p) => p.parcela.valor)))}`}
         acoes={
           <Link href={`/processos/${processo.id}`} className={classeBotao('secundario')}>
             Ver processo
@@ -47,10 +48,10 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
       <Card titulo="Parcelas" className="mb-6" flush>
         <ul className="divide-y divide-line">
           {parcelas.map(({ parcela, situacao, nota, liberadaEm }) => (
-            <li key={parcela.id} className="flex flex-col gap-3 px-5 py-4 lg:flex-row lg:items-start">
+            <li key={parcela.id} className="flex flex-col gap-3 px-4 py-4 lg:flex-row lg:items-start">
               <FormularioParcela processoId={processo.id} parcela={parcela} />
-              <div className="flex items-center gap-2 lg:w-60 lg:justify-end lg:pt-7">
-                <Badge tom={SITUACAO[situacao].tom}>{SITUACAO[situacao].rotulo}</Badge>
+              <div className="flex items-center gap-3 lg:w-64 lg:justify-end lg:pt-8">
+                <Situacao tom={SITUACAO[situacao].tom}>{SITUACAO[situacao].rotulo}</Situacao>
                 {situacao === 'liberada' && (
                   <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="text-sm font-medium text-brand-700 hover:underline" title={`Liberada em ${formatarData(liberadaEm!)}`}>
                     Registrar nota
@@ -63,7 +64,7 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
                 ) : (
                   <form action={excluirParcela}>
                     <input type="hidden" name="id" value={parcela.id} />
-                    <button title="Apagar parcela" className="rounded-lg p-2 text-subtle hover:bg-danger-soft hover:text-danger">
+                    <button title="Apagar parcela" className="rounded-md p-1.5 text-subtle hover:bg-danger-soft hover:text-danger">
                       <Trash2 className="size-4" />
                     </button>
                   </form>
@@ -71,7 +72,7 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
               </div>
             </li>
           ))}
-          {parcelas.length === 0 && <li className="px-5 py-8 text-center text-muted">Este processo ainda não tem parcelas.</li>}
+          {parcelas.length === 0 && <li className="px-4 py-8 text-center text-muted">Este processo ainda não tem parcelas.</li>}
         </ul>
       </Card>
 
