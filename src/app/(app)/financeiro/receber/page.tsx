@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Vazio } from '@/components/ui/expansivel'
 import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
+import { Paginacao } from '@/components/ui/paginacao'
 import { ItemResumo, Resumo } from '@/components/ui/resumo'
 import { Secao } from '@/components/ui/secao'
 import { listarNotas } from '@/data/financeiro'
@@ -13,6 +14,8 @@ import { cn } from '@/lib/cn'
 import { diasEntre } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
 import { brl, contar, formatarDataCurta } from '@/lib/formatar'
+import { paginar } from '@/lib/paginar'
+import { AbrirLinha } from '../_components/abrir-linha'
 
 export const metadata: Metadata = { title: 'Contas a receber' }
 
@@ -24,16 +27,16 @@ const FAIXAS = [
   { rotulo: 'Mais de 60 dias', de: 61, ate: Infinity, cor: 'bg-danger' },
 ]
 
-/** As mais atrasadas primeiro; o resto fica atrás de "ver todas". */
-const PRIMEIRAS = 15
+/** "Quem mais deve" mostra só os maiores; o título diz de quantos. */
+const MAIORES_DEVEDORES = 6
 
-export default async function PaginaReceber({ searchParams }: { searchParams: Promise<{ todas?: string }> }) {
-  const [{ todas }, { hoje: dia, notas }] = await Promise.all([searchParams, listarNotas()])
+export default async function PaginaReceber({ searchParams }: { searchParams: Promise<{ pagina?: string }> }) {
+  const [{ pagina }, { hoje: dia, notas }] = await Promise.all([searchParams, listarNotas()])
   const abertas = notas
     .filter(({ nota }) => saldoAReceber(nota, dia) > 0)
     .map((item) => ({ ...item, atraso: diasDeAtraso(item.nota, dia), saldo: saldoAReceber(item.nota, dia) }))
     .sort((a, b) => b.atraso - a.atraso || a.nota.previsao.localeCompare(b.nota.previsao))
-  const visiveis = todas ? abertas : abertas.slice(0, PRIMEIRAS)
+  const paginado = paginar(abertas, pagina)
 
   const resumo = resumoNotas(notas.map(({ nota }) => nota), dia)
   const total = somar(abertas.map((a) => a.saldo))
@@ -78,7 +81,7 @@ export default async function PaginaReceber({ searchParams }: { searchParams: Pr
                 <div key={faixa.rotulo} title={`${faixa.rotulo}: ${brl(faixa.valor)}`} className={faixa.cor} style={{ width: `${total ? (faixa.valor / total) * 100 : 0}%` }} />
               ))}
             </div>
-            <ul className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+            <ul className="mt-4 space-y-2">
               {faixas.map((faixa) => (
                 <li key={faixa.rotulo} className="flex items-baseline gap-2 text-sm">
                   <span className={cn('size-2.5 shrink-0 translate-y-px rounded-full', faixa.cor)} />
@@ -92,9 +95,12 @@ export default async function PaginaReceber({ searchParams }: { searchParams: Pr
           </Secao>
         </div>
         <div className="lg:col-span-2">
-          <Secao titulo="Quem mais deve">
+          <Secao
+            titulo="Quem mais deve"
+            acao={porGrupo.length > MAIORES_DEVEDORES && <span className="text-sm text-muted">os {MAIORES_DEVEDORES} maiores de {porGrupo.length}</span>}
+          >
             <Lista>
-              {porGrupo.slice(0, 6).map(([nome, valor]) => (
+              {porGrupo.slice(0, MAIORES_DEVEDORES).map(([nome, valor]) => (
                 <Linha key={nome}>
                   <span className="min-w-0 flex-1 truncate">{nome}</span>
                   <span className="font-medium tabular-nums">{brl(valor)}</span>
@@ -105,16 +111,7 @@ export default async function PaginaReceber({ searchParams }: { searchParams: Pr
         </div>
       </div>
 
-      <Secao
-        titulo={todas ? `Notas em aberto (${abertas.length})` : 'Notas em aberto, as mais atrasadas primeiro'}
-        acao={
-          abertas.length > PRIMEIRAS && (
-            <Link href={todas ? '/financeiro/receber' : '/financeiro/receber?todas=1'} scroll={false} className="text-sm text-brand-700 hover:underline">
-              {todas ? `Mostrar só as ${PRIMEIRAS} primeiras` : `Ver todas (${abertas.length})`}
-            </Link>
-          )
-        }
-      >
+      <Secao titulo={`${contar(abertas.length, 'nota em aberto', 'notas em aberto')}, as mais atrasadas primeiro`}>
         <Card flush>
           <table className="tabela">
             <thead>
@@ -125,24 +122,22 @@ export default async function PaginaReceber({ searchParams }: { searchParams: Pr
                 <th className="num">Atraso</th>
                 <th className="num">Saldo</th>
                 <th className="hidden sm:table-cell">Situação</th>
+                <th />
               </tr>
             </thead>
             <tbody>
-              {visiveis.map(({ nota, cliente, atraso, saldo }) => (
+              {paginado.itens.map(({ nota, cliente, atraso, saldo }) => (
                 <tr key={nota.id}>
                   <td className="sm:min-w-60">
                     {cliente.nome}
                     <p className="text-xs text-subtle">
                       {nota.descricao}
-                      {/* No celular a coluna NF some; o link vem para cá. */}
-                      <Link href={`/financeiro/notas/${nota.id}`} className="text-brand-700 hover:underline sm:hidden">
-                        {' '}
-                        · NF {nota.numero}
-                      </Link>
+                      {/* No celular a coluna NF some; o número vem para cá. */}
+                      <span className="sm:hidden"> · NF {nota.numero}</span>
                     </p>
                   </td>
                   <td className="hidden tabular-nums sm:table-cell">
-                    <Link href={`/financeiro/notas/${nota.id}`} className="text-brand-700 hover:underline">
+                    <Link href={`/financeiro/notas/${nota.id}`} className="link">
                       {nota.numero}
                     </Link>
                   </td>
@@ -152,12 +147,14 @@ export default async function PaginaReceber({ searchParams }: { searchParams: Pr
                   <td className="hidden sm:table-cell">
                     <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
                   </td>
+                  <AbrirLinha href={`/financeiro/notas/${nota.id}`} rotulo={`Abrir NF ${nota.numero}`} />
                 </tr>
               ))}
             </tbody>
           </table>
           {abertas.length === 0 && <Vazio>Nenhuma nota em aberto.</Vazio>}
         </Card>
+        <Paginacao {...paginado} href={(n) => `/financeiro/receber?pagina=${n}`} />
       </Secao>
     </>
   )
