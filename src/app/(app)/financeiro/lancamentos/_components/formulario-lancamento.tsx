@@ -3,19 +3,9 @@
 import { useActionState } from 'react'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
 import { Campo, Entrada, MensagemFormulario, Selecao } from '@/components/ui/form'
-import { CONTAS, type GrupoDre } from '@/domain/financeiro/plano-de-contas'
 import { EntradaDinheiro } from '../../_components/entrada-dinheiro'
+import { SelecaoConta } from '../../_components/selecao-conta'
 import { registrarLancamento } from '../actions'
-
-const GRUPOS: Record<GrupoDre, string> = {
-  receita: 'Receita',
-  imposto: 'Impostos',
-  custo: 'Custo dos serviços',
-  despesa: 'Despesas operacionais',
-  financeiro: 'Resultado financeiro',
-  outras: 'Outras receitas',
-  fora: 'Fora da DRE',
-}
 
 export function FormularioLancamento({ hoje, processos }: { hoje: string; processos: { id: string; nome: string }[] }) {
   const [estado, acao] = useActionState(registrarLancamento, {})
@@ -36,20 +26,7 @@ export function FormularioLancamento({ hoje, processos }: { hoje: string; proces
         <EntradaDinheiro name="valor" centavos={valores.valor} required />
       </Campo>
       <Campo rotulo="Conta" erro={erros.contaId}>
-        <Selecao name="contaId" defaultValue={valores.contaId ?? ''} required>
-          <option value="" disabled>
-            Escolha
-          </option>
-          {Object.entries(GRUPOS).map(([grupo, nome]) => (
-            <optgroup key={grupo} label={nome}>
-              {CONTAS.filter((conta) => conta.grupo === grupo).map((conta) => (
-                <option key={conta.id} value={conta.id}>
-                  {conta.nome}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </Selecao>
+        <SelecaoConta name="contaId" defaultValue={valores.contaId ?? ''} required />
       </Campo>
       <Campo rotulo="Descrição" erro={erros.descricao} className="sm:col-span-2">
         <Entrada name="descricao" defaultValue={valores.descricao} placeholder="Ex.: Viveiro Mata Nativa · plantio" required />

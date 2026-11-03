@@ -21,7 +21,7 @@ Atualizado em 2026-11-02. Vale para todas as sessões. Ao terminar uma etapa, ma
 | Financeiro | Registrar nota (inclusive a partir de parcela liberada), cancelar, registrar recebimento | Pronto (E4) |
 | Financeiro | Lançamentos manuais (despesas e receitas) com conta, competência e processo | Pronto (E4) |
 | Financeiro | Editar contrato e parcelas do processo | Pronto (E4) |
-| Financeiro | Importar extrato (OFX/CSV), regras de classificação, fila "a classificar", conciliação nota × crédito | **Hoje se der** (E6) |
+| Financeiro | Importar extrato (OFX/CSV), regras de classificação, fila "a classificar", conciliação nota × crédito | Pronto (E6) |
 | Financeiro | Fatura do cartão item a item, fechamento do mês, margem por projeto, monitor do Simples | Depois (E8) |
 | Financeiro | Importar o histórico real das planilhas; exportar Excel/PDF para o contador | Depois (E9) |
 
@@ -34,7 +34,7 @@ Atualizado em 2026-11-02. Vale para todas as sessões. Ao terminar uma etapa, ma
 | E3 Edição de prazos ✅ | Clientes, processos, eventos, caixa de entrada gravada (testada no Neon) | E1 | B |
 | E4 Edição financeira ✅ | Notas, recebimentos, lançamentos, contratos | E1 | C |
 | E5 Robô do Diário Oficial ✅ | Coletor real do DOC-SP + botão "Buscar no Diário" gravando na caixa de entrada (testado com o site real e no Neon). Agendamento diário fica para depois | lógica: nada; gravação: E1 | B |
-| E6 Extrato bancário | Importar OFX/CSV, regras de classificação, conciliação | lógica: nada; telas: E1 | C |
+| E6 Extrato bancário ✅ | Importar OFX/CSV, regras de classificação, conciliação | lógica: nada; telas: E1 | C |
 | E7 Alertas por e-mail | Resend, resumo diário e lembretes | E2 | depois |
 | E8 Financeiro avançado | Cartão, fechamento mensal, margem por projeto, Simples | E4, E6 | depois |
 | E9 Dados reais | Importar as planilhas da Eco Direito (fora do repositório), exportação | E4 | depois |
