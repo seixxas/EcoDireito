@@ -20,7 +20,10 @@ const { financeiro } = base
 // Apagar os clientes zera o cliente_id dos logins (on delete set null): guardo antes para refazer.
 const vinculos = await db.select({ id: schema.user.id, clienteId: schema.user.clienteId }).from(schema.user).where(isNotNull(schema.user.clienteId))
 
+// Extrato e regras primeiro: as linhas apontam para lançamentos (set null) e voltariam para a fila "a classificar".
 for (const tabela of [
+  schema.extratoLinhas,
+  schema.regrasClassificacao,
   schema.lancamentos,
   schema.notasFiscais,
   schema.parcelas,
