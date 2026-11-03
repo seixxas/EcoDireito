@@ -18,7 +18,7 @@ export function LinhaPrazo({ prazo, hoje, processo, cliente }: { prazo: Prazo; h
         <p className="font-medium text-ink">{prazo.regra.titulo}</p>
         <div className="flex flex-wrap items-baseline gap-x-3 text-xs text-muted">
           {processo && (
-            <Link href={`/processos/${processo.id}`} className="text-brand-700 hover:underline">
+            <Link href={`/processos/${processo.id}`} className="link">
               {processo.empreendimento}
             </Link>
           )}

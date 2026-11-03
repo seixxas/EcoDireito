@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Expansivel, Vazio } from '@/components/ui/expansivel'
 import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
+import { Paginacao } from '@/components/ui/paginacao'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { Situacao } from '@/components/ui/situacao'
 import { hoje } from '@/data/hoje'
@@ -14,6 +15,7 @@ import { diaUtilAnterior, ehDiaUtil } from '@/domain/feriados'
 import { EVENTOS } from '@/domain/processos'
 import { COMO_ACHOU } from '@/domain/publicacoes'
 import { contar, formatarDataNaLista, formatarDiaEData } from '@/lib/formatar'
+import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { AcoesPublicacao } from './_components/acoes-publicacao'
 import { BuscaEdicao } from './_components/busca-edicao'
@@ -25,12 +27,19 @@ type Aba = keyof typeof ABAS
 
 const HORARIO = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 
-export default async function PaginaPublicacoes({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
-  const { aba: pedida } = await searchParams
+function endereco(aba: Aba, pagina = 1) {
+  const busca = new URLSearchParams()
+  if (aba !== 'nova') busca.set('aba', aba)
+  if (pagina > 1) busca.set('pagina', String(pagina))
+  return busca.size ? `/publicacoes?${busca}` : '/publicacoes'
+}
+
+export default async function PaginaPublicacoes({ searchParams }: { searchParams: Promise<{ aba?: string; pagina?: string }> }) {
+  const { aba: pedida, pagina } = await searchParams
   const aba: Aba = pedida && pedida in ABAS ? (pedida as Aba) : 'nova'
   const [{ edicao, itens }, usuario, dia] = await Promise.all([listarPublicacoes(), exigirArea('prazos'), hoje()])
   const editar = pode(usuario.papel, 'prazos', 'editar')
-  const lista = itens.filter((item) => item.ato.status === aba)
+  const lista = paginar(itens.filter((item) => item.ato.status === aba), pagina)
   const novas = itens.filter((item) => item.ato.status === 'nova').length
 
   const lida = edicao.processadaEm ? ` (lida em ${HORARIO.format(new Date(edicao.processadaEm)).replace(', ', ' às ')})` : ''
@@ -55,14 +64,14 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
           opcoes={Object.entries(ABAS).map(([valor, rotulo]) => ({
             valor,
             rotulo,
-            href: valor === 'nova' ? '/publicacoes' : `/publicacoes?aba=${valor}`,
+            href: endereco(valor as Aba),
             contagem: itens.filter((item) => item.ato.status === valor).length,
           }))}
         />
       </div>
 
       <Lista>
-        {lista.map(({ ato, vinculo, evento, cliente, processo, prazosSugeridos }) => (
+        {lista.itens.map(({ ato, vinculo, evento, cliente, processo, prazosSugeridos }) => (
           // No celular a data vai para a linha de detalhes e as ações descem para baixo do texto.
           <Linha key={ato.id} className="flex-wrap items-start gap-y-2 sm:flex-nowrap">
             <span className="hidden w-24 shrink-0 tabular-nums text-muted sm:block">{formatarDataNaLista(ato.data, dia)}</span>
@@ -71,7 +80,7 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
                 <Badge>{ato.serie}</Badge>
                 <span className="font-medium text-ink">{cliente.nome}</span>
                 {processo ? (
-                  <Link href={`/processos/${processo.id}`} className="text-brand-700 hover:underline">
+                  <Link href={`/processos/${processo.id}`} className="link">
                     {processo.empreendimento}
                   </Link>
                 ) : (
@@ -94,7 +103,7 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
                 <span>Achado pelo {COMO_ACHOU[vinculo.comoAchou]}</span>
                 <span>{ato.unidade}</span>
                 {ato.link && (
-                  <a href={ato.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-brand-700 hover:underline">
+                  <a href={ato.link} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1">
                     Abrir no Diário <ExternalLink className="size-3" />
                   </a>
                 )}
@@ -121,7 +130,8 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
           </Linha>
         ))}
       </Lista>
-      {lista.length === 0 && <Vazio>Nada aqui.</Vazio>}
+      {lista.total === 0 && <Vazio>Nada aqui.</Vazio>}
+      <Paginacao {...lista} href={(n) => endereco(aba, n)} />
     </>
   )
 }

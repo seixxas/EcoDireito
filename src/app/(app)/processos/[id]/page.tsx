@@ -12,6 +12,7 @@ import { Expansivel, Vazio } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
 import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
+import { Paginacao } from '@/components/ui/paginacao'
 import { Secao } from '@/components/ui/secao'
 import { Situacao } from '@/components/ui/situacao'
 import { hoje } from '@/data/hoje'
@@ -22,6 +23,7 @@ import { estaAberto, proximoPrazo } from '@/domain/prazos'
 import { EVENTOS, FASES } from '@/domain/processos'
 import { cn } from '@/lib/cn'
 import { brl, formatarData } from '@/lib/formatar'
+import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { FormularioEvento } from '../_components/formulario-evento'
 import { LinkVoltar } from '../_components/link-voltar'
@@ -36,8 +38,8 @@ const PARCELA: Record<SituacaoParcela, { rotulo: string; tom: Tom }> = {
   recebida: { rotulo: 'Recebida', tom: 'ok' },
 }
 
-export default async function PaginaProcesso({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ aba?: string }> }) {
-  const [{ id }, { aba: pedida }] = await Promise.all([params, searchParams])
+export default async function PaginaProcesso({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ aba?: string; pagina?: string }> }) {
+  const [{ id }, { aba: pedida, pagina }] = await Promise.all([params, searchParams])
   const [dia, dados, usuario] = await Promise.all([hoje(), obterProcesso(id), exigirArea('prazos')])
   if (!dados) notFound()
   const { processo, cliente, prazos, parcelas } = dados
@@ -47,12 +49,12 @@ export default async function PaginaProcesso({ params, searchParams }: { params:
   const abertos = prazos.filter((p) => estaAberto(p, dia))
   const cumpridos = prazos.filter((p) => !estaAberto(p, dia)).reverse()
   const proximo = proximoPrazo(prazos, dia)
-  const eventos = [...processo.eventos].sort((a, b) => b.data.localeCompare(a.data))
+  const eventos = paginar([...processo.eventos].sort((a, b) => b.data.localeCompare(a.data)), pagina)
   const fase = FASES[processo.faseAtual - 1]
 
   const abas = [
     { valor: 'prazos', rotulo: 'Prazos', contagem: abertos.length },
-    { valor: 'linha-do-tempo', rotulo: 'Linha do tempo', contagem: eventos.length },
+    { valor: 'linha-do-tempo', rotulo: 'Linha do tempo', contagem: eventos.total },
     ...(pode(usuario.papel, 'financeiro') ? [{ valor: 'cobranca', rotulo: 'Cobrança', contagem: parcelas.length }] : []),
   ].map((a) => ({ ...a, href: a.valor === 'prazos' ? `/processos/${id}` : `/processos/${id}?aba=${a.valor}` }))
   const aba = abas.find((a) => a.valor === pedida)?.valor ?? 'prazos'
@@ -134,7 +136,7 @@ export default async function PaginaProcesso({ params, searchParams }: { params:
             </Expansivel>
           )}
           <Lista>
-            {eventos.map((evento) => (
+            {eventos.itens.map((evento) => (
               <Linha key={evento.id} className="group">
                 <span className="w-24 shrink-0 tabular-nums text-muted">{formatarData(evento.data)}</span>
                 <span className="min-w-0 flex-1 text-ink">{EVENTOS[evento.tipo].nome}</span>
@@ -159,7 +161,8 @@ export default async function PaginaProcesso({ params, searchParams }: { params:
               </Linha>
             ))}
           </Lista>
-          {eventos.length === 0 && <Vazio>Nenhum evento ainda.</Vazio>}
+          {eventos.total === 0 && <Vazio>Nenhum evento ainda.</Vazio>}
+          <Paginacao {...eventos} href={(n) => `/processos/${id}?aba=linha-do-tempo${n > 1 ? `&pagina=${n}` : ''}`} />
         </>
       )}
 
@@ -168,50 +171,52 @@ export default async function PaginaProcesso({ params, searchParams }: { params:
           titulo="Contrato"
           acao={
             editarFinanceiro && (
-              <Link href={`/financeiro/contratos/${processo.id}`} className="text-sm font-medium text-brand-700 hover:underline">
+              <Link href={`/financeiro/contratos/${processo.id}`} className="link text-sm font-medium">
                 Editar contrato
               </Link>
             )
           }
         >
           {parcelas.length > 0 ? (
-            <table className="tabela">
-              <thead>
-                <tr>
-                  <th>Parcela</th>
-                  <th className="num">Valor</th>
-                  <th>Libera quando</th>
-                  <th>Situação</th>
-                  <th>Nota fiscal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {parcelas.map(({ parcela, situacao, nota, liberadaEm }) => (
-                  <tr key={parcela.id}>
-                    <td className="font-medium">{parcela.descricao}</td>
-                    <td className="num">{brl(parcela.valor)}</td>
-                    <td className="text-muted">
-                      {EVENTOS[parcela.gatilho].nome}
-                      {liberadaEm && <span className="block text-xs text-subtle">aconteceu em {formatarData(liberadaEm)}</span>}
-                    </td>
-                    <td>
-                      <Situacao tom={PARCELA[situacao].tom}>{PARCELA[situacao].rotulo}</Situacao>
-                    </td>
-                    <td className="text-muted">
-                      {nota ? (
-                        `NF ${nota.numero} · ${formatarData(nota.emissao)}`
-                      ) : situacao === 'liberada' && editarFinanceiro ? (
-                        <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="font-medium text-brand-700 hover:underline">
-                          Emitir nota
-                        </Link>
-                      ) : (
-                        '—'
-                      )}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="tabela">
+                <thead>
+                  <tr>
+                    <th>Parcela</th>
+                    <th className="num">Valor</th>
+                    <th>Libera quando</th>
+                    <th>Situação</th>
+                    <th>Nota fiscal</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {parcelas.map(({ parcela, situacao, nota, liberadaEm }) => (
+                    <tr key={parcela.id}>
+                      <td className="font-medium">{parcela.descricao}</td>
+                      <td className="num">{brl(parcela.valor)}</td>
+                      <td className="text-muted">
+                        {EVENTOS[parcela.gatilho].nome}
+                        {liberadaEm && <span className="block text-xs text-subtle">aconteceu em {formatarData(liberadaEm)}</span>}
+                      </td>
+                      <td>
+                        <Situacao tom={PARCELA[situacao].tom}>{PARCELA[situacao].rotulo}</Situacao>
+                      </td>
+                      <td className="text-muted">
+                        {nota ? (
+                          `NF ${nota.numero} · ${formatarData(nota.emissao)}`
+                        ) : situacao === 'liberada' && editarFinanceiro ? (
+                          <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="link font-medium">
+                            Emitir nota
+                          </Link>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <Vazio>Nenhum contrato cadastrado para este processo.</Vazio>
           )}

@@ -6,17 +6,20 @@ import { Vazio } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
 import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
+import { Paginacao } from '@/components/ui/paginacao'
 import { hoje } from '@/data/hoje'
 import { listarProcessos } from '@/data/processos'
 import { exigirArea } from '@/data/sessao'
+import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 
 export const metadata: Metadata = { title: 'Processos' }
 
-export default async function PaginaProcessos() {
-  const [dia, itens, usuario] = await Promise.all([hoje(), listarProcessos(), exigirArea('prazos')])
+export default async function PaginaProcessos({ searchParams }: { searchParams: Promise<{ pagina?: string }> }) {
+  const [{ pagina }, dia, itens, usuario] = await Promise.all([searchParams, hoje(), listarProcessos(), exigirArea('prazos')])
   const ordenados = [...itens].sort((a, b) => (a.proximo?.vencimento ?? '9999').localeCompare(b.proximo?.vencimento ?? '9999'))
   const comVencido = itens.filter((i) => i.proximo && i.proximo.vencimento < dia).length
+  const paginado = paginar(ordenados, pagina)
 
   return (
     <>
@@ -37,7 +40,7 @@ export default async function PaginaProcessos() {
         }
       />
       <Lista>
-        {ordenados.map(({ processo, cliente, proximo }) => (
+        {paginado.itens.map(({ processo, cliente, proximo }) => (
           <Linha key={processo.id} href={`/processos/${processo.id}`} className="flex-wrap gap-y-1 sm:flex-nowrap">
             <div className="min-w-0 basis-full sm:basis-auto sm:flex-1">
               <p className="truncate font-medium text-ink">{processo.empreendimento}</p>
@@ -64,6 +67,7 @@ export default async function PaginaProcessos() {
         ))}
       </Lista>
       {itens.length === 0 && <Vazio>Nenhum processo cadastrado.</Vazio>}
+      <Paginacao {...paginado} href={(n) => (n > 1 ? `/processos?pagina=${n}` : '/processos')} />
     </>
   )
 }
