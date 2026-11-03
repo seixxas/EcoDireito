@@ -15,7 +15,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/processos/clientes` | Clientes | Lista, cadastro e edição de clientes |
 | `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; confirmar cria o evento, descartar pede motivo, cadastrar processo a partir do ato |
 | `/financeiro` | Faturamento | Notas, situação, faturado × recebido, parcelas prontas para faturar |
-| `/financeiro/receber` | Contas a receber | Atraso por faixa e por grupo econômico |
+| `/financeiro/receber` | Contas a receber | Notas em aberto com busca e filtros de situação e faixa de atraso; maiores saldos por empresa ou grupo |
 | `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`) |
 | `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas e realizado por mês |
 | `/financeiro/notas/nova` | Registrar nota | Nota avulsa ou a partir de parcela liberada (`?parcela=`) |
