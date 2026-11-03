@@ -78,4 +78,5 @@ Pode mexer em: `src/domain/financeiro/**`, `src/data/financeiro.ts`, `src/app/(a
 
 | De | Para | Pedido | Feito |
 |---|---|---|---|
+| C | B | Em `/processos/[id]`, no card de parcelas, para quem edita o financeiro: link "Editar parcelas" para `/financeiro/contratos/[id]` e, na parcela pronta para faturar, "Registrar nota" para `/financeiro/notas/nova?parcela=<id>`. | |
 | B | A | `publicacoes.link`, `edicoes_diario.erro` e unique (data, documento) para o robô não duplicar | sim (feat/fundacao) |
