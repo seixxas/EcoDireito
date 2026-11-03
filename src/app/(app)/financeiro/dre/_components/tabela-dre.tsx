@@ -66,11 +66,16 @@ export function TabelaDre({ meses, linhas, receitaLiquida }: { meses: string[]; 
             const valores = meses.map((_, i) => somar(contas.map((c) => c.valores[i])))
             return (
               <tr key={linha.id} className="bg-canvas">
-                <td className="sticky left-0 bg-canvas">
-                  <button type="button" onClick={() => alternar(linha.id)} aria-expanded={aberta} className="flex items-center gap-1.5 font-medium text-ink hover:text-brand-700">
-                    <ChevronRight className={cn('size-4 text-subtle transition-transform', aberta && 'rotate-90')} />
+                <td className="sticky left-0 min-w-56 whitespace-nowrap bg-canvas">
+                  <button
+                    type="button"
+                    onClick={() => alternar(linha.id)}
+                    aria-expanded={aberta}
+                    title={`${contas.length} ${contas.length === 1 ? 'conta' : 'contas'}`}
+                    className="flex items-center gap-1.5 font-medium text-ink hover:text-brand-700"
+                  >
+                    <ChevronRight className={cn('size-4 shrink-0 text-muted transition-transform', aberta && 'rotate-90')} />
                     {linha.nome}
-                    <span className="text-xs font-normal text-subtle">{contas.length} contas</span>
                   </button>
                 </td>
                 {valoresDaLinha(valores, somar(contas.map((c) => c.total)), false)}
@@ -80,7 +85,10 @@ export function TabelaDre({ meses, linhas, receitaLiquida }: { meses: string[]; 
           const subtotal = linha.tipo === 'subtotal'
           return (
             <tr key={linha.id} className={cn(subtotal && 'bg-brand-50/60 font-semibold')}>
-              <td className={cn('sticky left-0 min-w-56 whitespace-nowrap', subtotal ? 'bg-brand-50 text-brand-900' : 'bg-surface', secao && 'pl-10')}>{linha.nome}</td>
+              <td className={cn('sticky left-0 min-w-56 whitespace-nowrap', subtotal ? 'bg-brand-50 text-brand-900' : 'bg-surface')}>
+                {/* O recuo fica no span: o padding da primeira coluna vem do CSS da .tabela e ganha de classe. */}
+                <span className={cn(secao && 'ml-6 inline-block text-muted')}>{linha.nome}</span>
+              </td>
               {valoresDaLinha(linha.valores, linha.total, subtotal)}
             </tr>
           )

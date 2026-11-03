@@ -16,6 +16,15 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 - Nota: `cancelada` · `recebida` · `parcial` · `atrasada` (previsão passou) · `a_receber`.
 - Parcela: `aguardando` (evento não aconteceu) · `liberada` (evento aconteceu, sem nota) · `faturada` · `recebida`.
 
+## Telas (redesign de 03/11, guia em `interface.md`)
+
+- Faturamento e Lançamentos abrem no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`). Faturamento: parcelas prontas para faturar em lista e abas "Notas do mês" · "Faturado × recebido no ano" (`?aba=grafico`).
+- Contas a receber: atraso numa barra só; as 15 notas mais atrasadas (`?todas=1` mostra todas).
+- DRE: custos, despesas e "fora da DRE" começam recolhidos (só o total do grupo).
+- Fluxo: abas "Próximas 8 semanas" · "Realizado por mês" (`?aba=realizado`); movimentos da semana recolhidos.
+- Extrato: importação compacta e abas "A classificar" · "Regras" · "Ignoradas" (`?aba=`).
+- Situação da nota é ponto + texto (`SituacaoDaNota`, em `components/financeiro/situacao-nota.tsx`).
+
 ## Edição
 
 | Tela | O que faz |

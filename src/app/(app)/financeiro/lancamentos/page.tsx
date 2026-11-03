@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
+import { Expansivel } from '@/components/ui/expansivel'
 import { PageHeader } from '@/components/ui/page-header'
 import { listarLancamentos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
@@ -9,7 +10,7 @@ import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
 import { cn } from '@/lib/cn'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
-import { brl, formatarData, formatarMes } from '@/lib/formatar'
+import { brl, formatarDataCurta, formatarMes } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
 import { NavegacaoMes } from '../_components/navegacao-mes'
 import { excluirLancamento } from './actions'
@@ -29,25 +30,19 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
     <>
       <PageHeader
         titulo="Lançamentos"
-        descricao="Entradas e saídas do caixa, cada uma na sua conta da DRE. A receita das notas entra sozinha quando o recebimento é registrado."
+        resumo={`${doMes.length} lançamentos em ${formatarMes(mes)}: entraram ${brl(entradas)} e saíram ${brl(-saidas)}. A receita das notas entra sozinha com o recebimento.`}
         acoes={<NavegacaoMes mes={mes} meses={meses} href={(m) => (m === mesDe(dia) ? '/financeiro/lancamentos' : `/financeiro/lancamentos?mes=${m}`)} />}
       />
 
       {editar && (
-        <Card titulo="Novo lançamento" className="mb-6">
-          <FormularioLancamento hoje={dia} processos={processos.map((p) => ({ id: p.id, nome: p.empreendimento }))} />
-        </Card>
+        <Expansivel resumo="Novo lançamento" className="mb-6">
+          <Card>
+            <FormularioLancamento hoje={dia} processos={processos.map((p) => ({ id: p.id, nome: p.empreendimento }))} />
+          </Card>
+        </Expansivel>
       )}
 
-      <Card
-        titulo={`${doMes.length} lançamentos em ${formatarMes(mes)}`}
-        acao={
-          <span className="text-sm text-muted">
-            entradas <span className="font-semibold text-ok">{brl(entradas)}</span> · saídas <span className="font-semibold text-danger">{brl(saidas)}</span>
-          </span>
-        }
-        flush
-      >
+      <Card flush>
         <table className="tabela">
           <thead>
             <tr>
@@ -62,7 +57,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
           <tbody>
             {doMes.map((lancamento) => (
               <tr key={lancamento.id}>
-                <td className="whitespace-nowrap">{formatarData(lancamento.data)}</td>
+                <td className="whitespace-nowrap">{formatarDataCurta(lancamento.data)}</td>
                 <td className="min-w-64">
                   {lancamento.descricao}
                   {lancamento.notaId && (
@@ -77,14 +72,15 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                   )}
                 </td>
                 <td className="text-muted">{nomeDaConta(lancamento.contaId)}</td>
-                <td className={cn('whitespace-nowrap', lancamento.competencia === mes ? 'text-subtle' : 'text-warn')}>{formatarMes(lancamento.competencia)}</td>
+                {/* Só aparece quando a competência é outro mês: é a exceção que importa para a DRE. */}
+                <td className="whitespace-nowrap text-warn">{lancamento.competencia !== mes && formatarMes(lancamento.competencia)}</td>
                 <td className={cn('num font-medium', lancamento.valor > 0 && 'text-ok')}>{brl(lancamento.valor)}</td>
                 {editar && (
                   <td className="text-right">
                     {!lancamento.notaId && (
                       <form action={excluirLancamento}>
                         <input type="hidden" name="id" value={lancamento.id} />
-                        <button title="Apagar lançamento" className="rounded-lg p-2 text-subtle hover:bg-danger-soft hover:text-danger">
+                        <button title="Apagar lançamento" className="rounded-md p-1.5 text-subtle hover:bg-danger-soft hover:text-danger">
                           <Trash2 className="size-4" />
                         </button>
                       </form>

@@ -1,16 +1,17 @@
 import { Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
+import { Abas } from '@/components/ui/abas'
 import type { Tom } from '@/components/ui/badge'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
 import { Card } from '@/components/ui/card'
+import { Expansivel, Vazio } from '@/components/ui/expansivel'
+import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
-import { Stat } from '@/components/ui/stat'
 import { filaDoExtrato } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import { chaveDaSugestao, notasParaCredito, sugerirTermo, type Sugestao } from '@/domain/financeiro/classificacao'
 import { valorLiquido } from '@/domain/financeiro/notas'
 import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
-import { somar } from '@/lib/dinheiro'
 import { brl, formatarData } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
 import { confirmarTodas, devolverLinha, excluirRegra } from './actions'
@@ -20,14 +21,15 @@ import { FormularioRegra } from './_components/formulario-regra'
 
 export const metadata: Metadata = { title: 'Extrato bancário' }
 
-export default async function PaginaExtrato() {
-  const [usuario, fila] = await Promise.all([exigirArea('financeiro'), filaDoExtrato()])
+export default async function PaginaExtrato({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
+  const [{ aba: pedida }, usuario, fila] = await Promise.all([searchParams, exigirArea('financeiro'), filaDoExtrato()])
   const { pendentes, regras, ignoradas, lancadas, clientes, processos, notas } = fila
+  const aba = pedida === 'regras' || pedida === 'ignoradas' ? pedida : 'fila'
   const editar = pode(usuario.papel, 'financeiro', 'editar')
   const comSugestao = pendentes.filter((p) => p.sugestao).length
   const aReceber = notas.filter((n) => !n.cancelada && !n.recebimento)
   const nomeDoCliente = (id: string) => clientes.find((c) => c.id === id)!.nome
-  const nomeDoProcesso = (id?: string) => processos.find((p) => p.id === id)?.empreendimento
+  const opcoesDeProcesso = processos.map((p) => ({ id: p.id, nome: p.empreendimento }))
 
   const descrever = (sugestao: Sugestao): { texto: string; tom: Tom } => {
     if (sugestao.tipo === 'lancamento') return { texto: `Já lançado: ${sugestao.lancamento.descricao} (${formatarData(sugestao.lancamento.data)})`, tom: 'info' }
@@ -39,32 +41,40 @@ export default async function PaginaExtrato() {
     <>
       <PageHeader
         titulo="Extrato bancário"
-        descricao="Importe o extrato do banco e cada linha vira lançamento. O sistema reconhece o que já foi lançado à mão, acha a nota que cada crédito paga e sugere a conta pelas regras."
-      />
-
-      <div className="mb-6 grid gap-4 lg:grid-cols-4">
-        {editar && (
-          <Card titulo="Importar extrato" className="lg:col-span-2">
-            <FormularioImportacao />
-          </Card>
-        )}
-        <Stat rotulo="A classificar" valor={pendentes.length} detalhe={`${comSugestao} com sugestão · ${brl(somar(pendentes.map((p) => p.linha.valor)))}`} tom="warn" />
-        <Stat rotulo="Já lançadas" valor={lancadas} detalhe="linhas do extrato que viraram lançamento" tom="ok" />
-      </div>
-
-      <Card
-        titulo="A classificar"
-        className="mb-6"
-        acao={
+        resumo={
+          pendentes.length
+            ? `${pendentes.length} linhas a classificar, ${comSugestao} com sugestão pronta.`
+            : lancadas
+              ? `Nada a classificar: as ${lancadas} linhas importadas já viraram lançamento.`
+              : 'Importe o extrato do banco: cada linha vira lançamento, com sugestão de conta e de nota.'
+        }
+        acoes={
           editar &&
+          aba === 'fila' &&
           comSugestao > 0 && (
             <form action={confirmarTodas}>
-              <BotaoEnviar className="py-1.5">Confirmar as {comSugestao} sugestões</BotaoEnviar>
+              <BotaoEnviar>Confirmar as {comSugestao} sugestões</BotaoEnviar>
             </form>
           )
         }
-        flush
-      >
+      />
+
+      {editar && (
+        <Card className="mb-6">
+          <FormularioImportacao />
+        </Card>
+      )}
+
+      <Abas
+        ativa={aba}
+        abas={[
+          { valor: 'fila', rotulo: 'A classificar', href: '/financeiro/extrato', contagem: pendentes.length },
+          { valor: 'regras', rotulo: 'Regras', href: '/financeiro/extrato?aba=regras', contagem: regras.length },
+          { valor: 'ignoradas', rotulo: 'Ignoradas', href: '/financeiro/extrato?aba=ignoradas', contagem: ignoradas.length },
+        ]}
+      />
+
+      {aba === 'fila' && (
         <FilaDoExtrato
           editar={editar}
           linhas={pendentes.map(({ linha, sugestao }) => ({
@@ -76,74 +86,66 @@ export default async function PaginaExtrato() {
             termo: sugerirTermo(linha.descricao),
             candidatas: linha.valor > 0 ? notasParaCredito(linha, aReceber, clientes).map(({ nota }) => nota.id) : [],
           }))}
-          processos={processos.map((p) => ({ id: p.id, nome: p.empreendimento }))}
+          processos={opcoesDeProcesso}
           notas={aReceber.map((n) => ({ id: n.id, nome: `NF ${n.numero} · ${nomeDoCliente(n.clienteId)} · ${brl(valorLiquido(n))}` }))}
         />
-      </Card>
+      )}
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <Card titulo="Regras de classificação" flush>
+      {aba === 'regras' && (
+        <>
           {editar && (
-            <div className="border-b border-line p-5">
-              <FormularioRegra processos={processos.map((p) => ({ id: p.id, nome: p.empreendimento }))} />
-            </div>
+            <Expansivel resumo="Nova regra" className="mb-4">
+              <Card>
+                <FormularioRegra processos={opcoesDeProcesso} />
+              </Card>
+            </Expansivel>
           )}
-          <table className="tabela">
-            <tbody>
+          {regras.length ? (
+            <Lista>
               {regras.map((regra) => (
-                <tr key={regra.id}>
-                  <td>“{regra.contem}”</td>
-                  <td>
-                    {nomeDaConta(regra.contaId)}
-                    {regra.processoId && <p className="text-xs text-muted">{nomeDoProcesso(regra.processoId)}</p>}
-                  </td>
+                <Linha key={regra.id}>
+                  <span className="min-w-0 flex-1">
+                    Descrição com “{regra.contem}”
+                    {regra.processoId && <span className="block text-sm text-muted">{processos.find((p) => p.id === regra.processoId)?.empreendimento}</span>}
+                  </span>
+                  <span className="text-muted">{nomeDaConta(regra.contaId)}</span>
                   {editar && (
-                    <td className="text-right">
-                      <form action={excluirRegra}>
-                        <input type="hidden" name="id" value={regra.id} />
-                        <button title="Apagar regra" className="rounded-lg p-2 text-subtle hover:bg-danger-soft hover:text-danger">
-                          <Trash2 className="size-4" />
-                        </button>
-                      </form>
-                    </td>
+                    <form action={excluirRegra}>
+                      <input type="hidden" name="id" value={regra.id} />
+                      <button title="Apagar regra" className="rounded-md p-1.5 text-subtle hover:bg-danger-soft hover:text-danger">
+                        <Trash2 className="size-4" />
+                      </button>
+                    </form>
                   )}
-                </tr>
+                </Linha>
               ))}
-              {regras.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="py-8 text-center text-muted">
-                    Nenhuma regra ainda. Ao classificar uma linha, marque “daqui em diante” para criar uma.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </Card>
+            </Lista>
+          ) : (
+            <Vazio>Nenhuma regra ainda. Ao classificar uma linha, marque “daqui em diante” para criar uma.</Vazio>
+          )}
+        </>
+      )}
 
-        {ignoradas.length > 0 && (
-          <Card titulo="Ignoradas" flush>
-            <table className="tabela">
-              <tbody>
-                {ignoradas.map((linha) => (
-                  <tr key={linha.id}>
-                    <td className="whitespace-nowrap">{formatarData(linha.data)}</td>
-                    <td>{linha.descricao}</td>
-                    <td className="num">{brl(linha.valor)}</td>
-                    {editar && (
-                      <td className="text-right">
-                        <form action={devolverLinha}>
-                          <input type="hidden" name="linhaId" value={linha.id} />
-                          <button className="whitespace-nowrap text-sm font-medium text-brand-700 hover:underline">Voltar para a fila</button>
-                        </form>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
-        )}
-      </div>
+      {aba === 'ignoradas' &&
+        (ignoradas.length ? (
+          <Lista>
+            {ignoradas.map((linha) => (
+              <Linha key={linha.id}>
+                <span className="w-24 text-muted">{formatarData(linha.data)}</span>
+                <span className="min-w-0 flex-1">{linha.descricao}</span>
+                <span className="tabular-nums">{brl(linha.valor)}</span>
+                {editar && (
+                  <form action={devolverLinha}>
+                    <input type="hidden" name="linhaId" value={linha.id} />
+                    <button className="whitespace-nowrap text-sm text-brand-700 hover:underline">Voltar para a fila</button>
+                  </form>
+                )}
+              </Linha>
+            ))}
+          </Lista>
+        ) : (
+          <Vazio>Nenhuma linha ignorada.</Vazio>
+        ))}
     </>
   )
 }

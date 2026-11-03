@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/ui/page-header'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { dadosDaDre } from '@/data/financeiro'
 import { montarDre, type Regime } from '@/domain/financeiro/dre'
+import { brl, formatarMes, formatarPercentual } from '@/lib/formatar'
 import { TabelaDre } from './_components/tabela-dre'
 
 export const metadata: Metadata = { title: 'DRE' }
@@ -19,12 +20,19 @@ export default async function PaginaDre({ searchParams }: { searchParams: Promis
   const { meses, notas, lancamentos } = await dadosDaDre()
   const linhas = montarDre({ lancamentos, notas, meses, regime })
   const receitaLiquida = linhas.find((l) => l.id === 'subtotal-imposto')?.total ?? 0
+  const resultado = linhas.find((l) => l.id === 'subtotal-outras')?.total ?? 0
 
   return (
     <>
       <PageHeader
         titulo="DRE"
-        descricao={`Na mesma estrutura que a Eco Direito já usa, montada direto dos lançamentos. ${REGIMES[regime].explicacao}`}
+        resumo={
+          <>
+            Resultado líquido de <strong className={resultado < 0 ? 'text-danger' : 'text-ink'}>{brl(resultado)}</strong> de {formatarMes(meses[0])} a{' '}
+            {formatarMes(meses.at(-1)!)}
+            {receitaLiquida ? `, ${formatarPercentual(resultado / receitaLiquida)} da receita líquida` : ''}. {REGIMES[regime].explicacao}
+          </>
+        }
         acoes={
           <SegmentedLinks
             ativo={regime}
