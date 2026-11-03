@@ -2,41 +2,53 @@
 
 import { useActionState } from 'react'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
-import { Campo, Entrada, MensagemFormulario, Selecao } from '@/components/ui/form'
-import { EVENTOS, FASES, TIPOS_EVENTO } from '@/domain/processos'
+import { AreaTexto, Campo, Entrada, MensagemFormulario } from '@/components/ui/form'
+import type { InfoEvento, TipoEvento } from '@/domain/processos'
 import { lancarEvento } from '../actions'
 
-export function FormularioEvento({ processoId, dia }: { processoId: string; dia: string }) {
+type Props = {
+  processoId: string
+  tipo: TipoEvento
+  info: InfoEvento
+  dia: string
+  /** Prazo padrão que a etapa abre, para explicar o campo de prazo do ato. */
+  prazoPadrao?: number
+  /** Autuação de processo ainda sem nº SEI. */
+  pedirSei?: boolean
+}
+
+/** Marca uma etapa da fase: só os campos que fazem sentido para ela. */
+export function FormularioEtapa({ processoId, tipo, info, dia, prazoPadrao, pedirSei }: Props) {
   const [estado, acao] = useActionState(lancarEvento, {})
+  const erros = estado.erros ?? {}
   return (
-    <form action={acao} className="space-y-3">
+    <form action={acao} className="max-w-xl space-y-3">
       <input type="hidden" name="processoId" value={processoId} />
-      <Campo rotulo="O que aconteceu" erro={estado.erros?.tipo}>
-        <Selecao name="tipo" defaultValue={estado.valores?.tipo ?? ''} required>
-          <option value="" disabled>
-            Escolha o evento
-          </option>
-          {FASES.map((fase) => (
-            <optgroup key={fase.numero} label={`${fase.numero}. ${fase.nome}`}>
-              {TIPOS_EVENTO.filter((tipo) => EVENTOS[tipo].fase === fase.numero).map((tipo) => (
-                <option key={tipo} value={tipo}>
-                  {EVENTOS[tipo].nome}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </Selecao>
-      </Campo>
+      <input type="hidden" name="tipo" value={tipo} />
       <div className="grid gap-3 sm:grid-cols-2">
-        <Campo rotulo="Data" erro={estado.erros?.data} dica="Se ainda vai acontecer, a data planejada.">
-          <Entrada type="date" name="data" defaultValue={estado.valores?.data ?? dia} required />
+        <Campo rotulo={info.planejada ? 'Data planejada' : 'Quando aconteceu'} erro={erros.data}>
+          <Entrada type="date" name="data" defaultValue={estado.valores?.data ?? dia} max={info.planejada ? undefined : dia} required />
         </Campo>
-        <Campo rotulo="Prazo dado no ato (dias)" erro={estado.erros?.diasNoAto} dica="Só se for diferente do padrão.">
-          <Entrada type="number" name="diasNoAto" defaultValue={estado.valores?.diasNoAto} min={1} inputMode="numeric" />
-        </Campo>
+        {pedirSei && (
+          <Campo rotulo="Nº SEI gerado" erro={erros.numeroSei} dica="Pode preencher depois, em Editar.">
+            <Entrada name="numeroSei" defaultValue={estado.valores?.numeroSei} placeholder="6027.2026/0000021-3" pattern="\d{4}\.\d{4}/\d{7}-\d" />
+          </Campo>
+        )}
+        {info.prazoNoAto && (
+          <Campo
+            rotulo="O ato deu outro prazo? (dias)"
+            erro={erros.diasNoAto}
+            dica={`Deixe vazio para usar o padrão${prazoPadrao ? ` de ${prazoPadrao} dias` : ''}. Preencha só se o texto do ato disser outro, como "60 dias".`}
+          >
+            <Entrada type="number" name="diasNoAto" defaultValue={estado.valores?.diasNoAto} min={1} inputMode="numeric" placeholder={prazoPadrao ? String(prazoPadrao) : undefined} />
+          </Campo>
+        )}
       </div>
+      <Campo rotulo="Observação" erro={erros.observacao} dica="Opcional. Aparece na linha do tempo.">
+        <AreaTexto name="observacao" defaultValue={estado.valores?.observacao} rows={2} className="min-h-16" placeholder="Ex.: protocolo nº, o que a SVMA pediu, com quem falou" />
+      </Campo>
       <MensagemFormulario estado={estado} />
-      <BotaoEnviar>Lançar evento</BotaoEnviar>
+      <BotaoEnviar>{info.planejada ? 'Marcar a data' : 'Marcar como feita'}</BotaoEnviar>
     </form>
   )
 }

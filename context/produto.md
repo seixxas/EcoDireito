@@ -11,7 +11,8 @@
 
 ## Módulos
 
-1. **Processos e prazos**: cada processo com as 7 fases e os prazos calculados por regra. Detalhe em `prazos.md`.
+0. **Comercial** (`/comercial`, em desenvolvimento): por enquanto só uma prévia com propostas de exemplo. A ideia é o funil de propostas até virar processo.
+1. **Processos e prazos**: cada processo com as 8 fases (da Proposta à Compensação), as etapas de cada uma e os prazos calculados por regra. Detalhe em `prazos.md`.
 2. **Diário Oficial**: um robô lê o Diário Oficial da Cidade e acha os atos dos processos. Detalhe em `publicacoes.md`.
 3. **Portal do cliente**: a construtora acompanha o próprio processo, só para leitura.
 4. **Financeiro**: substitui as planilhas (notas, contas a receber, DRE, fluxo de caixa). Detalhe em `financeiro.md`.
@@ -29,7 +30,7 @@
 | Parecer conclusivo | Fim da análise técnica. Vale 18 meses |
 | Câmara de Compensação | Colegiado que define a compensação ambiental |
 | TCA | Termo de Compromisso Ambiental. Tem cláusulas com prazo (9.3, 9.5, 9.7) |
-| LAA | Marco usado na cobrança (2ª parcela do licenciamento). Significado exato a confirmar |
+| LAA | Laudo de Avaliação Ambiental. Sai com o parecer técnico e as plantas aprovadas, depois da vistoria (ou da resposta ao último Comunique-se). Fecha a fase Resposta e libera a 2ª parcela do licenciamento |
 | Alvará de Execução | Emitido pela SMUL (urbanismo). Precisa ser protocolado na SVMA |
 | FEMA | Fundo municipal. A compensação pode ser paga nele em vez de entregar mudas |
 | Manejo | Corte, poda ou transplante de árvores autorizado |

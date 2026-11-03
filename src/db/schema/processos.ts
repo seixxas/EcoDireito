@@ -19,7 +19,8 @@ export const processos = pgTable('processos', {
   responsavel: text().notNull().default(''),
   /** 'licenciamento' | 'manejo' */
   servico: text().notNull(),
-  numeroSei: text().notNull(),
+  /** Vazio até a autuação na SVMA. */
+  numeroSei: text(),
   numeroSimproc: text(),
   numeroTca: text(),
   faseAtual: integer().notNull().default(1),
@@ -37,5 +38,6 @@ export const eventos = pgTable('eventos', {
   /** 'diario' | 'manual' */
   origem: text().notNull(),
   diasNoAto: integer(),
+  observacao: text(),
   criadoEm: timestamp({ withTimezone: true }).notNull().defaultNow(),
 })

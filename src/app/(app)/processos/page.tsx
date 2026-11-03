@@ -45,7 +45,7 @@ export default async function PaginaProcessos({ searchParams }: { searchParams: 
             <div className="min-w-0 basis-full sm:basis-auto sm:flex-1">
               <p className="truncate font-medium text-ink">{processo.empreendimento}</p>
               <p className="truncate text-xs text-muted">
-                {cliente.nome} · SEI {processo.numeroSei}
+                {cliente.nome} · {processo.numeroSei ? `SEI ${processo.numeroSei}` : 'sem nº SEI'}
                 {processo.servico === 'manejo' && ' · Manejo'}
               </p>
             </div>
