@@ -16,22 +16,26 @@ import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
 import { brl, formatarData, formatarMes } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
+import { NavegacaoMes } from './_components/navegacao-mes'
 
 export const metadata: Metadata = { title: 'Faturamento' }
 
 type Filtros = { mes?: string; situacao?: string }
 
-function link(filtros: Filtros) {
-  const params = new URLSearchParams(Object.entries(filtros).filter(([, valor]) => valor && valor !== 'todos') as [string, string][])
-  return params.size ? `/financeiro?${params}` : '/financeiro'
-}
-
 export default async function PaginaFaturamento({ searchParams }: { searchParams: Promise<Filtros> }) {
-  const { mes = 'todos', situacao = 'todos' } = await searchParams
-  const [{ hoje: dia, meses, notas }, parcelas, usuario] = await Promise.all([listarNotas(), listarParcelasLiberadas(), exigirArea('financeiro')])
+  const [filtros, { hoje: dia, meses, notas }, parcelas, usuario] = await Promise.all([searchParams, listarNotas(), listarParcelasLiberadas(), exigirArea('financeiro')])
   const editar = pode(usuario.papel, 'financeiro', 'editar')
+  const atual = mesDe(dia)
+  const mes = filtros.mes && meses.includes(filtros.mes) ? filtros.mes : atual
+  const situacao = filtros.situacao ?? 'todos'
+  const link = (novos: Filtros) => {
+    const params = new URLSearchParams()
+    if (novos.mes && novos.mes !== atual) params.set('mes', novos.mes)
+    if (novos.situacao && novos.situacao !== 'todos') params.set('situacao', novos.situacao)
+    return params.size ? `/financeiro?${params}` : '/financeiro'
+  }
 
-  const doPeriodo = mes === 'todos' ? notas : notas.filter(({ nota }) => mesDe(nota.emissao) === mes)
+  const doPeriodo = notas.filter(({ nota }) => mesDe(nota.emissao) === mes)
   const resumo = resumoNotas(doPeriodo.map(({ nota }) => nota), dia)
   const lista = doPeriodo
     .filter(({ nota }) => situacao === 'todos' || situacaoNota(nota, dia) === situacao)
@@ -49,11 +53,14 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
         titulo="Faturamento"
         descricao="Notas fiscais emitidas e o que já entrou no caixa. Substitui a planilha de faturamento: cada nota é lançada uma vez e a situação é calculada sozinha."
         acoes={
-          editar && (
-            <Link href="/financeiro/notas/nova" className={classeBotao()}>
-              <Plus className="size-4" /> Registrar nota
-            </Link>
-          )
+          <div className="flex items-center gap-3">
+            <NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m, situacao })} />
+            {editar && (
+              <Link href="/financeiro/notas/nova" className={classeBotao()}>
+                <Plus className="size-4" /> Registrar nota
+              </Link>
+            )}
+          </div>
         }
       />
 
@@ -106,11 +113,7 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
         />
       </Card>
 
-      <div className="mb-3 flex flex-col gap-3">
-        <SegmentedLinks
-          ativo={mes}
-          opcoes={[{ valor: 'todos', rotulo: 'Ano todo' }, ...meses.map((m) => ({ valor: m, rotulo: formatarMes(m) }))].map((o) => ({ ...o, href: link({ mes: o.valor, situacao }) }))}
-        />
+      <div className="mb-3">
         <SegmentedLinks
           ativo={situacao}
           opcoes={[{ valor: 'todos', rotulo: 'Todas' }, ...Object.entries(SITUACOES_NOTA).map(([valor, { rotulo }]) => ({ valor, rotulo }))].map((o) => ({

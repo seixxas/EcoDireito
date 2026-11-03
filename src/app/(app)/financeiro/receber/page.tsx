@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: 'Contas a receber' }
 
 const FAIXAS = [
   { rotulo: 'A vencer', de: -Infinity, ate: 0, cor: 'bg-brand-300' },
-  { rotulo: '1 a 15 dias de atraso', de: 1, ate: 15, cor: 'bg-accent' },
+  { rotulo: '1 a 15 dias de atraso', de: 1, ate: 15, cor: 'bg-accent/50' },
   { rotulo: '16 a 30 dias', de: 16, ate: 30, cor: 'bg-accent' },
   { rotulo: '31 a 60 dias', de: 31, ate: 60, cor: 'bg-danger/70' },
   { rotulo: 'Mais de 60 dias', de: 61, ate: Infinity, cor: 'bg-danger' },
@@ -57,18 +57,19 @@ export default async function PaginaReceber() {
 
       <div className="mb-6 grid gap-6 xl:grid-cols-5">
         <Card titulo="Por tempo de atraso" className="xl:col-span-3">
-          <ul className="space-y-3">
+          <div className="flex h-3 overflow-hidden rounded-full bg-canvas">
             {faixas.map((faixa) => (
-              <li key={faixa.rotulo}>
-                <div className="flex justify-between text-sm">
-                  <span>
-                    {faixa.rotulo} <span className="text-subtle">· {faixa.quantidade} notas</span>
-                  </span>
-                  <span className="font-semibold tabular-nums">{brl(faixa.valor)}</span>
-                </div>
-                <div className="mt-1 h-2.5 rounded-full bg-canvas">
-                  <div className={cn('h-full rounded-full', faixa.cor)} style={{ width: `${total ? (faixa.valor / total) * 100 : 0}%` }} />
-                </div>
+              <div key={faixa.rotulo} title={`${faixa.rotulo}: ${brl(faixa.valor)}`} className={faixa.cor} style={{ width: `${total ? (faixa.valor / total) * 100 : 0}%` }} />
+            ))}
+          </div>
+          <ul className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+            {faixas.map((faixa) => (
+              <li key={faixa.rotulo} className="flex items-baseline gap-2 text-sm">
+                <span className={cn('size-2.5 shrink-0 translate-y-px rounded-full', faixa.cor)} />
+                <span className="flex-1">
+                  {faixa.rotulo} <span className="text-subtle">· {faixa.quantidade}</span>
+                </span>
+                <span className="font-medium tabular-nums">{brl(faixa.valor)}</span>
               </li>
             ))}
           </ul>

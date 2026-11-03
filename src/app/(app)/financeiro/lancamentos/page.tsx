@@ -3,7 +3,6 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
-import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { listarLancamentos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
@@ -12,6 +11,7 @@ import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
 import { brl, formatarData, formatarMes } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
+import { NavegacaoMes } from '../_components/navegacao-mes'
 import { excluirLancamento } from './actions'
 import { FormularioLancamento } from './_components/formulario-lancamento'
 
@@ -30,6 +30,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
       <PageHeader
         titulo="Lançamentos"
         descricao="Entradas e saídas do caixa, cada uma na sua conta da DRE. A receita das notas entra sozinha quando o recebimento é registrado."
+        acoes={<NavegacaoMes mes={mes} meses={meses} href={(m) => (m === mesDe(dia) ? '/financeiro/lancamentos' : `/financeiro/lancamentos?mes=${m}`)} />}
       />
 
       {editar && (
@@ -37,10 +38,6 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
           <FormularioLancamento hoje={dia} processos={processos.map((p) => ({ id: p.id, nome: p.empreendimento }))} />
         </Card>
       )}
-
-      <div className="mb-3">
-        <SegmentedLinks ativo={mes} opcoes={meses.map((m) => ({ valor: m, rotulo: formatarMes(m), href: `/financeiro/lancamentos?mes=${m}` }))} />
-      </div>
 
       <Card
         titulo={`${doMes.length} lançamentos em ${formatarMes(mes)}`}
