@@ -62,6 +62,18 @@ export async function gravarConfirmacao(item: PublicacaoNaCaixa & { processo: Pr
   ])
 }
 
+/**
+ * Lança o ato no processo que acabou de ser cadastrado a partir dele. Só quando o nº SEI do processo é o do ato:
+ * é por ele que a caixa liga o ato ao processo nas próximas leituras. Devolve se lançou.
+ * O processo vem de quem chama: no mesmo pedido, o `carregar()` ainda não tem o processo novo.
+ */
+export async function lancarNoProcessoNovo(atoId: string, processo: Processo) {
+  const item = await obterPublicacao(atoId)
+  if (!item || item.ato.status !== 'nova' || !item.ato.processo || item.ato.processo !== processo.numeroSei) return false
+  await gravarConfirmacao({ ...item, processo })
+  return true
+}
+
 export async function gravarDescarte(id: string, motivo: string) {
   exigirBanco()
   await db.update(schema.publicacoes).set({ status: 'descartada', motivo }).where(aindaNova(id))

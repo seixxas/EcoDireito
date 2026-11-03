@@ -3,26 +3,43 @@
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
-import { Botao, Entrada, MensagemFormulario, classeBotao } from '@/components/ui/form'
-import { confirmarAto, descartarAto } from '../actions'
+import { Botao, Entrada, MensagemFormulario, Selecao, classeBotao } from '@/components/ui/form'
+import { MOTIVOS_PARA_IGNORAR } from '@/domain/publicacoes'
+import { ignorarAto, lancarAto } from '../actions'
 
-/** Ações na linha do ato. Sem processo cadastrado, o caminho é cadastrar a partir do ato e voltar para confirmar. */
-export function AcoesPublicacao({ id, temProcesso }: { id: string; temProcesso: boolean }) {
-  const [confirmacao, confirmar] = useActionState(confirmarAto, {})
-  const [descarte, descartar] = useActionState(descartarAto, {})
-  const [descartando, setDescartando] = useState(false)
+/**
+ * Ações na linha do ato: lançar no processo (ou marcar como visto, se a série não vira etapa) ou ignorar com motivo.
+ * Sem processo cadastrado, o caminho é cadastrar a partir do ato; o cadastro já lança.
+ */
+export function AcoesPublicacao({ id, temProcesso, marcaEtapa }: { id: string; temProcesso: boolean; marcaEtapa: boolean }) {
+  const [lancamento, lancar] = useActionState(lancarAto, {})
+  const [ignorado, ignorar] = useActionState(ignorarAto, {})
+  const [ignorando, setIgnorando] = useState(false)
+  const [motivo, setMotivo] = useState('')
+  const erroMotivo = ignorado.erros?.motivo ?? ignorado.erros?.outro
 
-  if (descartando) {
+  if (ignorando) {
     return (
-      <form action={descartar} className="w-64 space-y-2">
+      <form action={ignorar} className="w-64 space-y-2">
         <input type="hidden" name="id" value={id} />
-        <Entrada name="motivo" defaultValue={descarte.valores?.motivo} aria-label="Por que não é nosso?" placeholder="Por que não é nosso?" required autoFocus />
-        {descarte.erros?.motivo && <p className="text-xs text-danger">{descarte.erros.motivo}</p>}
+        <Selecao name="motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} aria-label="Por que ignorar?" required autoFocus>
+          <option value="" disabled>
+            Por que ignorar?
+          </option>
+          {MOTIVOS_PARA_IGNORAR.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+          <option value="outro">Outro (escrever)</option>
+        </Selecao>
+        {motivo === 'outro' && <Entrada name="outro" defaultValue={ignorado.valores?.outro} aria-label="Motivo" placeholder="Escreva o motivo" required autoFocus />}
+        {erroMotivo && <p className="text-xs text-danger">{erroMotivo}</p>}
         <div className="flex justify-end gap-2">
-          <Botao type="button" variante="secundario" onClick={() => setDescartando(false)}>
+          <Botao type="button" variante="secundario" onClick={() => setIgnorando(false)}>
             Voltar
           </Botao>
-          <BotaoEnviar variante="perigo">Descartar</BotaoEnviar>
+          <BotaoEnviar>Ignorar</BotaoEnviar>
         </div>
       </form>
     )
@@ -30,22 +47,22 @@ export function AcoesPublicacao({ id, temProcesso }: { id: string; temProcesso: 
 
   return (
     <div className="flex flex-col items-start gap-1.5 sm:items-end">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 sm:justify-end">
         {temProcesso ? (
-          <form action={confirmar}>
+          <form action={lancar}>
             <input type="hidden" name="id" value={id} />
-            <BotaoEnviar>Confirmar</BotaoEnviar>
+            <BotaoEnviar>{marcaEtapa ? 'Lançar no processo' : 'Marcar como visto'}</BotaoEnviar>
           </form>
         ) : (
           <Link href={`/processos/novo?ato=${encodeURIComponent(id)}`} className={classeBotao()}>
-            Cadastrar processo
+            {marcaEtapa ? 'Cadastrar o processo e lançar' : 'Cadastrar o processo'}
           </Link>
         )}
-        <Botao variante="secundario" onClick={() => setDescartando(true)}>
-          Não é nosso
+        <Botao variante="secundario" onClick={() => setIgnorando(true)}>
+          Ignorar
         </Botao>
       </div>
-      <MensagemFormulario estado={confirmacao} />
+      <MensagemFormulario estado={lancamento} />
     </div>
   )
 }

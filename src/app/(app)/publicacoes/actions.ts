@@ -8,13 +8,14 @@ import { exigirArea } from '@/data/sessao'
 import { formatarData } from '@/lib/formatar'
 import { campo, lerFormulario, type EstadoFormulario } from '@/lib/formulario'
 
-export async function confirmarAto(_: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
+/** Lança o ato no processo: marca a etapa que ele sugere ou, se a série não vira etapa, só registra que foi visto. */
+export async function lancarAto(_: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   await exigirArea('prazos', 'editar')
   const lido = lerFormulario(z.object({ id: campo.texto() }), formData)
   if ('estado' in lido) return lido.estado
   const item = await obterPublicacao(lido.dados.id)
   if (!item || item.ato.status !== 'nova') return { erro: 'Este ato já foi revisado.' }
-  if (!item.processo) return { erro: 'Cadastre o processo antes de confirmar.' }
+  if (!item.processo) return { erro: 'Cadastre o processo antes de lançar.' }
   await gravarConfirmacao({ ...item, processo: item.processo })
   refresh()
   return {}
@@ -38,13 +39,17 @@ export async function buscarEdicao(_: EstadoFormulario, formData: FormData): Pro
   return { ok: `Edição de ${formatarData(data)}: ${atosSvma} atos da Secretaria do Verde, ${novos === 1 ? '1 novo' : `${novos} novos`} para revisar.`, valores: { data } }
 }
 
-const esquemaDescarte = z.object({ id: campo.texto(), motivo: campo.texto('Diga por que o ato não é nosso') })
+/** `motivo` vem da lista (`MOTIVOS_PARA_IGNORAR`); "outro" usa o que foi escrito. */
+const esquemaIgnorar = z
+  .object({ id: campo.texto(), motivo: campo.texto('Escolha o motivo'), outro: campo.opcional() })
+  .refine((dados) => dados.motivo !== 'outro' || dados.outro, { path: ['outro'], message: 'Escreva o motivo' })
 
-export async function descartarAto(_: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
+export async function ignorarAto(_: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   await exigirArea('prazos', 'editar')
-  const lido = lerFormulario(esquemaDescarte, formData)
+  const lido = lerFormulario(esquemaIgnorar, formData)
   if ('estado' in lido) return lido.estado
-  await gravarDescarte(lido.dados.id, lido.dados.motivo)
+  const { id, motivo, outro } = lido.dados
+  await gravarDescarte(id, motivo === 'outro' && outro ? outro : motivo)
   refresh()
   return {}
 }

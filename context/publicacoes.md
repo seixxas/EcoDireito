@@ -5,11 +5,19 @@ A caixa de entrada mostra o que está na tabela `publicacoes` (ou os atos fictí
 
 ## Caixa de entrada (E3)
 
-- **Confirmar**: o ato vira o evento (`eventoDoAto`; data do ato, origem `diario`). Evento, fase do processo e status do ato vão num único `db.batch` (transação). O evento tem id fixo `diario-<id do ato>`: duas confirmações ao mesmo tempo gravam um só. Série sem evento (ex.: Notificação) só fica confirmada.
+Abas: Para revisar (`nova`), Lançados (`confirmada`) e Ignorados (`descartada`); na URL, `?aba=` usa o status. No topo de "Para revisar": "O robô lê o Diário Oficial e traz os atos que parecem ser dos nossos clientes. Para cada um, decida: lançar no processo (marca a etapa e conta o prazo) ou ignorar."
+
+- **Dois grupos** em "Para revisar": "De processos que já acompanhamos" (achados pelo nº SEI ou SIMPROC) e "De clientes, mas o processo ainda não está cadastrado" (achados só pelo CNPJ). A página corta a lista com os primeiros antes; os grupos separam o que está nela.
+- **Por que o ato está ali**, em cada linha: "Achado pelo nº SEI do processo X." / "Achado pelo nº SIMPROC do processo X, escrito no texto do ato." / "Achado pelo CNPJ do cliente, escrito no texto do ato. O processo deste ato (SEI ...) ainda não está cadastrado."
+- **O que lançar faz**: "Ao lançar: marca a etapa “X” e abre o prazo “Y” até ...". Série que não vira etapa: "Este tipo de ato não marca etapa: marcar como visto registra só que ele é nosso."
+- **Botões** (só quem edita prazos):
+  - Com processo: "Lançar no processo" (ou "Marcar como visto", se a série não vira etapa) e "Ignorar".
+  - Sem processo: "Cadastrar o processo e lançar" (ou "Cadastrar o processo") e "Ignorar".
+- **Lançar**: o ato vira o evento (`eventoDoAto`; data do ato, origem `diario`). Evento, fase do processo e status do ato vão num único `db.batch` (transação). O evento tem id fixo `diario-<id do ato>`: dois lançamentos ao mesmo tempo gravam um só. Série sem evento só fica `confirmada` (aparece como "Visto").
+- **Cadastrar o processo e lançar**: abre `/processos/novo?ato=<id>` com cliente, nº SEI e fase preenchidos. Ao salvar, `salvarProcesso` chama `lancarNoProcessoNovo` e volta para `/publicacoes?lancado=<id do ato>`, que mostra "Processo cadastrado e ato lançado. Abrir o processo". Só lança se o nº SEI do processo for o do ato (é por ele que a caixa liga os dois depois); com outro SEI, o processo é criado e o ato continua para revisar, com aviso.
+- **Ignorar**: motivo numa lista (`MOTIVOS_PARA_IGNORAR`: "Não é processo nosso", "Já foi lançado", "Não muda nada no processo") ou "Outro (escrever)". Grava o texto do motivo; a aba Ignorados mostra.
 - **Prazo escrito no ato** (`prazoDoAto` → `diasNoAto`): só no Comunique-se e só na frase "prazo de (até) N dias". Em extrato e despacho, "N dias" costuma ser vigência ou validade e alongaria o prazo da cláusula. "Dias úteis" é lido como corridos (só antecipa).
 - Limite conhecido: o vínculo é recalculado a cada leitura. Se o CNPJ ou o nº SEI de um cadastro mudar depois da importação, o ato gravado pode sumir da caixa.
-- **Não é nosso**: descarta com motivo obrigatório.
-- **Sem processo cadastrado** (achado pelo CNPJ): "Cadastrar processo" abre `/processos/novo?ato=<id>` com cliente, nº SEI e fase preenchidos e volta para a caixa; o ato passa a casar pelo SEI e pode ser confirmado.
 - Só atos com status `nova` mudam: a action recusa ato já revisado ("Este ato já foi revisado").
 - **Busca** (`?q=`): texto e série do ato, nº SEI (do ato e do processo), cliente, grupo e empreendimento. Vale nas três abas, e o contador de cada aba mostra o resultado da busca.
 
@@ -47,7 +55,7 @@ A caixa de entrada mostra o que está na tabela `publicacoes` (ou os atos fictí
 
 ## Regras
 
-- Humano no circuito: o robô só sugere. Alguém confirma, e só então o evento entra e gera prazos.
+- Humano no circuito: o robô só sugere. Alguém lança, e só então o evento entra e gera prazos.
 - Falha barulhenta: se a edição de um dia útil não for processada, a equipe recebe um alerta.
-- O ato sugere um tipo de evento (`eventoDoAto`, acima); quem confirma pode descartar.
+- O ato sugere um tipo de evento (`eventoDoAto`, acima); quem revisa pode ignorar.
 - DJEN (Justiça) só entra se a Eco Direito tiver processos judiciais.

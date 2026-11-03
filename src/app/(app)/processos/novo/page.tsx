@@ -27,7 +27,9 @@ export default async function PaginaNovoProcesso({ searchParams }: { searchParam
         titulo="Novo processo"
         resumo={
           publicacao
-            ? `A partir do ato de ${formatarData(publicacao.ato.data)} (${publicacao.ato.serie}). Ao salvar, você volta ao Diário Oficial para confirmar.`
+            ? `A partir do ato de ${formatarData(publicacao.ato.data)} (${publicacao.ato.serie}). Ao cadastrar, ${
+                publicacao.evento ? `o ato é lançado no processo (marca a etapa “${EVENTOS[publicacao.evento].nome}”)` : 'o ato fica registrado como visto'
+              } e você volta ao Diário Oficial. Mantenha o nº SEI do ato: é por ele que o robô liga os atos ao processo.`
             : 'Para um cliente novo, comece pela proposta, em Comercial. Aqui é para cadastrar um processo que já anda na SVMA.'
         }
         acoes={
@@ -45,6 +47,7 @@ export default async function PaginaNovoProcesso({ searchParams }: { searchParam
             faseAtual: publicacao?.evento && EVENTOS[publicacao.evento].fase,
           }}
           voltar={publicacao && '/publicacoes'}
+          ato={publicacao && { id: publicacao.ato.id, enviar: publicacao.evento ? 'Cadastrar o processo e lançar' : 'Cadastrar o processo' }}
         />
       </Card>
     </>
