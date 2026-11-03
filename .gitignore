@@ -49,3 +49,6 @@ next-env.d.ts
 
 # worktrees das sessões paralelas
 /.claude/worktrees/
+
+# permissões locais do Claude Code (de cada máquina)
+/.claude/settings.local.json
