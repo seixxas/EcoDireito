@@ -9,7 +9,7 @@ import { ItemResumo, Resumo } from '@/components/ui/resumo'
 import { projecaoDeCaixa } from '@/data/financeiro'
 import { cn } from '@/lib/cn'
 import { somar } from '@/lib/dinheiro'
-import { brl, formatarData, formatarDataCurta, formatarMes } from '@/lib/formatar'
+import { brl, contar, formatarData, formatarDataCurta, formatarMes } from '@/lib/formatar'
 
 export const metadata: Metadata = { title: 'Fluxo de caixa' }
 
@@ -86,7 +86,7 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
                     <td className="num">{brl(semana.saidas)}</td>
                     <td className={cn('num font-medium', semana.saldoFinal < 0 && 'text-danger')}>{brl(semana.saldoFinal)}</td>
                     <td className="min-w-72">
-                      <Expansivel resumo={`${semana.movimentos.length} movimentos`}>
+                      <Expansivel resumo={contar(semana.movimentos.length, 'movimento', 'movimentos')}>
                         <ul className="space-y-1 text-xs">
                           {semana.movimentos.map((m, i) => (
                             <li key={i} className="flex justify-between gap-4">

@@ -52,8 +52,8 @@ export default async function PaginaNota({ params }: { params: Promise<{ id: str
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Secao titulo="Nota">
-            <dl className="grid gap-x-6 gap-y-4 border-t border-line pt-4 sm:grid-cols-3">
-              <div className="sm:col-span-3">
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-4 sm:grid-cols-3">
+              <div className="col-span-2 sm:col-span-3">
                 <Dado rotulo="Serviço">{nota.descricao}</Dado>
               </div>
               <Dado rotulo="Emissão">{formatarData(nota.emissao)}</Dado>
