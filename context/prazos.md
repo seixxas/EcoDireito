@@ -47,3 +47,4 @@ Arquivos: `src/domain/processos.ts` (fases e eventos), `src/domain/prazos.ts` (r
 - O Alvará conta da emissão (Portaria SVMA 105/2024, art. 51) e não da publicação, como diz o passo a passo. O sistema usa a emissão.
 - Relatório de manejo: 20 dias (Portaria, art. 57) ou 30 (passo a passo). O sistema usa 20.
 - As regras estão em `REGRAS_SVMA`. Hoje vivem no código; no banco, viram cadastro editável.
+- Ponto facultativo municipal não está em `feriados.ts` (ex.: 30/10/2026, Dia do Servidor transferido; não teve Diário Oficial). Ele prorroga prazo como dia sem expediente? Se sim, entra na tabela.

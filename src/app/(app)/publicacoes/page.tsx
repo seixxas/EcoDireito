@@ -81,7 +81,7 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
                     <span className="text-warn"> · processo ainda não cadastrado (SEI {ato.processo})</span>
                   )}
                 </p>
-                <p className="mt-2 rounded-lg bg-canvas p-3 text-sm leading-relaxed text-muted">{ato.texto}</p>
+                <p className="mt-2 max-h-72 overflow-y-auto whitespace-pre-line rounded-lg bg-canvas p-3 text-sm leading-relaxed text-muted">{ato.texto}</p>
               </div>
 
               <div className="lg:col-span-2">

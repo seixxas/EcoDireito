@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Cliente, Processo } from './processos'
-import { ORGAO_SVMA, extrairDiasDoTexto, vincularAto, type Ato } from './publicacoes'
+import { ORGAO_SVMA, eventoDoAto, extrairDiasDoTexto, vincularAto, type Ato } from './publicacoes'
 
 const clientes: Cliente[] = [{ id: 'c1', nome: 'Aurora SPE', documento: '12.345.678/0001-95' }]
 const processos: Processo[] = [
@@ -46,6 +46,24 @@ describe('vincularAto', () => {
 
   it('ignora outros órgãos', () => {
     expect(vincularAto(ato({ orgao: 'Secretaria da Fazenda', processo: '6027.2025/0001234-5' }), processos, clientes)).toBeUndefined()
+  })
+})
+
+describe('eventoDoAto', () => {
+  it('usa a série do ato', () => {
+    expect(eventoDoAto({ serie: 'Comunique-se', texto: '' })).toBe('comunique_se')
+    expect(eventoDoAto({ serie: 'Notificação', texto: '' })).toBeUndefined()
+  })
+
+  it('no Extrato, separa TCA, CRP e certificado definitivo pelo texto', () => {
+    expect(eventoDoAto({ serie: 'Extrato', texto: 'SEI: 6027.2024/0004727-9 EXTRATO DO TERMO DE COMPROMISSO AMBIENTAL TCA Nº 455 / 2026' })).toBe('tca_publicado')
+    expect(eventoDoAto({ serie: 'Extrato', texto: 'CERTIFICADO AMBIENTAL RECEBIMENTO PROVISÓRIO DO TERMO DE COMPROMISSO AMBIENTAL - TCA nº 406/2024' })).toBe('crp_emitido')
+    expect(eventoDoAto({ serie: 'Extrato', texto: 'CERTIFICADO AMBIENTAL RECEBIMENTO DEFINITIVO DO TERMO DE COMPROMISSO AMBIENTAL - TCA nº 167/2019' })).toBe('certificado_definitivo')
+  })
+
+  it('extrato de aditivo ou de contrato não vira evento', () => {
+    expect(eventoDoAto({ serie: 'Extrato do Termo Aditivo', texto: 'EXTRATO DO ADITIVO 01 - TERMO DE COMPROMISSO AMBIENTAL TCA Nº 096 / 2017' })).toBeUndefined()
+    expect(eventoDoAto({ serie: 'Extrato', texto: 'EXTRATO DO CONTRATO Nº 12/SVMA/2026' })).toBeUndefined()
   })
 })
 

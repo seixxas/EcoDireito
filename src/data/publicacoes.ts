@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm'
 import { db, exigirBanco, schema } from '@/db'
 import { REGRAS_SVMA, calcularVencimento } from '@/domain/prazos'
 import type { Processo } from '@/domain/processos'
-import { SERIE_PARA_EVENTO, extrairDiasDoTexto, vincularAto } from '@/domain/publicacoes'
+import { eventoDoAto, extrairDiasDoTexto, vincularAto } from '@/domain/publicacoes'
 import { carregar } from './base'
 import { gravacoesDoEvento } from './processos'
 
@@ -12,7 +12,7 @@ export async function listarPublicacoes() {
   const itens = publicacoes.atos.flatMap((ato) => {
     const vinculo = vincularAto(ato, processos, clientes)
     if (!vinculo) return []
-    const evento = SERIE_PARA_EVENTO[ato.serie]
+    const evento = eventoDoAto(ato)
     const diasNoAto = extrairDiasDoTexto(ato.texto)
     return [
       {
