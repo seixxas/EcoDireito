@@ -18,15 +18,13 @@ export type Ato = {
 
 export const ORGAO_SVMA = 'Secretaria Municipal do Verde e do Meio Ambiente'
 
-export const COMO_ACHOU = {
-  sei: 'Nº SEI do processo',
-  simproc: 'Nº SIMPROC antigo no texto',
-  cnpj: 'CNPJ do cliente no texto',
-} as const
-
-export type ComoAchou = keyof typeof COMO_ACHOU
+/** Como o robô ligou o ato: pelo nº SEI (coluna do diário), pelo nº SIMPROC ou pelo CNPJ do cliente escrito no texto. */
+export type ComoAchou = 'sei' | 'simproc' | 'cnpj'
 
 export type Vinculo = { comoAchou: ComoAchou; clienteId: string; processoId?: string }
+
+/** Motivos para ignorar um ato da caixa de entrada; "Outro" pede o texto. */
+export const MOTIVOS_PARA_IGNORAR = ['Não é processo nosso', 'Já foi lançado', 'Não muda nada no processo'] as const
 
 const SERIE_PARA_EVENTO: Record<string, TipoEvento> = {
   'Comunique-se': 'comunique_se',

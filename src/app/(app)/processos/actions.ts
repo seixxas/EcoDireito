@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { gravarCliente, gravarEvento, gravarProcesso, obterProcesso, removerEvento, seiEmUso } from '@/data/processos'
 import { hoje } from '@/data/hoje'
+import { lancarNoProcessoNovo } from '@/data/publicacoes'
 import { exigirArea } from '@/data/sessao'
 import { EVENTOS, FASES, TIPOS_EVENTO, type NumeroFase } from '@/domain/processos'
 import { campo, lerFormulario, valoresDoFormulario, type EstadoFormulario } from '@/lib/formulario'
@@ -51,17 +52,23 @@ const esquemaProcesso = z.object({
     .max(FASES.length)
     .transform((n) => n as NumeroFase),
   voltar: campo.opcional(),
+  /** Ato do Diário Oficial de onde o cadastro partiu: o processo novo já sai com ele lançado. */
+  ato: campo.opcional(),
 })
 
 export async function salvarProcesso(_: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   await exigirArea('prazos', 'editar')
   const lido = lerFormulario(esquemaProcesso, formData)
   if ('estado' in lido) return lido.estado
-  const { id, voltar, ...dados } = lido.dados
+  const { id, voltar, ato, ...dados } = lido.dados
   if (await seiEmUso(dados.numeroSei, id)) {
     return { erro: 'Confira os campos destacados.', erros: { numeroSei: 'Já existe um processo com este nº SEI' }, valores: valoresDoFormulario(formData) }
   }
   const gravado = await gravarProcesso(dados, id)
+  if (ato && !id) {
+    await lancarNoProcessoNovo(ato, { ...dados, id: gravado, eventos: [] })
+    redirect(`/publicacoes?lancado=${encodeURIComponent(ato)}`)
+  }
   redirect(destino(voltar, `/processos/${gravado}`))
 }
 

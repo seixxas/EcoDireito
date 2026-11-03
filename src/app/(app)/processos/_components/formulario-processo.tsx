@@ -8,7 +8,15 @@ import { salvarProcesso } from '../actions'
 
 type Valores = Partial<Omit<Processo, 'eventos'>>
 
-export function FormularioProcesso({ clientes, valores, voltar }: { clientes: { id: string; nome: string }[]; valores: Valores; voltar?: string }) {
+type Props = {
+  clientes: { id: string; nome: string }[]
+  valores: Valores
+  voltar?: string
+  /** Cadastro a partir de um ato do Diário Oficial: o ato é lançado no processo ao salvar. */
+  ato?: { id: string; enviar: string }
+}
+
+export function FormularioProcesso({ clientes, valores, voltar, ato }: Props) {
   const [estado, acao] = useActionState(salvarProcesso, {})
   const erros = estado.erros ?? {}
   const valor = (nome: keyof Valores) => estado.valores?.[nome] ?? valores[nome]
@@ -16,6 +24,7 @@ export function FormularioProcesso({ clientes, valores, voltar }: { clientes: { 
     <form action={acao} className="max-w-3xl space-y-4">
       <input type="hidden" name="id" value={valores.id ?? ''} />
       <input type="hidden" name="voltar" value={voltar ?? ''} />
+      <input type="hidden" name="ato" value={ato?.id ?? ''} />
       <Campo rotulo="Cliente" erro={erros.clienteId}>
         <Selecao name="clienteId" defaultValue={valor('clienteId') ?? ''} required>
           <option value="" disabled>
@@ -64,7 +73,7 @@ export function FormularioProcesso({ clientes, valores, voltar }: { clientes: { 
         </Campo>
       </div>
       <MensagemFormulario estado={estado} />
-      <BotaoEnviar>{valores.id ? 'Salvar alterações' : 'Cadastrar processo'}</BotaoEnviar>
+      <BotaoEnviar>{valores.id ? 'Salvar alterações' : (ato?.enviar ?? 'Cadastrar processo')}</BotaoEnviar>
     </form>
   )
 }
