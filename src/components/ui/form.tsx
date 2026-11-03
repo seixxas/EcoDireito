@@ -3,7 +3,7 @@ import { cn } from '@/lib/cn'
 import type { EstadoFormulario } from '@/lib/formulario'
 
 const VARIANTES = {
-  primario: 'bg-brand-700 text-white hover:bg-brand-900',
+  primario: 'bg-brand-700 text-on-brand hover:bg-brand-900',
   secundario: 'border border-line bg-surface text-ink hover:bg-canvas',
   perigo: 'border border-danger/30 bg-surface text-danger hover:bg-danger-soft',
 } as const

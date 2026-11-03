@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #f7f6f2;
-  --color-rail: #f0eee7;
+  --color-canvas: #efede6;
+  --color-rail: #e7e4da;
   --color-surface: #ffffff;
-  --color-line: #e5e2d9;
+  --color-line: #dcd8cd;
   --color-ink: #1d2420;
-  --color-muted: #5b635d;
-  --color-subtle: #8b918a;
+  --color-muted: #545c56;
+  --color-subtle: #7b8179;
 
   --color-brand-50: #eaf3ed;
   --color-brand-100: #d3e6da;
@@ -27,6 +27,14 @@
   --color-info: #2c4260;
   --color-info-soft: #e4eaf2;
 
+  /* Texto sobre fundo de marca (botão principal, ícone da logo). */
+  --color-on-brand: #ffffff;
+
+  /* Menu lateral: verde escuro nos dois modos. */
+  --color-nav: #14301e;
+  --color-nav-ink: #d3e6da;
+  --color-nav-muted: #8fbf9f;
+
   /* Leitura: texto corrido em 15 px e miúdo em 13 px. */
   --text-sm: 0.9375rem;
   --text-sm--line-height: 1.5;
@@ -39,6 +47,42 @@
   --font-display: var(--font-bricolage), var(--font-plex), sans-serif;
 }
 
+/* Modo escuro: `data-theme="dark"` no <html>, posto pelo script do layout raiz e pelo BotaoTema.
+   As cores são as mesmas variáveis, trocadas aqui; a escala da marca inverte (700 = verde claro, para texto). */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-canvas: #131715;
+  --color-rail: #1f2522;
+  --color-surface: #1b201d;
+  --color-line: #2c3430;
+  --color-ink: #e6eae5;
+  --color-muted: #a4ada6;
+  --color-subtle: #7a837c;
+
+  --color-brand-50: #17271d;
+  --color-brand-100: #1f3a29;
+  --color-brand-300: #3d7352;
+  --color-brand-500: #4fae73;
+  --color-brand-600: #66bf87;
+  --color-brand-700: #86d1a0;
+  --color-brand-900: #c4ead0;
+
+  --color-ok: #57c793;
+  --color-ok-soft: #14291f;
+  --color-warn: #f0b85f;
+  --color-warn-soft: #2e2412;
+  --color-danger: #f47c70;
+  --color-danger-soft: #351a17;
+  --color-info: #a9c1e0;
+  --color-info-soft: #1c2533;
+
+  --color-on-brand: #0f2016;
+  --color-nav: #0f2016;
+}
+
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
@@ -46,6 +90,10 @@ body {
 }
 
 @layer components {
+  /* Link dentro de texto ou de tabela: sublinhado para ficar claro que abre outra tela. */
+  .link {
+    @apply font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 transition-colors hover:decoration-brand-700;
+  }
   .tabela {
     @apply w-full text-sm;
   }
