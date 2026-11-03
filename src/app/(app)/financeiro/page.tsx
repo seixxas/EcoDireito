@@ -1,17 +1,21 @@
+import { Plus } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { GraficoBarras } from '@/components/charts/grafico-barras'
 import { SITUACOES_NOTA, SituacaoNotaBadge } from '@/components/financeiro/situacao-nota'
 import { Card } from '@/components/ui/card'
+import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { Stat } from '@/components/ui/stat'
 import { listarNotas } from '@/data/financeiro'
 import { listarParcelasLiberadas } from '@/data/processos'
+import { exigirArea } from '@/data/sessao'
 import { resumoNotas, situacaoNota, valorLiquido, type SituacaoNota } from '@/domain/financeiro/notas'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
 import { brl, formatarData, formatarMes } from '@/lib/formatar'
+import { pode } from '@/lib/permissoes'
 
 export const metadata: Metadata = { title: 'Faturamento' }
 
@@ -24,7 +28,8 @@ function link(filtros: Filtros) {
 
 export default async function PaginaFaturamento({ searchParams }: { searchParams: Promise<Filtros> }) {
   const { mes = 'todos', situacao = 'todos' } = await searchParams
-  const [{ hoje: dia, meses, notas }, parcelas] = await Promise.all([listarNotas(), listarParcelasLiberadas()])
+  const [{ hoje: dia, meses, notas }, parcelas, usuario] = await Promise.all([listarNotas(), listarParcelasLiberadas(), exigirArea('financeiro')])
+  const editar = pode(usuario.papel, 'financeiro', 'editar')
 
   const doPeriodo = mes === 'todos' ? notas : notas.filter(({ nota }) => mesDe(nota.emissao) === mes)
   const resumo = resumoNotas(doPeriodo.map(({ nota }) => nota), dia)
@@ -43,6 +48,13 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
       <PageHeader
         titulo="Faturamento"
         descricao="Notas fiscais emitidas e o que já entrou no caixa. Substitui a planilha de faturamento: cada nota é lançada uma vez e a situação é calculada sozinha."
+        acoes={
+          editar && (
+            <Link href="/financeiro/notas/nova" className={classeBotao()}>
+              <Plus className="size-4" /> Registrar nota
+            </Link>
+          )
+        }
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -70,11 +82,13 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
                     <p className="text-xs text-muted">liberada em {formatarData(liberadaEm!)}</p>
                   </td>
                   <td className="num font-semibold">{brl(parcela.valor)}</td>
-                  <td className="text-right">
-                    <button disabled title="Disponível quando a emissão de nota for integrada" className="rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-semibold text-white opacity-90">
-                      Emitir nota
-                    </button>
-                  </td>
+                  {editar && (
+                    <td className="text-right">
+                      <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('primario', 'whitespace-nowrap py-1.5')}>
+                        Registrar nota
+                      </Link>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -124,7 +138,11 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
           <tbody>
             {lista.map(({ nota, cliente, processo }) => (
               <tr key={nota.id} className={nota.cancelada ? 'text-subtle line-through decoration-subtle/50' : undefined}>
-                <td className="font-mono text-xs">{nota.numero}</td>
+                <td className="font-mono text-xs">
+                  <Link href={`/financeiro/notas/${nota.id}`} className="text-brand-700 hover:underline">
+                    {nota.numero}
+                  </Link>
+                </td>
                 <td className="whitespace-nowrap">{formatarData(nota.emissao)}</td>
                 <td className="min-w-72">
                   {cliente.nome}

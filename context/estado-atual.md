@@ -15,6 +15,10 @@ Atualizado em 2026-11-02. Tudo roda com dados fictícios em memória (`src/data/
 | `/financeiro/receber` | Contas a receber | Atraso por faixa e por grupo econômico |
 | `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`) |
 | `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas e realizado por mês |
+| `/financeiro/notas/nova` | Registrar nota | Nota avulsa ou a partir de parcela liberada (`?parcela=`) |
+| `/financeiro/notas/[id]` | Nota fiscal | Detalhe, registrar ou corrigir recebimento, cancelar |
+| `/financeiro/lancamentos` | Lançamentos | Lista por mês e lançamento manual com conta, competência e processo |
+| `/financeiro/contratos` | Contratos | Parcelas por processo; `/[processoId]` inclui, edita e apaga |
 | `/portal/[id]` | Portal do cliente | O mockup original, agora com dados do processo |
 
 - Domínio com testes: motor de prazos, feriados, notas, DRE, fluxo e vínculo de publicações (`npm test`).

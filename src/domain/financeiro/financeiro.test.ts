@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { montarDre } from './dre'
 import { movimentosPrevistos, projetarSemanas } from './fluxo'
-import type { Lancamento } from './lancamentos'
-import { resumoNotas, situacaoNota, type NotaFiscal } from './notas'
+import type { Processo } from '../processos'
+import { errosDoLancamento, type Lancamento } from './lancamentos'
+import { errosDaNota, errosDoRecebimento, montarNota, motivoParaNaoCancelar, resumoNotas, situacaoNota, type NotaFiscal } from './notas'
 
 const nota = (parcial: Partial<NotaFiscal>): NotaFiscal => ({
   id: 'n1',
@@ -69,5 +70,50 @@ describe('fluxo projetado', () => {
     expect(movimentos).toHaveLength(2)
     const [semana] = projetarSemanas(10_000, '2026-11-03', movimentos, 1)
     expect(semana).toMatchObject({ inicio: '2026-11-02', entradas: 100_000, saidas: -2_000, saldoFinal: 108_000 })
+  })
+})
+
+describe('registro de nota', () => {
+  const dados = { numero: 2, emissao: '2026-11-02', clienteId: 'c1', descricao: 'Serviço', valor: 200_000, previsao: '2026-11-17', comRetencao: true }
+
+  it('calcula ISS e retenção pelo valor', () => {
+    expect(montarNota('n2', dados)).toMatchObject({ iss: 10_000, retencao: 11_000 })
+    expect(montarNota('n2', { ...dados, comRetencao: false }).retencao).toBe(0)
+  })
+
+  it('recusa número repetido, previsão antes da emissão e processo de outro cliente', () => {
+    const processo = { clienteId: 'c9' } as Processo
+    const erros = errosDaNota(montarNota('n2', { ...dados, numero: 1, previsao: '2026-11-01' }), [nota({})], processo)
+    expect(Object.keys(erros)).toEqual(['numero', 'previsao', 'processoId'])
+    expect(errosDaNota(montarNota('n2', dados), [nota({})])).toEqual({})
+  })
+
+  it('não fatura a mesma parcela duas vezes, a não ser que a nota anterior tenha sido cancelada', () => {
+    const nova = montarNota('n2', { ...dados, parcelaId: 'pc1' })
+    expect(errosDaNota(nova, [nota({ parcelaId: 'pc1' })])).toHaveProperty('parcelaId')
+    expect(errosDaNota(nova, [nota({ parcelaId: 'pc1', cancelada: true })])).toEqual({})
+  })
+})
+
+describe('recebimento e cancelamento', () => {
+  it('aceita recebimento entre a emissão e hoje', () => {
+    expect(errosDoRecebimento(nota({}), { data: '2026-01-20', valor: 100_000 }, '2026-01-26')).toEqual({})
+    expect(errosDoRecebimento(nota({}), { data: '2026-01-05', valor: 100_000 }, '2026-01-26')).toHaveProperty('data')
+    expect(errosDoRecebimento(nota({}), { data: '2026-01-27', valor: 0 }, '2026-01-26')).toEqual({ data: expect.any(String), valor: expect.any(String) })
+  })
+
+  it('só cancela nota sem recebimento', () => {
+    expect(motivoParaNaoCancelar(nota({}))).toBeUndefined()
+    expect(motivoParaNaoCancelar(nota({ recebimento: { data: '2026-01-20', valor: 100 } }))).toBeDefined()
+    expect(motivoParaNaoCancelar(nota({ cancelada: true }))).toBeDefined()
+  })
+})
+
+describe('lançamento manual', () => {
+  const lancamento = { data: '2026-11-02', competencia: '2026-11', descricao: 'Aluguel', contaId: 'aluguel', valor: -246_800 } as const
+
+  it('aceita o que já aconteceu, com valor', () => {
+    expect(errosDoLancamento(lancamento, '2026-11-02')).toEqual({})
+    expect(errosDoLancamento({ ...lancamento, data: '2026-11-03', valor: 0 }, '2026-11-02')).toEqual({ data: expect.any(String), valor: expect.any(String) })
   })
 })

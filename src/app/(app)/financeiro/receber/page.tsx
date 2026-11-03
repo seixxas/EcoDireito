@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { SituacaoNotaBadge } from '@/components/financeiro/situacao-nota'
 import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
@@ -106,7 +107,11 @@ export default async function PaginaReceber() {
                   {cliente.nome}
                   <p className="text-xs text-subtle">{nota.descricao}</p>
                 </td>
-                <td className="font-mono text-xs">{nota.numero}</td>
+                <td className="font-mono text-xs">
+                  <Link href={`/financeiro/notas/${nota.id}`} className="text-brand-700 hover:underline">
+                    {nota.numero}
+                  </Link>
+                </td>
                 <td className="whitespace-nowrap">{formatarData(nota.emissao)}</td>
                 <td className="whitespace-nowrap">{formatarData(nota.previsao)}</td>
                 <td className={cn('num', atraso > 30 ? 'font-semibold text-danger' : atraso > 0 && 'text-warn')}>{atraso ? `${atraso} dias` : '—'}</td>

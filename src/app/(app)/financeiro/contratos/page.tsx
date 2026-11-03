@@ -1,0 +1,80 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { Card } from '@/components/ui/card'
+import { PageHeader } from '@/components/ui/page-header'
+import { Stat } from '@/components/ui/stat'
+import { listarContratos } from '@/data/financeiro'
+import { exigirArea } from '@/data/sessao'
+import type { SituacaoParcela } from '@/domain/financeiro/parcelas'
+import { somar } from '@/lib/dinheiro'
+import { brl } from '@/lib/formatar'
+import { pode } from '@/lib/permissoes'
+
+export const metadata: Metadata = { title: 'Contratos' }
+
+type Item = Awaited<ReturnType<typeof listarContratos>>[number]['parcelas'][number]
+
+const total = (parcelas: Item[], ...situacoes: SituacaoParcela[]) =>
+  somar(parcelas.filter((p) => !situacoes.length || situacoes.includes(p.situacao)).map((p) => p.parcela.valor))
+
+export default async function PaginaContratos() {
+  const [usuario, contratos] = await Promise.all([exigirArea('financeiro'), listarContratos()])
+  const editar = pode(usuario.papel, 'financeiro', 'editar')
+  const todas = contratos.flatMap((c) => c.parcelas)
+
+  return (
+    <>
+      <PageHeader
+        titulo="Contratos"
+        descricao="As parcelas de cada processo e o evento que libera cada uma. Quando o evento é lançado no processo, a parcela fica pronta para faturar."
+      />
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Stat rotulo="Contratado" valor={brl(total(todas))} detalhe={`${contratos.filter((c) => c.parcelas.length).length} contratos`} tom="brand" />
+        <Stat rotulo="Faturado" valor={brl(total(todas, 'faturada', 'recebida'))} tom="ok" />
+        <Stat rotulo="Pronto para faturar" valor={brl(total(todas, 'liberada'))} detalhe="evento já aconteceu" tom="warn" />
+        <Stat rotulo="Aguardando evento" valor={brl(total(todas, 'aguardando'))} />
+      </div>
+
+      <Card flush>
+        <table className="tabela">
+          <thead>
+            <tr>
+              <th>Processo</th>
+              <th>Serviço</th>
+              <th className="num">Parcelas</th>
+              <th className="num">Contrato</th>
+              <th className="num">Faturado</th>
+              <th className="num">A faturar</th>
+              {editar && <th />}
+            </tr>
+          </thead>
+          <tbody>
+            {contratos.map(({ processo, cliente, parcelas }) => (
+              <tr key={processo.id}>
+                <td className="min-w-64">
+                  <Link href={`/processos/${processo.id}`} className="font-medium text-brand-700 hover:underline">
+                    {processo.empreendimento}
+                  </Link>
+                  <p className="text-xs text-muted">{cliente.nome}</p>
+                </td>
+                <td>{processo.servico === 'manejo' ? 'Manejo' : 'Licenciamento'}</td>
+                <td className="num">{parcelas.length || '—'}</td>
+                <td className="num font-medium">{parcelas.length ? brl(total(parcelas)) : '—'}</td>
+                <td className="num">{brl(total(parcelas, 'faturada', 'recebida'))}</td>
+                <td className="num text-warn">{total(parcelas, 'liberada') ? brl(total(parcelas, 'liberada')) : ''}</td>
+                {editar && (
+                  <td className="text-right">
+                    <Link href={`/financeiro/contratos/${processo.id}`} className="whitespace-nowrap text-sm font-medium text-brand-700 hover:underline">
+                      {parcelas.length ? 'Editar parcelas' : 'Montar contrato'}
+                    </Link>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+    </>
+  )
+}
