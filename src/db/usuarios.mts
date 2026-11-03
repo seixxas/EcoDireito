@@ -12,6 +12,7 @@ const senha = process.env.SENHA_DEMO
 if (!senha) throw new Error('Defina SENHA_DEMO no .env.local')
 
 const USUARIOS: { nome: string; email: string; papel: Papel; clienteId?: string }[] = [
+  { nome: 'Admin', email: 'admin@demo.ecodireito.com.br', papel: 'socia' },
   { nome: 'Elaine', email: 'elaine@demo.ecodireito.com.br', papel: 'socia' },
   { nome: 'Karim', email: 'karim@demo.ecodireito.com.br', papel: 'socia' },
   { nome: 'Cissa', email: 'cissa@demo.ecodireito.com.br', papel: 'socia' },
