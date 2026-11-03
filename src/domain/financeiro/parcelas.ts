@@ -1,6 +1,7 @@
 import type { DataISO } from '@/lib/datas'
 import type { Centavos } from '@/lib/dinheiro'
 import type { Processo, TipoEvento } from '../processos'
+import { situacaoDaProposta } from '../propostas'
 import { notaDaParcela, situacaoNota, type NotaFiscal } from './notas'
 
 /** Parcela de contrato: nasce quando o evento do processo acontece. */
@@ -20,14 +21,13 @@ export type Contrato = {
 
 /**
  * O contrato nasce com a proposta (as parcelas são o preço dela), mas só conta como contratado depois do aceite.
- * Recusada: o evento `proposta_recusada` vem com a tela de Propostas; até lá, a comparação é por texto.
+ * Segue a situação da proposta do Comercial, para as duas telas nunca discordarem (recusa vale mais que aceite).
  */
 export type SituacaoDoContrato = 'fechado' | 'proposta' | 'recusada'
 
 export function situacaoDoContrato(processo: Processo, hoje: DataISO): SituacaoDoContrato {
-  const aconteceram = processo.eventos.filter((e) => e.data <= hoje).map((e): string => e.tipo)
-  if (aconteceram.includes('aceite_proposta')) return 'fechado'
-  return aconteceram.includes('proposta_recusada') ? 'recusada' : 'proposta'
+  const { estado } = situacaoDaProposta(processo, hoje)
+  return estado === 'aprovada' ? 'fechado' : estado === 'recusada' ? 'recusada' : 'proposta'
 }
 
 export type SituacaoParcela = 'aguardando' | 'liberada' | 'faturada' | 'recebida'

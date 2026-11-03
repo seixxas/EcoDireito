@@ -178,5 +178,7 @@ describe('contrato fechado', () => {
     expect(situacaoDoContrato(comEventos(['proposta_enviada', '2026-10-20'], ['aceite_proposta', '2026-11-05']), '2026-11-03')).toBe('proposta')
     expect(situacaoDoContrato(comEventos(['aceite_proposta', '2026-11-01']), '2026-11-03')).toBe('fechado')
     expect(situacaoDoContrato(comEventos(['proposta_recusada', '2026-10-30']), '2026-11-03')).toBe('recusada')
+    // Como no Comercial: com aceite e recusa, vale a recusa.
+    expect(situacaoDoContrato(comEventos(['aceite_proposta', '2026-10-01'], ['proposta_recusada', '2026-10-30']), '2026-11-03')).toBe('recusada')
   })
 })
