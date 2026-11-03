@@ -3,18 +3,18 @@ import { cn } from '@/lib/cn'
 
 export type OpcaoFiltro = { valor: string; rotulo: string; href: string; contagem?: number }
 
-/** Abas de filtro que vivem na URL. */
+/** Filtros por URL, discretos. Para seções da página, use `Abas`. */
 export function SegmentedLinks({ opcoes, ativo }: { opcoes: OpcaoFiltro[]; ativo: string }) {
   return (
-    <nav className="flex flex-wrap gap-1 rounded-xl border border-line bg-surface p-1">
+    <nav className="flex flex-wrap gap-1">
       {opcoes.map((opcao) => (
         <Link
           key={opcao.valor}
           href={opcao.href}
           scroll={false}
           className={cn(
-            'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-            opcao.valor === ativo ? 'bg-brand-700 text-white' : 'text-muted hover:bg-canvas hover:text-ink',
+            'rounded-md px-2.5 py-1 text-sm transition-colors',
+            opcao.valor === ativo ? 'bg-ink text-white' : 'text-muted hover:bg-rail hover:text-ink',
           )}
         >
           {opcao.rotulo}
