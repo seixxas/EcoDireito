@@ -19,7 +19,8 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 ## Telas (redesign de 03/11, guia em `interface.md`)
 
 - Faturamento e Lançamentos abrem no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`). Faturamento: parcelas prontas para faturar em lista e abas "Notas do mês" · "Faturado × recebido no ano" (`?aba=grafico`).
-- Contas a receber: atraso numa barra só; as 15 notas mais atrasadas (`?todas=1` mostra todas).
+- Contas a receber: atraso numa barra só; notas em aberto das mais atrasadas para as menos.
+- Tabelas e listas paginadas de 10 em 10 (`paginar` + `Paginacao`, `?pagina=`, mantendo mês, situação e aba): notas do Faturamento, Contas a receber, Lançamentos, Contratos e as três abas do Extrato. Linha que abre detalhe tem setinha no fim (`AbrirLinha`); link no meio do texto usa a classe `link`.
 - DRE: custos, despesas e "fora da DRE" começam recolhidos (só o total do grupo).
 - Fluxo: abas "Próximas 8 semanas" · "Realizado por mês" (`?aba=realizado`); movimentos da semana recolhidos.
 - Extrato: importação compacta e abas "A classificar" · "Regras" · "Ignoradas" (`?aba=`).

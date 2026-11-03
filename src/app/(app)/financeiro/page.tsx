@@ -9,6 +9,7 @@ import { Vazio } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
 import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
+import { Paginacao } from '@/components/ui/paginacao'
 import { ItemResumo, Resumo } from '@/components/ui/resumo'
 import { Secao } from '@/components/ui/secao'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
@@ -19,12 +20,14 @@ import { resumoNotas, situacaoNota, valorLiquido, type SituacaoNota } from '@/do
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
 import { brl, contar, formatarData, formatarDataCurta, formatarMes } from '@/lib/formatar'
+import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
+import { AbrirLinha } from './_components/abrir-linha'
 import { NavegacaoMes } from './_components/navegacao-mes'
 
 export const metadata: Metadata = { title: 'Faturamento' }
 
-type Filtros = { mes?: string; situacao?: string; aba?: string }
+type Filtros = { mes?: string; situacao?: string; aba?: string; pagina?: string }
 
 export default async function PaginaFaturamento({ searchParams }: { searchParams: Promise<Filtros> }) {
   const [filtros, { hoje: dia, meses, notas }, parcelas, usuario] = await Promise.all([searchParams, listarNotas(), listarParcelasLiberadas(), exigirArea('financeiro')])
@@ -38,12 +41,14 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
     if (novos.mes && novos.mes !== atual) params.set('mes', novos.mes)
     if (novos.situacao && novos.situacao !== 'todos') params.set('situacao', novos.situacao)
     if (novos.aba && novos.aba !== 'notas') params.set('aba', novos.aba)
+    if (novos.pagina && novos.pagina !== '1') params.set('pagina', novos.pagina)
     return params.size ? `/financeiro?${params}` : '/financeiro'
   }
 
   const doMes = notas.filter(({ nota }) => mesDe(nota.emissao) === mes)
   const resumo = resumoNotas(doMes.map(({ nota }) => nota), dia)
   const lista = doMes.filter(({ nota }) => situacao === 'todos' || situacaoNota(nota, dia) === situacao).sort((a, b) => b.nota.numero - a.nota.numero)
+  const paginado = paginar(lista, filtros.pagina)
 
   const grafico = meses.map((m) => ({
     rotulo: formatarMes(m),
@@ -153,13 +158,14 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
                   <th className="num">Líquido</th>
                   <th className="hidden sm:table-cell">Previsão</th>
                   <th className="hidden sm:table-cell">Situação</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
-                {lista.map(({ nota, cliente }) => (
+                {paginado.itens.map(({ nota, cliente }) => (
                   <tr key={nota.id} className={nota.cancelada ? 'text-subtle line-through decoration-subtle/50' : undefined}>
                     <td className="tabular-nums">
-                      <Link href={`/financeiro/notas/${nota.id}`} className="text-brand-700 hover:underline">
+                      <Link href={`/financeiro/notas/${nota.id}`} className="link">
                         {nota.numero}
                       </Link>
                     </td>
@@ -180,12 +186,14 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
                     <td className="hidden sm:table-cell">
                       <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
                     </td>
+                    <AbrirLinha href={`/financeiro/notas/${nota.id}`} rotulo={`Abrir NF ${nota.numero}`} />
                   </tr>
                 ))}
               </tbody>
             </table>
             {lista.length === 0 && <Vazio>Nenhuma nota neste filtro.</Vazio>}
           </Card>
+          <Paginacao {...paginado} href={(n) => link({ mes, situacao, pagina: String(n) })} />
         </>
       )}
     </>

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Expansivel } from '@/components/ui/expansivel'
 import { PageHeader } from '@/components/ui/page-header'
+import { Paginacao } from '@/components/ui/paginacao'
 import { listarLancamentos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
@@ -11,6 +12,7 @@ import { cn } from '@/lib/cn'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
 import { brl, contar, formatarDataCurta, formatarMes } from '@/lib/formatar'
+import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { NavegacaoMes } from '../_components/navegacao-mes'
 import { excluirLancamento } from './actions'
@@ -18,11 +20,18 @@ import { FormularioLancamento } from './_components/formulario-lancamento'
 
 export const metadata: Metadata = { title: 'Lançamentos' }
 
-export default async function PaginaLancamentos({ searchParams }: { searchParams: Promise<{ mes?: string }> }) {
+export default async function PaginaLancamentos({ searchParams }: { searchParams: Promise<{ mes?: string; pagina?: string }> }) {
   const [filtros, usuario, { hoje: dia, meses, lancamentos, processos }] = await Promise.all([searchParams, exigirArea('financeiro'), listarLancamentos()])
   const editar = pode(usuario.papel, 'financeiro', 'editar')
   const mes = filtros.mes && meses.includes(filtros.mes) ? filtros.mes : mesDe(dia)
   const doMes = lancamentos.filter((l) => mesDe(l.data) === mes).sort((a, b) => b.data.localeCompare(a.data))
+  const paginado = paginar(doMes, filtros.pagina)
+  const link = (novoMes: string, pagina = 1) => {
+    const params = new URLSearchParams()
+    if (novoMes !== mesDe(dia)) params.set('mes', novoMes)
+    if (pagina > 1) params.set('pagina', String(pagina))
+    return params.size ? `/financeiro/lancamentos?${params}` : '/financeiro/lancamentos'
+  }
   const entradas = somar(doMes.filter((l) => l.valor > 0).map((l) => l.valor))
   const saidas = somar(doMes.filter((l) => l.valor < 0).map((l) => l.valor))
 
@@ -31,7 +40,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
       <PageHeader
         titulo="Lançamentos"
         resumo={`${contar(doMes.length, 'lançamento', 'lançamentos')} em ${formatarMes(mes)}: entraram ${brl(entradas)} e saíram ${brl(-saidas)}. A receita das notas entra sozinha com o recebimento.`}
-        acoes={<NavegacaoMes mes={mes} meses={meses} href={(m) => (m === mesDe(dia) ? '/financeiro/lancamentos' : `/financeiro/lancamentos?mes=${m}`)} />}
+        acoes={<NavegacaoMes mes={mes} meses={meses} href={(m) => link(m)} />}
       />
 
       {editar && (
@@ -55,7 +64,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
             </tr>
           </thead>
           <tbody>
-            {doMes.map((lancamento) => (
+            {paginado.itens.map((lancamento) => (
               <tr key={lancamento.id}>
                 <td className="hidden whitespace-nowrap sm:table-cell">{formatarDataCurta(lancamento.data)}</td>
                 <td className="sm:min-w-64">
@@ -65,12 +74,12 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                     {formatarDataCurta(lancamento.data)} · {nomeDaConta(lancamento.contaId)}
                   </span>
                   {lancamento.notaId && (
-                    <Link href={`/financeiro/notas/${lancamento.notaId}`} className="block text-xs text-brand-700 hover:underline">
+                    <Link href={`/financeiro/notas/${lancamento.notaId}`} className="link block w-fit text-xs">
                       ver nota
                     </Link>
                   )}
                   {!lancamento.notaId && lancamento.processoId && (
-                    <Link href={`/processos/${lancamento.processoId}`} className="block text-xs text-brand-700 hover:underline">
+                    <Link href={`/processos/${lancamento.processoId}`} className="link block w-fit text-xs">
                       {processos.find((p) => p.id === lancamento.processoId)?.empreendimento}
                     </Link>
                   )}
@@ -103,6 +112,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
           </tbody>
         </table>
       </Card>
+      <Paginacao {...paginado} href={(n) => link(mes, n)} />
     </>
   )
 }

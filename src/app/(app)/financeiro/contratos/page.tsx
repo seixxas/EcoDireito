@@ -2,12 +2,14 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
+import { Paginacao } from '@/components/ui/paginacao'
 import { ItemResumo, Resumo } from '@/components/ui/resumo'
 import { listarContratos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import type { SituacaoParcela } from '@/domain/financeiro/parcelas'
 import { somar } from '@/lib/dinheiro'
 import { brl, contar } from '@/lib/formatar'
+import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 
 export const metadata: Metadata = { title: 'Contratos' }
@@ -17,10 +19,11 @@ type Item = Awaited<ReturnType<typeof listarContratos>>[number]['parcelas'][numb
 const total = (parcelas: Item[], ...situacoes: SituacaoParcela[]) =>
   somar(parcelas.filter((p) => !situacoes.length || situacoes.includes(p.situacao)).map((p) => p.parcela.valor))
 
-export default async function PaginaContratos() {
-  const [usuario, contratos] = await Promise.all([exigirArea('financeiro'), listarContratos()])
+export default async function PaginaContratos({ searchParams }: { searchParams: Promise<{ pagina?: string }> }) {
+  const [{ pagina }, usuario, contratos] = await Promise.all([searchParams, exigirArea('financeiro'), listarContratos()])
   const editar = pode(usuario.papel, 'financeiro', 'editar')
   const todas = contratos.flatMap((c) => c.parcelas)
+  const paginado = paginar(contratos, pagina)
 
   return (
     <>
@@ -50,10 +53,10 @@ export default async function PaginaContratos() {
             </tr>
           </thead>
           <tbody>
-            {contratos.map(({ processo, cliente, parcelas }) => (
+            {paginado.itens.map(({ processo, cliente, parcelas }) => (
               <tr key={processo.id}>
                 <td className="sm:min-w-64">
-                  <Link href={`/processos/${processo.id}`} className="font-medium text-brand-700 hover:underline">
+                  <Link href={`/processos/${processo.id}`} className="link font-medium">
                     {processo.empreendimento}
                   </Link>
                   <p className="hidden text-xs text-muted sm:block">{cliente.nome}</p>
@@ -67,7 +70,7 @@ export default async function PaginaContratos() {
                 <td className="num hidden text-warn sm:table-cell">{total(parcelas, 'liberada') ? brl(total(parcelas, 'liberada')) : ''}</td>
                 {editar && (
                   <td className="text-right">
-                    <Link href={`/financeiro/contratos/${processo.id}`} className="whitespace-nowrap text-sm font-medium text-brand-700 hover:underline">
+                    <Link href={`/financeiro/contratos/${processo.id}`} className="link whitespace-nowrap text-sm font-medium">
                       {parcelas.length ? 'Editar' : 'Montar'}
                       <span className="hidden sm:inline">{parcelas.length ? ' parcelas' : ' contrato'}</span>
                     </Link>
@@ -78,6 +81,7 @@ export default async function PaginaContratos() {
           </tbody>
         </table>
       </Card>
+      <Paginacao {...paginado} href={(n) => `/financeiro/contratos?pagina=${n}`} />
     </>
   )
 }

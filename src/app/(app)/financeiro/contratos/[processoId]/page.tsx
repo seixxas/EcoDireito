@@ -53,12 +53,12 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
               <div className="flex items-center gap-3 lg:w-64 lg:justify-end lg:pt-8">
                 <Situacao tom={SITUACAO[situacao].tom}>{SITUACAO[situacao].rotulo}</Situacao>
                 {situacao === 'liberada' && (
-                  <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="text-sm font-medium text-brand-700 hover:underline" title={`Liberada em ${formatarData(liberadaEm!)}`}>
+                  <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="link text-sm font-medium" title={`Liberada em ${formatarData(liberadaEm!)}`}>
                     Registrar nota
                   </Link>
                 )}
                 {nota ? (
-                  <Link href={`/financeiro/notas/${nota.id}`} className="text-sm text-brand-700 hover:underline">
+                  <Link href={`/financeiro/notas/${nota.id}`} className="link text-sm">
                     NF {nota.numero}
                   </Link>
                 ) : (

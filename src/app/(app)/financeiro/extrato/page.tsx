@@ -7,12 +7,14 @@ import { Card } from '@/components/ui/card'
 import { Expansivel, Vazio } from '@/components/ui/expansivel'
 import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
+import { Paginacao } from '@/components/ui/paginacao'
 import { filaDoExtrato } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import { chaveDaSugestao, notasParaCredito, sugerirTermo, type Sugestao } from '@/domain/financeiro/classificacao'
 import { valorLiquido } from '@/domain/financeiro/notas'
 import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
 import { brl, contar, formatarData } from '@/lib/formatar'
+import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { confirmarTodas, devolverLinha, excluirRegra } from './actions'
 import { FilaDoExtrato } from './_components/fila-do-extrato'
@@ -21,10 +23,14 @@ import { FormularioRegra } from './_components/formulario-regra'
 
 export const metadata: Metadata = { title: 'Extrato bancário' }
 
-export default async function PaginaExtrato({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
-  const [{ aba: pedida }, usuario, fila] = await Promise.all([searchParams, exigirArea('financeiro'), filaDoExtrato()])
+export default async function PaginaExtrato({ searchParams }: { searchParams: Promise<{ aba?: string; pagina?: string }> }) {
+  const [{ aba: pedida, pagina }, usuario, fila] = await Promise.all([searchParams, exigirArea('financeiro'), filaDoExtrato()])
   const { pendentes, regras, ignoradas, lancadas, clientes, processos, notas } = fila
   const aba = pedida === 'regras' || pedida === 'ignoradas' ? pedida : 'fila'
+  const linkDaPagina = (n: number) => (aba === 'fila' ? `/financeiro/extrato?pagina=${n}` : `/financeiro/extrato?aba=${aba}&pagina=${n}`)
+  const filaPaginada = paginar(pendentes, pagina)
+  const regrasPaginadas = paginar(regras, pagina)
+  const ignoradasPaginadas = paginar(ignoradas, pagina)
   const editar = pode(usuario.papel, 'financeiro', 'editar')
   const comSugestao = pendentes.filter((p) => p.sugestao).length
   const aReceber = notas.filter((n) => !n.cancelada && !n.recebimento)
@@ -77,7 +83,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
       {aba === 'fila' && (
         <FilaDoExtrato
           editar={editar}
-          linhas={pendentes.map(({ linha, sugestao }) => ({
+          linhas={filaPaginada.itens.map(({ linha, sugestao }) => ({
             id: linha.id,
             data: linha.data,
             descricao: linha.descricao,
@@ -90,6 +96,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
           notas={aReceber.map((n) => ({ id: n.id, nome: `NF ${n.numero} · ${nomeDoCliente(n.clienteId)} · ${brl(valorLiquido(n))}` }))}
         />
       )}
+      {aba === 'fila' && <Paginacao {...filaPaginada} href={linkDaPagina} />}
 
       {aba === 'regras' && (
         <>
@@ -102,7 +109,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
           )}
           {regras.length ? (
             <Lista>
-              {regras.map((regra) => (
+              {regrasPaginadas.itens.map((regra) => (
                 <Linha key={regra.id}>
                   <span className="min-w-0 flex-1">
                     Descrição com “{regra.contem}”
@@ -123,26 +130,30 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
           ) : (
             <Vazio>Nenhuma regra ainda. Ao classificar uma linha, marque “daqui em diante” para criar uma.</Vazio>
           )}
+          <Paginacao {...regrasPaginadas} href={linkDaPagina} />
         </>
       )}
 
       {aba === 'ignoradas' &&
         (ignoradas.length ? (
-          <Lista>
-            {ignoradas.map((linha) => (
-              <Linha key={linha.id}>
-                <span className="w-24 text-muted">{formatarData(linha.data)}</span>
-                <span className="min-w-0 flex-1">{linha.descricao}</span>
-                <span className="tabular-nums">{brl(linha.valor)}</span>
-                {editar && (
-                  <form action={devolverLinha}>
-                    <input type="hidden" name="linhaId" value={linha.id} />
-                    <button className="whitespace-nowrap text-sm text-brand-700 hover:underline">Voltar para a fila</button>
-                  </form>
-                )}
-              </Linha>
-            ))}
-          </Lista>
+          <>
+            <Lista>
+              {ignoradasPaginadas.itens.map((linha) => (
+                <Linha key={linha.id}>
+                  <span className="w-24 text-muted">{formatarData(linha.data)}</span>
+                  <span className="min-w-0 flex-1">{linha.descricao}</span>
+                  <span className="tabular-nums">{brl(linha.valor)}</span>
+                  {editar && (
+                    <form action={devolverLinha}>
+                      <input type="hidden" name="linhaId" value={linha.id} />
+                      <button className="link whitespace-nowrap text-sm">Voltar para a fila</button>
+                    </form>
+                  )}
+                </Linha>
+              ))}
+            </Lista>
+            <Paginacao {...ignoradasPaginadas} href={linkDaPagina} />
+          </>
         ) : (
           <Vazio>Nenhuma linha ignorada.</Vazio>
         ))}

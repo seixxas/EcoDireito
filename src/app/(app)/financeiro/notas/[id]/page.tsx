@@ -60,7 +60,7 @@ export default async function PaginaNota({ params }: { params: Promise<{ id: str
               <Dado rotulo="Previsão de pagamento">{formatarData(nota.previsao)}</Dado>
               <Dado rotulo="Processo">
                 {processo ? (
-                  <Link href={`/processos/${processo.id}`} className="text-brand-700 hover:underline">
+                  <Link href={`/processos/${processo.id}`} className="link">
                     {processo.empreendimento}
                   </Link>
                 ) : (
