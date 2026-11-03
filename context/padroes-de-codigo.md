@@ -31,6 +31,17 @@ app/ (rotas e composição)  →  data/ (acesso a dados)  →  domain/ (regras p
 - `params` e `searchParams` são Promises: use `await`.
 - Filtros de lista ficam na URL (`?situacao=atrasada`), lidos com `searchParams`. Evite estado de cliente para isso.
 
+## Edição (Server Actions)
+
+1. A gravação fica numa função de `src/data/<area>.ts` que usa `db` de `src/db`. Ninguém usa `db` fora de `src/data` e `src/db`. Comece a função com `exigirBanco()`.
+2. A action fica em `app/<rota>/actions.ts` com `'use server'`:
+   - valida com `lerFormulario(esquema, formData)` de `src/lib/formulario.ts` (Zod; campos prontos em `campo.*`);
+   - chama a função de `data/`;
+   - termina com `refresh()` de `next/cache` (para continuar na página) ou `redirect()`.
+3. O formulário é um componente cliente com `useActionState(action, {})`. O React 19 limpa o formulário depois da action; para não perder o que foi digitado, use `defaultValue={estado.valores?.campo ?? padrao}` (o `lerFormulario` já devolve `valores`; em outros erros, `valoresDoFormulario(formData)`). Use `Campo`, `Entrada`, `Selecao`, `AreaTexto`, `MensagemFormulario` (`ui/form.tsx`) e `BotaoEnviar` (`ui/botao-enviar.tsx`). Link com cara de botão: `classeBotao()`.
+4. Ids novos com `crypto.randomUUID()`. Dinheiro digitado vira centavos com `campo.dinheiro()`.
+5. Schema do banco: `src/db/schema/<area>.ts`, mantido pela sessão A (veja `plano.md`).
+
 ## Tipos e valores
 
 - Datas: `DataISO` (`'2026-11-03'`). Toda conta com data passa por `src/lib/datas.ts`. Fuso: America/Sao_Paulo.

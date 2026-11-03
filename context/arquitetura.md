@@ -7,7 +7,12 @@
 - Recharts (gráficos, só em componentes cliente) e lucide-react (ícones).
 - Vitest para regras de domínio.
 - Demonstração na Vercel: https://eco-direito.vercel.app, com banco Neon (Postgres) já conectado, ainda sem uso no código.
-- Planejado, ainda não instalado: Drizzle sobre o Neon, login, jobs agendados para o robô e Resend para e-mail.
+- Banco: Neon (Postgres) com Drizzle (`drizzle-orm/neon-http`). Schema em `src/db/schema/<area>.ts`; `npm run db:push` aplica o schema e `npm run db:seed` grava a base fictícia (precisam do `.env.local`).
+- Sem `DATABASE_URL`, as telas usam os dados fictícios em memória (útil em teste e em worktree sem `.env.local`); gravar exige banco.
+- Formulários: Server Actions + Zod (`src/lib/formulario.ts`) + kit em `src/components/ui/form.tsx`.
+- Login: Better Auth (`src/lib/auth.ts`, rota `src/app/api/auth/[...all]`), sessão lida em `src/data/sessao.ts` (`usuarioAtual`, `exigirUsuario`, `exigirArea`); `src/proxy.ts` manda para `/login` quem não tem cookie.
+- Variáveis: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `BETTER_AUTH_SECRET`, `SENHA_DEMO` (local); na Vercel também `BETTER_AUTH_URL`.
+- Planejado, ainda não instalado: jobs agendados para o robô e Resend para e-mail.
 
 ## Pastas
 
@@ -32,7 +37,8 @@ src/
     charts/                    gráficos (cliente)
     prazos/ financeiro/ processos/   componentes de domínio compartilhados
   domain/                      regras puras + testes
-  data/                        acesso a dados (hoje: seed em memória)
+  db/                          conexão, schema por área e seed do banco
+  data/                        acesso a dados (banco; sem banco, seed em memória)
     seed/                      geradores de dados fictícios
   lib/                         datas, dinheiro, formatação, cn
 ```
