@@ -17,6 +17,13 @@ export function brl(valor: Centavos) {
   return moeda.format(valor / 100)
 }
 
+const moedaInteira = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
+
+/** R$ 12.345 — para tabelas grandes, como a DRE. */
+export function brlInteiro(valor: Centavos) {
+  return moedaInteira.format(valor / 100)
+}
+
 /** R$ 1,2 mi — para gráficos e KPIs. */
 export function brlCompacto(valor: Centavos) {
   return moedaCompacta.format(valor / 100)
