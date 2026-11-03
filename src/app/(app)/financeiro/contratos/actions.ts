@@ -9,8 +9,8 @@ import { campo, lerFormulario, type EstadoFormulario } from '@/lib/formulario'
 
 const esquema = z.object({
   processoId: campo.texto(),
-  /** Vazio = parcela nova. */
-  id: campo.opcional(),
+  /** Ausente = parcela nova. */
+  id: campo.opcional().optional(),
   descricao: campo.texto('Descreva a parcela'),
   valor: campo.dinheiro().refine((valor) => valor > 0, 'Informe um valor maior que zero'),
   gatilho: z.enum(Object.keys(EVENTOS) as [TipoEvento, ...TipoEvento[]], 'Escolha o evento'),
