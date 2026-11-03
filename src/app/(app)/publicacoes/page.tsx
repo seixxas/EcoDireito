@@ -5,12 +5,17 @@ import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/ui/page-header'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { Stat } from '@/components/ui/stat'
+import { hoje } from '@/data/hoje'
 import { listarPublicacoes } from '@/data/publicacoes'
+import { exigirArea } from '@/data/sessao'
+import { diaUtilAnterior, ehDiaUtil } from '@/domain/feriados'
 import { TIPOS_PRAZO } from '@/domain/prazos'
 import { EVENTOS } from '@/domain/processos'
 import { COMO_ACHOU } from '@/domain/publicacoes'
 import { formatarData, formatarDiaEData } from '@/lib/formatar'
+import { pode } from '@/lib/permissoes'
 import { AcoesPublicacao } from './_components/acoes-publicacao'
+import { BuscaEdicao } from './_components/busca-edicao'
 
 export const metadata: Metadata = { title: 'Diário Oficial' }
 
@@ -20,7 +25,8 @@ type Aba = keyof typeof ABAS
 export default async function PaginaPublicacoes({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
   const { aba: pedida } = await searchParams
   const aba: Aba = pedida && pedida in ABAS ? (pedida as Aba) : 'nova'
-  const { edicao, itens } = await listarPublicacoes()
+  const [{ edicao, itens }, usuario, dia] = await Promise.all([listarPublicacoes(), exigirArea('prazos'), hoje()])
+  const editar = pode(usuario.papel, 'prazos', 'editar')
   const lista = itens.filter((item) => item.ato.status === aba)
   const novas = itens.filter((item) => item.ato.status === 'nova')
 
@@ -28,11 +34,12 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
     <>
       <PageHeader
         titulo="Diário Oficial"
-        descricao="Todo dia útil, às 6h, o robô baixa a edição do Diário Oficial da Cidade, separa os atos da Secretaria do Verde e procura os processos e clientes da Eco Direito. Nada vira prazo sem alguém confirmar."
+        descricao="O robô baixa a edição do Diário Oficial da Cidade, separa os atos da Secretaria do Verde e procura os processos e clientes da Eco Direito. Nada vira prazo sem alguém confirmar."
+        acoes={editar && <BuscaEdicao dia={ehDiaUtil(dia) ? dia : diaUtilAnterior(dia)} />}
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat rotulo="Edição lida" valor={formatarDiaEData(edicao.data)} detalhe="processada às 06:02" tom="brand" />
+        <Stat rotulo="Edição lida" valor={formatarDiaEData(edicao.data)} detalhe="a mais recente lida pelo robô" tom="brand" />
         <Stat rotulo="Atos na edição" valor={edicao.totalAtos.toLocaleString('pt-BR')} detalhe="todos os órgãos da Prefeitura" />
         <Stat rotulo="Da Secretaria do Verde" valor={edicao.atosSvma} detalhe="lidos um a um pelo robô" />
         <Stat rotulo="Com clientes da Eco Direito" valor={novas.length} detalhe="esperando revisão" tom={novas.length ? 'warn' : 'ok'} />
@@ -78,7 +85,7 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
                     <span className="text-warn"> · processo ainda não cadastrado (SEI {ato.processo})</span>
                   )}
                 </p>
-                <p className="mt-2 rounded-lg bg-canvas p-3 text-sm leading-relaxed text-muted">{ato.texto}</p>
+                <p className="mt-2 max-h-72 overflow-y-auto whitespace-pre-line rounded-lg bg-canvas p-3 text-sm leading-relaxed text-muted">{ato.texto}</p>
               </div>
 
               <div className="lg:col-span-2">
@@ -104,11 +111,14 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
                   </>
                 )}
                 <div className="mt-3">
-                  {ato.status === 'nova' ? (
-                    <AcoesPublicacao temProcesso={Boolean(processo)} prazos={prazosSugeridos.length} />
-                  ) : (
-                    <p className="text-sm text-muted">{ato.status === 'confirmada' ? 'Confirmada pela equipe.' : `Descartada: ${ato.motivo}.`}</p>
-                  )}
+                  {ato.status === 'confirmada' && <p className="text-sm text-muted">Confirmada pela equipe.</p>}
+                  {ato.status === 'descartada' && <p className="text-sm text-muted">Descartada: {ato.motivo}.</p>}
+                  {ato.status === 'nova' &&
+                    (editar ? (
+                      <AcoesPublicacao id={ato.id} temProcesso={Boolean(processo)} temEvento={Boolean(evento)} prazos={prazosSugeridos.length} />
+                    ) : (
+                      <p className="text-sm text-muted">Esperando a revisão da equipe.</p>
+                    ))}
                 </div>
               </div>
             </div>

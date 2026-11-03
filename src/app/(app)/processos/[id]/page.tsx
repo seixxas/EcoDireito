@@ -1,18 +1,25 @@
-import { ArrowLeft, ExternalLink, Newspaper, UserPen } from 'lucide-react'
+import { ExternalLink, Newspaper, Plus, Trash2, UserPen } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { SituacaoPrazo } from '@/components/prazos/situacao-prazo'
 import { Badge, type Tom } from '@/components/ui/badge'
+import { BotaoEnviar } from '@/components/ui/botao-enviar'
 import { Card } from '@/components/ui/card'
+import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
 import { hoje } from '@/data/hoje'
 import { obterProcesso } from '@/data/processos'
+import { exigirArea } from '@/data/sessao'
 import type { SituacaoParcela } from '@/domain/financeiro/parcelas'
 import { TIPOS_PRAZO, estaAberto, proximoPrazo } from '@/domain/prazos'
 import { EVENTOS, FASES } from '@/domain/processos'
 import { cn } from '@/lib/cn'
 import { brl, formatarData, formatarDiaEData } from '@/lib/formatar'
+import { pode } from '@/lib/permissoes'
+import { FormularioEvento } from '../_components/formulario-evento'
+import { LinkVoltar } from '../_components/link-voltar'
+import { apagarEvento } from '../actions'
 
 export const metadata: Metadata = { title: 'Processo' }
 
@@ -25,9 +32,10 @@ const PARCELA: Record<SituacaoParcela, { rotulo: string; tom: Tom }> = {
 
 export default async function PaginaProcesso({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [dia, dados] = await Promise.all([hoje(), obterProcesso(id)])
+  const [dia, dados, usuario] = await Promise.all([hoje(), obterProcesso(id), exigirArea('prazos')])
   if (!dados) notFound()
   const { processo, cliente, prazos, parcelas } = dados
+  const editar = pode(usuario.papel, 'prazos', 'editar')
 
   const abertos = prazos.filter((p) => estaAberto(p, dia))
   const cumpridos = prazos.filter((p) => !estaAberto(p, dia)).reverse()
@@ -36,20 +44,25 @@ export default async function PaginaProcesso({ params }: { params: Promise<{ id:
 
   return (
     <>
-      <Link href="/processos" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
-        <ArrowLeft className="size-4" /> Processos
-      </Link>
+      <LinkVoltar href="/processos">Processos</LinkVoltar>
       <PageHeader
         titulo={processo.empreendimento}
-        descricao={`${cliente.nome} · ${processo.endereco}`}
+        descricao={processo.endereco ? `${cliente.nome} · ${processo.endereco}` : cliente.nome}
         acoes={
-          <Link
-            href={`/portal/${processo.id}`}
-            target="_blank"
-            className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3.5 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50"
-          >
-            Ver como o cliente vê <ExternalLink className="size-4" />
-          </Link>
+          <div className="flex gap-2">
+            {editar && (
+              <Link href={`/processos/${processo.id}/editar`} className={classeBotao('secundario')}>
+                Editar
+              </Link>
+            )}
+            <Link
+              href={`/portal/${processo.id}`}
+              target="_blank"
+              className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3.5 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50"
+            >
+              Ver como o cliente vê <ExternalLink className="size-4" />
+            </Link>
+          </div>
         }
       />
 
@@ -108,6 +121,17 @@ export default async function PaginaProcesso({ params }: { params: Promise<{ id:
         </Card>
 
         <Card titulo="Linha do tempo" className="xl:col-span-2">
+          {editar && (
+            <details className="mb-5 rounded-xl border border-line p-3 open:bg-canvas">
+              <summary className={classeBotao('secundario', 'cursor-pointer list-none')}>
+                <Plus className="size-4" /> Lançar evento
+              </summary>
+              <div className="mt-3">
+                <FormularioEvento processoId={processo.id} dia={dia} />
+              </div>
+            </details>
+          )}
+          {eventos.length === 0 && <p className="text-sm text-muted">Nenhum evento ainda.</p>}
           <ol className="space-y-4">
             {eventos.map((evento) => {
               const Icone = evento.origem === 'diario' ? Newspaper : UserPen
@@ -117,7 +141,7 @@ export default async function PaginaProcesso({ params }: { params: Promise<{ id:
                   <span className={cn('mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full', evento.origem === 'diario' ? 'bg-info-soft text-info' : 'bg-brand-50 text-brand-700')}>
                     <Icone className="size-3.5" />
                   </span>
-                  <div>
+                  <div className="flex-1">
                     <p className="text-sm font-medium">
                       {EVENTOS[evento.tipo].nome} {planejado && <Badge tom="warn">planejado</Badge>}
                     </p>
@@ -125,6 +149,22 @@ export default async function PaginaProcesso({ params }: { params: Promise<{ id:
                       {formatarData(evento.data)} · {evento.origem === 'diario' ? 'Diário Oficial' : 'lançado pela equipe'}
                     </p>
                   </div>
+                  {editar && (
+                    <details className="relative">
+                      <summary className="cursor-pointer list-none rounded p-1 text-subtle hover:text-danger" title="Apagar evento">
+                        <Trash2 className="size-3.5" />
+                      </summary>
+                      <form action={apagarEvento.bind(null, evento.id)} className="absolute right-0 z-10 mt-1 w-56 rounded-lg border border-line bg-surface p-3 shadow-sm">
+                        <p className="mb-2 text-xs text-muted">
+                          Os prazos gerados por ele somem, e os que ele cumpriu voltam a ficar em aberto.
+                          {evento.origem === 'diario' && ' O ato volta para a caixa de entrada do Diário Oficial.'}
+                        </p>
+                        <BotaoEnviar variante="perigo" className="w-full">
+                          Apagar evento
+                        </BotaoEnviar>
+                      </form>
+                    </details>
+                  )}
                 </li>
               )
             })}

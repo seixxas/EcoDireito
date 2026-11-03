@@ -1,6 +1,13 @@
+import { and, eq, sql } from 'drizzle-orm'
+import { db, exigirBanco, schema } from '@/db'
+import { ehDiaUtil } from '@/domain/feriados'
 import { REGRAS_SVMA, calcularVencimento } from '@/domain/prazos'
-import { SERIE_PARA_EVENTO, extrairDiasDoTexto, vincularAto } from '@/domain/publicacoes'
+import type { Processo } from '@/domain/processos'
+import { eventoDoAto, extrairDiasDoTexto, vincularAto } from '@/domain/publicacoes'
+import type { DataISO } from '@/lib/datas'
+import { baixarEdicao } from '@/robo/doc-sp'
 import { carregar } from './base'
+import { gravacoesDoEvento } from './processos'
 
 export async function listarPublicacoes() {
   const { processos, clientes, publicacoes } = await carregar()
@@ -8,13 +15,14 @@ export async function listarPublicacoes() {
   const itens = publicacoes.atos.flatMap((ato) => {
     const vinculo = vincularAto(ato, processos, clientes)
     if (!vinculo) return []
-    const evento = SERIE_PARA_EVENTO[ato.serie]
+    const evento = eventoDoAto(ato)
     const diasNoAto = extrairDiasDoTexto(ato.texto)
     return [
       {
         ato,
         vinculo,
         evento,
+        diasNoAto,
         cliente: clientes.find((c) => c.id === vinculo.clienteId)!,
         processo: processos.find((p) => p.id === vinculo.processoId),
         prazosSugeridos: REGRAS_SVMA.filter((regra) => regra.gatilho === evento).map((regra) => ({
@@ -30,3 +38,61 @@ export async function listarPublicacoes() {
 }
 
 export type PublicacaoNaCaixa = Awaited<ReturnType<typeof listarPublicacoes>>['itens'][number]
+
+export async function obterPublicacao(id: string) {
+  const { itens } = await listarPublicacoes()
+  return itens.find((item) => item.ato.id === id)
+}
+
+const aindaNova = (id: string) => and(eq(schema.publicacoes.id, id), eq(schema.publicacoes.status, 'nova'))
+
+/** Confirma o ato. Se a série do ato vira evento, lança o evento no processo (com o prazo escrito no ato) na mesma transação. */
+export async function gravarConfirmacao(item: PublicacaoNaCaixa & { processo: Processo }) {
+  exigirBanco()
+  const { hoje } = await carregar()
+  if (!item.evento) {
+    await db.update(schema.publicacoes).set({ status: 'confirmada' }).where(aindaNova(item.ato.id))
+    return
+  }
+  const evento = { id: crypto.randomUUID(), tipo: item.evento, data: item.ato.data, origem: 'diario' as const, diasNoAto: item.diasNoAto }
+  await db.batch([
+    ...gravacoesDoEvento(item.processo, evento, hoje),
+    db.update(schema.publicacoes).set({ status: 'confirmada', eventoId: evento.id }).where(aindaNova(item.ato.id)),
+  ])
+}
+
+export async function gravarDescarte(id: string, motivo: string) {
+  exigirBanco()
+  await db.update(schema.publicacoes).set({ status: 'descartada', motivo }).where(aindaNova(id))
+}
+
+/**
+ * Baixa a edição do dia, grava na caixa de entrada os atos que se ligam a um cliente ou processo e registra a edição.
+ * Rodar de novo não duplica (unique em data + documento). Falha do download lança erro; quem chama avisa.
+ */
+export async function importarEdicao(data: DataISO) {
+  exigirBanco()
+  const edicao = await baixarEdicao(data)
+  if (!edicao) {
+    // Dia útil sem edição costuma ser ponto facultativo (fora de feriados.ts), mas pode ser falha da fonte: fica registrado para conferir.
+    if (ehDiaUtil(data)) {
+      await db.insert(schema.edicoesDiario).values({ data, totalAtos: 0, atosSvma: 0, erro: 'O Diário Oficial não publicou edição neste dia útil.' }).onConflictDoNothing()
+    }
+    return undefined
+  }
+
+  const { processos, clientes } = await carregar()
+  const nossos = edicao.atos.filter((ato) => vincularAto(ato, processos, clientes))
+  const registro = { data, totalAtos: edicao.totalAtos, atosSvma: edicao.atos.length, erro: null }
+  const gravarRegistro = db
+    .insert(schema.edicoesDiario)
+    .values(registro)
+    .onConflictDoUpdate({ target: schema.edicoesDiario.data, set: { ...registro, processadaEm: sql`now()` } })
+
+  if (nossos.length === 0) {
+    await gravarRegistro
+    return { atosSvma: edicao.atos.length, novos: 0 }
+  }
+  const [inseridos] = await db.batch([db.insert(schema.publicacoes).values(nossos).onConflictDoNothing().returning({ id: schema.publicacoes.id }), gravarRegistro])
+  return { atosSvma: edicao.atos.length, novos: inseridos.length }
+}
