@@ -3,8 +3,8 @@
 import { useActionState } from 'react'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
 import { Campo, Entrada, MensagemFormulario } from '@/components/ui/form'
-import { EntradaDinheiro } from '../../../_components/entrada-dinheiro'
-import { registrarRecebimento } from '../../actions'
+import { EntradaDinheiro } from './entrada-dinheiro'
+import { registrarRecebimento } from '../notas/actions'
 
 export function FormularioRecebimento({ notaId, data, valor }: { notaId: string; data: string; valor: number }) {
   const [estado, acao] = useActionState(registrarRecebimento, {})
