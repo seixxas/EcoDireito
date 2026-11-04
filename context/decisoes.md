@@ -4,6 +4,9 @@ Registro curto, do mais novo para o mais antigo. Mudou uma decisão? Acrescente 
 
 | Data | Decisão | Por quê |
 |---|---|---|
+| 2026-11-04 | Navegação "caixa única": 4 itens no menu, abas dentro de cada área, busca geral e botão Novo | Escolha do dono do produto entre três caminhos (referências: Karbon, Linear, Stripe). O que precisa de alguém deixa de morar em três telas e o menu cai de 13 itens para 4 |
+| 2026-11-04 | Busca geral numa página (`/busca`), sem lista suspensa enquanto digita | Menos código, funciona sem JavaScript e reaproveita as listas |
+| 2026-11-04 | Fixados no `localStorage` | É conveniência de cada pessoa, não dado do escritório; não pede tabela nova |
 | 2026-11-02 | Login com Better Auth (e-mail e senha, sem cadastro aberto), perfis em `src/lib/permissoes.ts` | Roda no nosso Postgres e vai junto para a hospedagem oficial; sem serviço externo |
 | 2026-11-02 | Recorte por perfil em `carregar()`, não só no layout | Layout e página renderizam em paralelo: a guarda do layout não impede a página de mandar dados |
 | 2026-11-02 | `BETTER_AUTH_URL` só na Vercel; no local, o endereço vem da requisição | Cada sessão roda numa porta diferente |

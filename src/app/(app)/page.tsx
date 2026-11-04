@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
+import { AbasDoDia } from '@/components/layout/abas-do-dia'
 import { SituacaoPrazo } from '@/components/prazos/situacao-prazo'
 import { Vazio } from '@/components/ui/expansivel'
 import { Linha, Lista } from '@/components/ui/lista'
@@ -15,21 +16,24 @@ import { listarPublicacoes } from '@/data/publicacoes'
 import { exigirUsuario } from '@/data/sessao'
 import { resumoNotas, situacaoNota } from '@/domain/financeiro/notas'
 import { estaAberto } from '@/domain/prazos'
+import { EVENTOS } from '@/domain/processos'
 import { somarDias, type DataISO } from '@/lib/datas'
 import { cn } from '@/lib/cn'
 import { brl, contar, formatarDataLonga, formatarDiaEData, juntar } from '@/lib/formatar'
 import { inicioDoPapel, pode } from '@/lib/permissoes'
+import { AcoesPublicacao } from './publicacoes/_components/acoes-publicacao'
 
 export const metadata: Metadata = { title: 'Hoje' }
 
 const HORARIO = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
 
 /** Uma linha da lista do dia: situação à esquerda, o que é no meio, data ou valor à direita. */
-function Item({ href, situacao, titulo, contexto, direita }: { href: string; situacao: ReactNode; titulo: ReactNode; contexto: ReactNode; direita: ReactNode }) {
+function Item({ href, situacao, titulo, contexto, direita }: { href?: string; situacao: ReactNode; titulo: ReactNode; contexto: ReactNode; direita: ReactNode }) {
   return (
     <Linha href={href} className="flex-wrap gap-x-4 gap-y-0.5 sm:flex-nowrap">
       <span className="w-full shrink-0 sm:w-44">{situacao}</span>
-      <span className="min-w-0 flex-1">
+      {/* Linha com botões (sem href): no celular os botões descem para não espremer o título. */}
+      <span className={cn('min-w-0 flex-1', !href && 'min-w-full sm:min-w-0')}>
         <span className="block truncate font-medium text-ink">{titulo}</span>
         <span className="block truncate text-xs text-muted">{contexto}</span>
       </span>
@@ -41,7 +45,7 @@ function Item({ href, situacao, titulo, contexto, direita }: { href: string; sit
 function ItemPrazo({ prazo, dia }: { prazo: PrazoComProcesso; dia: DataISO }) {
   return (
     <Item
-      href={`/processos/${prazo.processo.id}`}
+      href={`/processos/${prazo.processo.id}?aba=etapas&fase=${EVENTOS[prazo.regra.cumpridoPor].fase}`}
       situacao={<SituacaoPrazo prazo={prazo} hoje={dia} />}
       titulo={prazo.regra.titulo}
       contexto={`${prazo.processo.empreendimento} · ${prazo.processo.responsavel}`}
@@ -114,6 +118,7 @@ export default async function Hoje() {
 
   return (
     <>
+      <AbasDoDia ativa="fazer" />
       <PageHeader
         titulo="Hoje"
         resumo={`${data.charAt(0).toUpperCase()}${data.slice(1)}. ${pendencias.length ? `${juntar(pendencias)}.` : 'Nada pendente.'}`}
@@ -148,14 +153,17 @@ export default async function Hoje() {
                 {deHoje.map((prazo) => (
                   <ItemPrazo key={prazo.id} prazo={prazo} dia={dia} />
                 ))}
-                {novas.map(({ ato, cliente, processo }) => (
+                {novas.map(({ ato, cliente, processo, evento }) => (
                   <Item
                     key={ato.id}
-                    href="/publicacoes"
                     situacao={<Situacao tom="info">Nova no Diário</Situacao>}
-                    titulo={ato.serie}
+                    titulo={
+                      <Link href="/publicacoes" className="hover:text-brand-700">
+                        {ato.serie}
+                      </Link>
+                    }
                     contexto={processo ? processo.empreendimento : `${cliente.nome} · processo ainda não cadastrado`}
-                    direita="Revisar"
+                    direita={pode(usuario.papel, 'prazos', 'editar') ? <AcoesPublicacao id={ato.id} temProcesso={Boolean(processo)} marcaEtapa={Boolean(evento)} /> : 'A revisar'}
                   />
                 ))}
                 {aFaturar.map(({ parcela, processo, cliente }) => (

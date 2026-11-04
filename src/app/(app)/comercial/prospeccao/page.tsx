@@ -7,6 +7,7 @@ import { ItemResumo, Resumo } from '@/components/ui/resumo'
 import { Secao } from '@/components/ui/secao'
 import { Situacao } from '@/components/ui/situacao'
 import { exigirArea } from '@/data/sessao'
+import { AbasDoComercial } from '../_components/abas-do-comercial'
 
 export const metadata: Metadata = { title: 'Prospecção' }
 
@@ -68,6 +69,7 @@ export default async function PaginaProspeccao() {
 
   return (
     <>
+      <AbasDoComercial ativa="prospeccao" />
       <PageHeader titulo="Prospecção" resumo="Encontrar projetos e empresas que vão precisar de licenciamento ou manejo, antes de elas procurarem alguém." />
 
       <div className="mb-6 flex items-start gap-3 rounded-lg border border-accent/40 bg-warn-soft px-4 py-3">

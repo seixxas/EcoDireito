@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { AbasDoDia } from '@/components/layout/abas-do-dia'
 import { LinhaPrazo } from '@/components/prazos/linha-prazo'
 import { Busca } from '@/components/ui/busca'
 import { Vazio } from '@/components/ui/expansivel'
@@ -72,6 +73,7 @@ export default async function PaginaPrazos({
 
   return (
     <>
+      <AbasDoDia ativa="prazos" />
       <PageHeader
         titulo="Prazos"
         resumo={frase(periodosNossos.filter((p) => p === 'vencidos').length, periodosNossos.filter((p) => p === 'semana').length)}

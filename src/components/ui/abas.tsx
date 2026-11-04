@@ -6,7 +6,7 @@ export type Aba = { valor: string; rotulo: string; href: string; contagem?: numb
 /** Abas de seção da página, na URL (`?aba=`). Sublinhadas. */
 export function Abas({ abas, ativa, className }: { abas: Aba[]; ativa: string; className?: string }) {
   return (
-    <nav className={cn('mb-5 flex gap-6 overflow-x-auto border-b border-line', className)}>
+    <nav className={cn('mb-5 flex gap-6 overflow-x-auto border-b border-line print:hidden', className)}>
       {abas.map((aba) => (
         <Link
           key={aba.valor}

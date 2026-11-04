@@ -28,6 +28,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/usuarios` | Usuários | Sócias criam e removem acessos (equipe, contador, cliente). O Comercial aparece para sócias, financeiro e equipe; não para contador e cliente |
 | `/portal` e `/portal/[id]` | Portal do cliente | O cliente entra e vê só os próprios processos |
 
+- Navegação "caixa única" (04/11): menu com Hoje, Propostas, Processos e Financeiro, busca geral (`/busca`, Ctrl+K), botão "Novo", atalhos fixados e abas no topo de cada área. Guia em `context/interface.md`. Falta o "Adiar" na lista Para fazer, que precisa de tabela nova.
 - Modo escuro (botão lua/sol no pé do menu), menu verde e paginação de 10 itens (`src/lib/paginar.ts`).
 - Processos em 8 fases (Proposta antes da Documentação), cada uma com as suas etapas; o LAA fecha a fase Resposta, depois do Comunique-se. Processo novo nasce sem nº SEI. Veja `context/prazos.md`.
 - Redesign no ar desde 03/11 (guia em `context/interface.md`): Hoje, prazos, processo em abas, Diário, financeiro, portal, login e usuários.

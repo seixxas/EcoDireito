@@ -38,7 +38,9 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 
 ## Layout
 
-- Menu lateral verde escuro (`nav`), estreito, com os grupos Comercial, Processos, Financeiro e Administração. Item ainda em desenvolvimento leva a etiqueta "em breve" (`emBreve`). Usuário, tema e "Sair" no pé.
+- Menu lateral verde escuro (`nav`), estreito, com 4 itens na ordem do negócio: Hoje, Propostas, Processos e Financeiro. Em cima, a busca geral (`BuscaGeral`, Ctrl+K, resultado em `/busca`) e o botão "Novo" (`BotaoNovo`, só o que o perfil pode criar). Embaixo dos itens, os atalhos fixados (`BotaoFixar` no processo, `ListaFixados` no menu), guardados no navegador de cada pessoa. Usuários, tema e "Sair" no pé.
+- As telas de cada item ficam em abas no topo da página, acima do título, sempre com o componente `Abas`: Hoje tem Para fazer · Diário Oficial · Prazos (`AbasDoDia`, com a contagem do que espera alguém); Propostas tem Propostas · Prospecção (`AbasDoComercial`); Financeiro tem as abas no layout da área (`AbasDoFinanceiro`). As URLs antigas continuam valendo.
+- Na lista Para fazer, o que se resolve ali tem botão na linha (Lançar no processo, Ignorar); o resto abre o lugar exato (o prazo abre a etapa dele, em `?aba=etapas&fase=`). Linha com botão não é link: o título é que leva à tela.
 - Área de conteúdo com `max-w-6xl`. Tabela larga pode usar a largura toda.
 - `PageHeader`: título + frase-resumo (`resumo`) + ações à direita. A `descricao` longa sai; se for essencial, use uma frase curta.
 

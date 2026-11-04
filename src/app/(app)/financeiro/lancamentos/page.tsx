@@ -27,7 +27,7 @@ import { FormularioLancamento } from './_components/formulario-lancamento'
 export const metadata: Metadata = { title: 'Lançamentos' }
 
 /** `regime=competencia` filtra o mês pela competência (é o link da DRE por competência); `processo`, o link da lucratividade. */
-type Filtros = { mes?: string; q?: string; conta?: string; regime?: string; processo?: string; pagina?: string }
+type Filtros = { mes?: string; q?: string; conta?: string; regime?: string; processo?: string; pagina?: string; novo?: string }
 
 export default async function PaginaLancamentos({ searchParams }: { searchParams: Promise<Filtros> }) {
   const [filtros, usuario, { hoje: dia, meses, lancamentos, processos }] = await Promise.all([searchParams, exigirArea('financeiro'), listarLancamentos()])
@@ -80,7 +80,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
       />
 
       {editar && (
-        <Expansivel resumo="Novo lançamento" className="mb-6">
+        <Expansivel resumo="Novo lançamento" aberto={filtros.novo === '1'} className="mb-6">
           <Card>
             <FormularioLancamento hoje={dia} processos={processos.map((p) => ({ id: p.id, nome: p.empreendimento }))} />
           </Card>
