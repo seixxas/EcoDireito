@@ -38,7 +38,9 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 
 ## Layout
 
-- Menu lateral verde escuro (`nav`), estreito, com os grupos Comercial, Processos, Financeiro e Administração. Item ainda em desenvolvimento leva a etiqueta "em breve" (`emBreve`). Usuário, tema e "Sair" no pé.
+- Menu lateral verde escuro (`nav`), estreito, com 4 itens na ordem do negócio: Hoje, Propostas, Processos e Financeiro. Em cima, a busca geral (`BuscaGeral`, Ctrl+K, resultado em `/busca`) e o botão "Novo" (`BotaoNovo`, só o que o perfil pode criar). Embaixo dos itens, os atalhos fixados (`BotaoFixar` no processo, `ListaFixados` no menu), guardados no navegador de cada pessoa. Usuários, tema e "Sair" no pé.
+- As telas de cada item ficam em abas no topo da página, acima do título, sempre com o componente `Abas`: Hoje tem Para fazer · Diário Oficial · Prazos (`AbasDoDia`, com a contagem do que espera alguém); Propostas tem Propostas · Prospecção (`AbasDoComercial`); Financeiro tem as abas no layout da área (`AbasDoFinanceiro`). As URLs antigas continuam valendo.
+- Na lista Para fazer, o que se resolve ali tem botão na linha (Lançar no processo, Ignorar); o resto abre o lugar exato (o prazo abre a etapa dele, em `?aba=etapas&fase=`). Linha com botão não é link: o título é que leva à tela.
 - Área de conteúdo com `max-w-6xl`. Tabela larga pode usar a largura toda.
 - `PageHeader`: título + frase-resumo (`resumo`) + ações à direita. A `descricao` longa sai; se for essencial, use uma frase curta.
 
@@ -54,7 +56,7 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 | `Busca({ valor, placeholder, manter, limpar })` | Caixa de busca na URL (`?q=`), acima da lista; filtre com `combina(q, ...textos)` (`src/lib/buscar.ts`: ignora acento e maiúscula; cada palavra buscada tem de ser o começo de uma palavra do texto, então "lumen" não acha "emolumentos"; para achar CNPJ sem pontuação, passe também `documento.replace(/\D/g, '')`). Buscar volta para a página 1 |
 | `Situacao({ tom, children })` | Status: ponto + texto |
 | `Badge({ tom })` | Etiqueta neutra (tipo, origem) |
-| `Abas({ abas, ativa })` | Abas por URL (`?aba=`), sublinhadas |
+| `Abas({ abas, ativa })` | Abas por URL (`?aba=`), sublinhadas. Com `detalhe` (valor em reais) e `alerta`, viram uma faixa em grade, sem rolagem, e substituem o `Resumo` (Faturamento) |
 | `SegmentedLinks` | Filtros por URL, controle com borda e ativo preenchido |
 | `Expansivel({ resumo, children })` | Conteúdo recolhido atrás de um botãozinho (texto do ato, cálculo, movimentos) |
 | `Vazio({ children })` | Lista vazia |
@@ -76,7 +78,8 @@ Texto de resumo: `contar(n, 'prazo', 'prazos')`, `juntar(['a', 'b', 'c'])` → "
 | Prazos | Agrupar por período (Vencidos, Esta semana, Próximas semanas, Mais adiante) em linhas compactas; cálculo e base legal em `Expansivel` (B) |
 | Processos / processo | Lista compacta. No processo: barra das 8 fases clicável, dados em uma linha e abas Etapas (checklist da fase) · Prazos · Linha do tempo · Cobrança |
 | Diário Oficial | Linhas compactas (série, cliente/processo, como achou, prazo sugerido, ações); texto do ato em `Expansivel` (B) |
-| Faturamento e financeiro | Mês atual por padrão com navegação de mês; `Resumo` no topo; gráfico menor ou atrás de aba; DRE com grupos recolhíveis (C) |
+| Faturamento | Feito. Frase, faixa de abas do ciclo, busca e a tabela da aba, com botões de texto na linha. Clicar na linha abre o painel à direita (`?nota=`), sem sair da lista: `LinhaDaNota` + `PainelLateral`, em `financeiro/_components`. Detalhes em `financeiro.md` |
+| Financeiro | Mês atual por padrão com navegação de mês; `Resumo` no topo; gráfico em página própria ou atrás de aba; DRE com grupos recolhíveis (C) |
 | Comercial | Funil em 4 colunas de cartões (o único lugar com cartões: é um quadro de etapas). A proposta abre na aba Proposta do processo, com o documento que imprime limpo (`print:hidden` no resto) |
 | Portal, login, usuários | Feito. Portal: fase atual e próximo prazo numa caixa, etapas numa linha do tempo vertical. Usuários: lista com o que cada perfil pode, formulário recolhido. Login: fundo papel, sem sombra (A) |
 

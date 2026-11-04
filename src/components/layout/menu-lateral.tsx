@@ -1,76 +1,30 @@
 'use client'
 
-import {
-  ArrowLeftRight,
-  CalendarClock,
-  ChartColumn,
-  ChartLine,
-  FileSignature,
-  FolderKanban,
-  HandCoins,
-  Handshake,
-  Landmark,
-  Leaf,
-  ListTodo,
-  LogOut,
-  Newspaper,
-  Radar,
-  Receipt,
-  Users,
-  type LucideIcon,
-} from 'lucide-react'
+import { FolderKanban, Handshake, Landmark, Leaf, ListTodo, LogOut, Users, type LucideIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Suspense } from 'react'
 import { sair } from '@/app/(auth)/actions'
 import { cn } from '@/lib/cn'
-import { BotaoTema } from './botao-tema'
 import { PAPEIS, pode, type Area, type Papel } from '@/lib/permissoes'
+import { BotaoNovo } from './botao-novo'
+import { BotaoTema } from './botao-tema'
+import { BuscaGeral } from './busca-geral'
+import { ListaFixados } from './fixados'
 
-type Item = { href: string; rotulo: string; icone: LucideIcon; area: Area; emBreve?: true }
+type Item = { href: string; rotulo: string; icone: LucideIcon; area: Area; tambem?: string[] }
 export type UsuarioDoMenu = { nome: string; papel: Papel }
 
-const GRUPOS: { titulo?: string; itens: Item[] }[] = [
-  { itens: [{ href: '/', rotulo: 'Hoje', icone: ListTodo, area: 'prazos' }] },
-  {
-    titulo: 'Comercial',
-    itens: [
-      { href: '/comercial', rotulo: 'Propostas', icone: Handshake, area: 'comercial' },
-      { href: '/comercial/prospeccao', rotulo: 'Prospecção', icone: Radar, area: 'comercial', emBreve: true },
-    ],
-  },
-  {
-    titulo: 'Processos',
-    itens: [
-      { href: '/prazos', rotulo: 'Prazos', icone: CalendarClock, area: 'prazos' },
-      { href: '/processos', rotulo: 'Processos', icone: FolderKanban, area: 'prazos' },
-      { href: '/publicacoes', rotulo: 'Diário Oficial', icone: Newspaper, area: 'prazos' },
-    ],
-  },
-  {
-    titulo: 'Financeiro',
-    itens: [
-      { href: '/financeiro', rotulo: 'Faturamento', icone: Receipt, area: 'financeiro' },
-      { href: '/financeiro/receber', rotulo: 'Contas a receber', icone: HandCoins, area: 'financeiro' },
-      { href: '/financeiro/lancamentos', rotulo: 'Lançamentos', icone: ArrowLeftRight, area: 'financeiro' },
-      { href: '/financeiro/extrato', rotulo: 'Extrato', icone: Landmark, area: 'financeiro' },
-      { href: '/financeiro/contratos', rotulo: 'Contratos', icone: FileSignature, area: 'financeiro' },
-      { href: '/financeiro/fluxo', rotulo: 'Fluxo de caixa', icone: ChartLine, area: 'financeiro' },
-      { href: '/financeiro/dre', rotulo: 'DRE', icone: ChartColumn, area: 'financeiro' },
-    ],
-  },
-  {
-    titulo: 'Administração',
-    itens: [{ href: '/usuarios', rotulo: 'Usuários', icone: Users, area: 'usuarios' }],
-  },
+/** Quatro itens, na ordem do negócio. As telas de cada um ficam em abas lá dentro. */
+const ITENS: Item[] = [
+  { href: '/', rotulo: 'Hoje', icone: ListTodo, area: 'prazos', tambem: ['/publicacoes', '/prazos'] },
+  { href: '/comercial', rotulo: 'Propostas', icone: Handshake, area: 'comercial' },
+  { href: '/processos', rotulo: 'Processos', icone: FolderKanban, area: 'prazos' },
+  { href: '/financeiro', rotulo: 'Financeiro', icone: Landmark, area: 'financeiro' },
 ]
 
-const TODOS = GRUPOS.flatMap((g) => g.itens)
-
-function ativo(pathname: string, href: string) {
-  // O item mais específico que bate com a URL é o ativo (/financeiro não acende em /financeiro/dre).
-  const candidatos = TODOS.filter((i) => pathname === i.href || (i.href !== '/' && pathname.startsWith(`${i.href}/`)))
-  return candidatos.sort((a, b) => b.href.length - a.href.length)[0]?.href === href
+function ativo(pathname: string, { href, tambem = [] }: Item) {
+  return [href, ...tambem].some((caminho) => pathname === caminho || (caminho !== '/' && pathname.startsWith(`${caminho}/`)))
 }
 
 function Marca() {
@@ -99,8 +53,7 @@ function MenuNaRota({ usuario }: { usuario?: UsuarioDoMenu }) {
 
 function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu }) {
   // Enquanto o usuário carrega, nenhum link: ninguém vê, nem por um instante, o que o perfil não pode abrir.
-  const visivel = (item: Item) => Boolean(usuario && pode(usuario.papel, item.area))
-  const grupos = GRUPOS.map((g) => ({ ...g, itens: g.itens.filter(visivel) })).filter((g) => g.itens.length)
+  const itens = ITENS.filter((item) => usuario && pode(usuario.papel, item.area))
 
   return (
     <>
@@ -108,32 +61,41 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
         <div className="px-2">
           <Marca />
         </div>
-        <nav className="mt-6 flex flex-1 flex-col gap-5 overflow-y-auto">
-          {grupos.map((grupo, i) => (
-            <div key={i}>
-              {grupo.titulo && <p className="mb-1 px-2 text-xs text-nav-muted">{grupo.titulo}</p>}
-              <ul className="flex flex-col gap-px">
-                {grupo.itens.map(({ href, rotulo, icone: Icone, emBreve }) => (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      className={cn(
-                        'flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors',
-                        ativo(pathname, href) ? 'bg-white/12 font-medium text-white' : 'text-nav-ink/85 hover:bg-white/6 hover:text-white',
-                      )}
-                    >
-                      <Icone className={cn('size-4', ativo(pathname, href) ? 'text-white' : 'text-nav-muted')} />
-                      {rotulo}
-                      {emBreve && <span className="ml-auto rounded bg-accent/20 px-1.5 py-px text-[0.6875rem] font-medium text-accent">em breve</span>}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        {usuario && (
+          <div className="mt-5 space-y-2">
+            <BuscaGeral />
+            <BotaoNovo papel={usuario.papel} />
+          </div>
+        )}
+        <nav className="mt-5 flex flex-1 flex-col gap-5 overflow-y-auto">
+          <ul className="flex flex-col gap-px">
+            {itens.map((item) => {
+              const { href, rotulo, icone: Icone } = item
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className={cn(
+                      'flex items-center gap-2.5 rounded-md px-2 py-2 text-sm transition-colors',
+                      ativo(pathname, item) ? 'bg-white/12 font-medium text-white' : 'text-nav-ink/85 hover:bg-white/6 hover:text-white',
+                    )}
+                  >
+                    <Icone className={cn('size-4', ativo(pathname, item) ? 'text-white' : 'text-nav-muted')} />
+                    {rotulo}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+          {usuario && <ListaFixados />}
         </nav>
         {usuario && (
           <div className="border-t border-white/10 px-2 pt-3">
+            {pode(usuario.papel, 'usuarios') && (
+              <Link href="/usuarios" className="mb-2 flex items-center gap-2 text-sm text-nav-ink/85 hover:text-white">
+                <Users className="size-4 text-nav-muted" /> Usuários
+              </Link>
+            )}
             <div className="flex items-center gap-2.5">
               <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-nav">
                 {usuario.nome.at(0)}
@@ -168,21 +130,22 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
             )}
           </div>
         </div>
+        {usuario && (
+          <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+            <BuscaGeral />
+            <BotaoNovo papel={usuario.papel} />
+          </div>
+        )}
         <nav className="-mx-4 mt-3 flex gap-1 overflow-x-auto px-4">
-          {grupos
-            .flatMap((g) => g.itens)
-            .map(({ href, rotulo }) => (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  'whitespace-nowrap rounded-md px-2.5 py-1 text-sm',
-                  ativo(pathname, href) ? 'bg-white/15 font-medium text-white' : 'text-nav-ink/85',
-                )}
-              >
-                {rotulo}
-              </Link>
-            ))}
+          {[...itens, ...(usuario && pode(usuario.papel, 'usuarios') ? [{ href: '/usuarios', rotulo: 'Usuários', icone: Users, area: 'usuarios' as const }] : [])].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn('whitespace-nowrap rounded-md px-2.5 py-1 text-sm', ativo(pathname, item) ? 'bg-white/15 font-medium text-white' : 'text-nav-ink/85')}
+            >
+              {item.rotulo}
+            </Link>
+          ))}
         </nav>
       </header>
     </>

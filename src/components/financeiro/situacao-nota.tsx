@@ -2,7 +2,7 @@ import type { Tom } from '@/components/ui/badge'
 import { Situacao } from '@/components/ui/situacao'
 import type { SituacaoNota } from '@/domain/financeiro/notas'
 
-export const SITUACOES_NOTA: Record<SituacaoNota, { rotulo: string; tom: Tom }> = {
+const SITUACOES_NOTA: Record<SituacaoNota, { rotulo: string; tom: Tom }> = {
   a_receber: { rotulo: 'A receber', tom: 'info' },
   atrasada: { rotulo: 'Atrasada', tom: 'danger' },
   parcial: { rotulo: 'Recebida em parte', tom: 'warn' },

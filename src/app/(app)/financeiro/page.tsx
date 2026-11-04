@@ -1,240 +1,223 @@
 import { Plus } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { GraficoBarras } from '@/components/charts/grafico-barras'
-import { SITUACOES_NOTA, SituacaoDaNota } from '@/components/financeiro/situacao-nota'
+import { SituacaoDaNota } from '@/components/financeiro/situacao-nota'
 import { Abas } from '@/components/ui/abas'
 import { Busca } from '@/components/ui/busca'
 import { Card } from '@/components/ui/card'
 import { Vazio } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
-import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
-import { ItemResumo, Resumo } from '@/components/ui/resumo'
-import { Secao } from '@/components/ui/secao'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
-import { listarNotas } from '@/data/financeiro'
+import { listarNotas, obterNota } from '@/data/financeiro'
 import { listarParcelasLiberadas } from '@/data/processos'
 import { exigirArea } from '@/data/sessao'
-import { resumoNotas, situacaoNota, valorLiquido, type SituacaoNota } from '@/domain/financeiro/notas'
+import {
+  ABAS_DO_CICLO,
+  abaUsaMes,
+  ehAbaDoCiclo,
+  FAIXAS_DE_ATRASO,
+  fraseDoCiclo,
+  naFaixa,
+  notasPorAba,
+  ordenarAtrasadas,
+  ORDENS_DAS_ATRASADAS,
+  primeiraAbaComItens,
+  valorNaAba,
+  type AbaDoCiclo,
+} from '@/domain/financeiro/ciclo'
+import { situacaoNota } from '@/domain/financeiro/notas'
 import { combina } from '@/lib/buscar'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
-import { brl, contar, formatarData, formatarDataCurta, formatarMes } from '@/lib/formatar'
+import { brl, formatarMes } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
-import { AbrirLinha } from './_components/abrir-linha'
-import { AbaLucratividade } from './_components/lucratividade'
+import { DetalheDaNota, type AcaoDaNota } from './_components/detalhe-da-nota'
 import { NavegacaoMes, TODOS_OS_MESES } from './_components/navegacao-mes'
+import { PainelLateral } from './_components/painel-lateral'
+import { TabelaAFaturar, TabelaEmAberto, TabelaRecebidas, TabelaTodas } from './_components/tabelas-do-ciclo'
 
 export const metadata: Metadata = { title: 'Faturamento' }
 
-type Filtros = { mes?: string; situacao?: string; aba?: string; q?: string; margem?: string; pagina?: string }
+type Filtros = { aba?: string; mes?: string; q?: string; faixa?: string; ordem?: string; pagina?: string; nota?: string; acao?: string }
+
+const VAZIO: Record<AbaDoCiclo, string> = {
+  'a-faturar': 'Nenhuma parcela para faturar',
+  'a-vencer': 'Nenhuma nota a vencer',
+  hoje: 'Nenhuma nota vence hoje',
+  atrasadas: 'Nenhuma nota atrasada',
+  recebidas: 'Nenhuma nota recebida',
+  todas: 'Nenhuma nota',
+}
 
 export default async function PaginaFaturamento({ searchParams }: { searchParams: Promise<Filtros> }) {
   const [filtros, { hoje: dia, meses, notas }, parcelas, usuario] = await Promise.all([searchParams, listarNotas(), listarParcelasLiberadas(), exigirArea('financeiro')])
   const editar = pode(usuario.papel, 'financeiro', 'editar')
   const atual = mesDe(dia)
-  const mes = filtros.mes === TODOS_OS_MESES || meses.includes(filtros.mes ?? '') ? filtros.mes! : atual
-  const situacao = filtros.situacao ?? 'todos'
-  const aba = filtros.aba === 'grafico' || filtros.aba === 'lucratividade' ? filtros.aba : 'notas'
-  const q = filtros.q?.trim() || undefined
-  /** Link com os filtros de agora trocando só o que vier em `novos` (a página volta para a 1). */
-  const link = (novos: Filtros) => {
-    const f = { mes, situacao, aba, q, ...novos }
-    const params = new URLSearchParams()
-    if (f.mes && f.mes !== atual) params.set('mes', f.mes)
-    if (f.situacao && f.situacao !== 'todos') params.set('situacao', f.situacao)
-    if (f.aba && f.aba !== 'notas') params.set('aba', f.aba)
-    if (f.q) params.set('q', f.q)
-    if (f.margem && f.aba === 'lucratividade') params.set('margem', f.margem)
-    if (f.pagina && f.pagina !== '1') params.set('pagina', f.pagina)
-    return params.size ? `/financeiro?${params}` : '/financeiro'
-  }
+  const abaDaUrl = ehAbaDoCiclo(filtros.aba) ? filtros.aba : undefined
+  // O mês só vale nas abas que têm o seletor; nas outras, Recebidas e Todas contam o mês atual.
+  const mes = abaDaUrl && abaUsaMes(abaDaUrl) && (filtros.mes === TODOS_OS_MESES || meses.includes(filtros.mes ?? '')) ? filtros.mes! : atual
   const todosOsMeses = mes === TODOS_OS_MESES
-  const periodo = todosOsMeses ? 'em todos os meses' : `em ${formatarMes(mes)}`
+  const q = filtros.q?.trim() || undefined
+  const faixa = FAIXAS_DE_ATRASO.find((f) => f.id === filtros.faixa)
+  const ordem = filtros.ordem === 'saldo' ? 'saldo' : 'atraso'
 
-  // Mês e busca valem para o resumo, as contagens e a lista; a situação só para a lista.
-  const doMes = notas.filter(
-    ({ nota, cliente, processo }) =>
-      (todosOsMeses || mesDe(nota.emissao) === mes) && combina(q, cliente.nome, cliente.grupo, nota.numero, nota.descricao, processo?.empreendimento),
+  // A busca vale para as abas, as contagens e a frase do topo.
+  const parcelasBuscadas = parcelas
+    .filter(({ parcela, processo, cliente }) => combina(q, processo.empreendimento, processo.numeroSei, cliente.nome, cliente.grupo, parcela.descricao))
+    .sort((a, b) => a.liberadaEm!.localeCompare(b.liberadaEm!))
+  const grupos = notasPorAba(
+    notas.filter(({ nota, cliente, processo }) => combina(q, cliente.nome, cliente.grupo, nota.numero, nota.descricao, processo?.empreendimento)),
+    dia,
+    todosOsMeses ? undefined : mes,
   )
-  const resumo = resumoNotas(doMes.map(({ nota }) => nota), dia)
-  const lista = doMes.filter(({ nota }) => situacao === 'todos' || situacaoNota(nota, dia) === situacao).sort((a, b) => b.nota.numero - a.nota.numero)
-  const paginado = paginar(lista, filtros.pagina)
+  const quantidades = {
+    'a-faturar': parcelasBuscadas.length,
+    'a-vencer': grupos['a-vencer'].length,
+    hoje: grupos.hoje.length,
+    atrasadas: grupos.atrasadas.length,
+    recebidas: grupos.recebidas.length,
+    todas: grupos.todas.length,
+  }
+  const aba = abaDaUrl ?? primeiraAbaComItens(quantidades)
 
-  const grafico = meses.map((m) => ({
-    rotulo: formatarMes(m),
-    faturado: somar(notas.filter(({ nota }) => !nota.cancelada && mesDe(nota.emissao) === m).map(({ nota }) => nota.valor)),
-    recebido: somar(notas.filter(({ nota }) => nota.recebimento && mesDe(nota.recebimento.data) === m).map(({ nota }) => nota.recebimento!.valor)),
-  }))
+  /** Link com os filtros de agora trocando só o que vier em `novos`. A aba vai sempre na URL: ela não pode mudar sozinha depois de um recebimento. */
+  const link = (novos: Filtros) => {
+    const f = { aba, mes, q, faixa: faixa?.id, ordem, ...novos }
+    const destino = f.aba as AbaDoCiclo
+    const params = new URLSearchParams({ aba: destino })
+    if (abaUsaMes(destino) && f.mes !== atual) params.set('mes', f.mes)
+    if (f.q) params.set('q', f.q)
+    if (destino === 'atrasadas' && f.faixa) params.set('faixa', f.faixa)
+    if (destino === 'atrasadas' && f.ordem === 'saldo') params.set('ordem', f.ordem)
+    if (f.pagina && f.pagina !== '1') params.set('pagina', f.pagina)
+    if (f.nota) params.set('nota', f.nota)
+    if (f.nota && f.acao) params.set('acao', f.acao)
+    return `/financeiro?${params}`
+  }
+
+  const atrasadasNoFiltro = ordenarAtrasadas(faixa ? grupos.atrasadas.filter(({ nota }) => naFaixa(nota, faixa, dia)) : grupos.atrasadas, ordem, dia)
+  const paginaDeParcelas = paginar(parcelasBuscadas, filtros.pagina)
+  const paginaDeNotas = paginar(aba === 'atrasadas' ? atrasadasNoFiltro : aba === 'a-faturar' ? [] : grupos[aba], filtros.pagina)
+  const paginado = aba === 'a-faturar' ? paginaDeParcelas : paginaDeNotas
+
+  const pagina = String(paginado.pagina)
+  const linkDaNota = (id: string, acao?: AcaoDaNota) => link({ pagina, nota: id, acao })
+  const painel = filtros.nota ? await obterNota(filtros.nota) : undefined
+  const acao = filtros.acao === 'receber' || filtros.acao === 'cobrar' ? filtros.acao : undefined
+  const tabela = { itens: paginaDeNotas.itens, dia, notaAberta: painel?.nota.id, linkDaNota }
+  const periodo = todosOsMeses ? 'em todos os meses' : `em ${formatarMes(mes)}`
 
   return (
     <>
       <PageHeader
         titulo="Faturamento"
-        resumo={
-          resumo.quantidade
-            ? `${brl(resumo.faturado)} em ${contar(resumo.quantidade, 'nota', 'notas')}${q ? ` com “${q}”` : ''} ${periodo}; ${brl(resumo.aReceber)} ainda a receber.`
-            : `Nenhuma nota${q ? ` com “${q}”` : ' emitida'} ${periodo}.`
-        }
+        resumo={fraseDoCiclo(quantidades, q)}
         acoes={
-          <>
-            <NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m })} todos />
-            {editar && (
-              <Link href="/financeiro/notas/nova" className={classeBotao()}>
-                <Plus className="size-4" /> Registrar nota
-              </Link>
-            )}
-          </>
+          editar && (
+            <Link href="/financeiro/notas/nova" className={classeBotao()}>
+              <Plus className="size-4" /> Registrar nota
+            </Link>
+          )
         }
       />
-
-      <Resumo className="mb-8">
-        <ItemResumo rotulo="Faturado" valor={brl(resumo.faturado)} detalhe={contar(resumo.quantidade, 'nota', 'notas')} />
-        <ItemResumo
-          rotulo="Recebido"
-          valor={brl(resumo.recebido)}
-          detalhe={resumo.prazoMedianoDias > 0 && `mediana de ${contar(resumo.prazoMedianoDias, 'dia', 'dias')} até receber`}
-          tom={resumo.recebido ? 'ok' : 'neutral'}
-        />
-        <ItemResumo rotulo="A receber" valor={brl(resumo.aReceber)} />
-        <ItemResumo
-          rotulo="Atrasado"
-          valor={brl(resumo.atrasado)}
-          detalhe={contar(resumo.quantidadeAtrasadas, 'nota', 'notas')}
-          tom={resumo.atrasado ? 'danger' : 'neutral'}
-        />
-      </Resumo>
-
-      {parcelas.length > 0 && (
-        <Secao titulo={`Prontas para faturar · ${brl(somar(parcelas.map(({ parcela }) => parcela.valor)))}`} className="mb-8">
-          <Lista>
-            {parcelas.map(({ parcela, processo, cliente, liberadaEm }) => (
-              <Linha key={parcela.id} className="flex-wrap gap-y-2">
-                {/* No celular, valor e botão descem para a linha de baixo em vez de espremer o nome. */}
-                <div className="min-w-0 flex-1 basis-60">
-                  <Link href={`/processos/${processo.id}`} className="font-medium text-ink hover:text-brand-700">
-                    {processo.empreendimento}
-                  </Link>
-                  <p className="truncate text-sm text-muted">
-                    {parcela.descricao} · liberada em {formatarDataCurta(liberadaEm!)} · {cliente.nome}
-                  </p>
-                </div>
-                <span className="font-medium tabular-nums">{brl(parcela.valor)}</span>
-                {editar && (
-                  <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('secundario', 'py-1')}>
-                    Registrar nota
-                  </Link>
-                )}
-              </Linha>
-            ))}
-          </Lista>
-        </Secao>
-      )}
 
       <Abas
         ativa={aba}
-        abas={[
-          { valor: 'notas', rotulo: todosOsMeses ? 'Notas de todos os meses' : `Notas de ${formatarMes(mes)}`, href: link({ aba: 'notas' }), contagem: doMes.length },
-          { valor: 'grafico', rotulo: 'Faturado × recebido', href: link({ aba: 'grafico' }) },
-          { valor: 'lucratividade', rotulo: 'Lucratividade por projeto', href: link({ aba: 'lucratividade' }) },
-        ]}
+        abas={(Object.keys(ABAS_DO_CICLO) as AbaDoCiclo[]).map((id) => ({
+          valor: id,
+          rotulo: ABAS_DO_CICLO[id],
+          href: link({ aba: id }),
+          contagem: quantidades[id],
+          detalhe: brl(id === 'a-faturar' ? somar(parcelasBuscadas.map(({ parcela }) => parcela.valor)) : somar(grupos[id].map(({ nota }) => valorNaAba(id, nota, dia)))),
+          alerta: id === 'atrasadas' && quantidades.atrasadas > 0,
+        }))}
       />
 
-      {aba === 'lucratividade' ? (
-        <AbaLucratividade
-          filtros={{ q, margem: filtros.margem, pagina: filtros.pagina }}
-          link={(novos) => link({ aba: 'lucratividade', ...novos })}
-          manter={{ aba, mes: mes === atual ? undefined : mes, situacao: situacao === 'todos' ? undefined : situacao }}
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <Busca
+          valor={q}
+          placeholder="Buscar cliente, grupo, NF ou serviço"
+          manter={{
+            aba,
+            mes: abaUsaMes(aba) && mes !== atual ? mes : undefined,
+            faixa: aba === 'atrasadas' ? faixa?.id : undefined,
+            ordem: aba === 'atrasadas' && ordem === 'saldo' ? ordem : undefined,
+          }}
+          limpar={link({ q: undefined })}
+          className="min-w-60"
         />
-      ) : aba === 'grafico' ? (
-        <GraficoBarras
-          dados={grafico}
-          series={[
-            { chave: 'faturado', nome: 'Faturado (emissão)', cor: 'var(--color-brand-700)' },
-            { chave: 'recebido', nome: 'Recebido (caixa)', cor: 'var(--color-brand-300)' },
-          ]}
-        />
-      ) : (
-        <>
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <Busca
-              valor={q}
-              placeholder="Buscar cliente, grupo, NF ou serviço"
-              manter={{ mes: mes === atual ? undefined : mes, situacao: situacao === 'todos' ? undefined : situacao }}
-              limpar={link({ q: undefined })}
-              className="min-w-60"
-            />
-            <SegmentedLinks
-              ativo={situacao}
-              opcoes={[{ valor: 'todos', rotulo: 'Todas' }, ...Object.entries(SITUACOES_NOTA).map(([valor, { rotulo }]) => ({ valor, rotulo }))].map((o) => ({
-                ...o,
-                href: link({ situacao: o.valor }),
-                contagem: o.valor === 'todos' ? doMes.length : doMes.filter(({ nota }) => situacaoNota(nota, dia) === (o.valor as SituacaoNota)).length,
-              }))}
-            />
-          </div>
-          <Card flush>
-            <table className="tabela">
-              <thead>
-                <tr>
-                  <th>NF</th>
-                  <th className="hidden sm:table-cell">Emissão</th>
-                  <th>Cliente e serviço</th>
-                  <th className="num">Líquido</th>
-                  <th className="hidden sm:table-cell">Previsão</th>
-                  <th className="hidden sm:table-cell">Situação</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {paginado.itens.map(({ nota, cliente }) => (
-                  <tr key={nota.id} className={nota.cancelada ? 'text-subtle line-through decoration-subtle/50' : undefined}>
-                    <td className="tabular-nums">
-                      <Link href={`/financeiro/notas/${nota.id}`} className="link">
-                        {nota.numero}
-                      </Link>
-                    </td>
-                    <td className="hidden whitespace-nowrap sm:table-cell">{formatarDataCurta(nota.emissao)}</td>
-                    <td className="sm:min-w-72">
-                      {cliente.nome}
-                      <p className="text-xs text-subtle">{nota.descricao}</p>
-                      {/* No celular a coluna Situação some; ela vem para baixo do cliente. */}
-                      <span className="sm:hidden">
-                        <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
-                      </span>
-                    </td>
-                    <td className="num font-medium">
-                      {brl(valorLiquido(nota))}
-                      {nota.retencao > 0 && <p className="text-xs font-normal text-subtle">de {brl(nota.valor)}</p>}
-                    </td>
-                    <td className="hidden whitespace-nowrap sm:table-cell">{formatarData(nota.previsao)}</td>
-                    <td className="hidden sm:table-cell">
-                      <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
-                    </td>
-                    <AbrirLinha href={`/financeiro/notas/${nota.id}`} rotulo={`Abrir NF ${nota.numero}`} />
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {lista.length === 0 && (
-              <Vazio>
-                Nenhuma nota neste filtro {periodo}.
-                {q && !todosOsMeses && (
-                  <>
-                    {' '}
-                    <Link href={link({ mes: TODOS_OS_MESES })} className="link">
-                      Buscar em todos os meses
-                    </Link>
-                  </>
-                )}
-              </Vazio>
+        {abaUsaMes(aba) && <NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m })} todos />}
+        <Link href="/financeiro/faturado-recebido" className="ml-auto text-sm text-muted underline decoration-line underline-offset-2 hover:text-ink">
+          Faturado × recebido
+        </Link>
+      </div>
+
+      {aba === 'atrasadas' && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <SegmentedLinks
+            ativo={faixa?.id ?? 'todas'}
+            opcoes={[
+              { valor: 'todas', rotulo: 'Todas', href: link({ faixa: undefined }), contagem: quantidades.atrasadas },
+              ...FAIXAS_DE_ATRASO.map((f) => ({
+                valor: f.id,
+                rotulo: f.rotulo,
+                href: link({ faixa: f.id }),
+                contagem: grupos.atrasadas.filter(({ nota }) => naFaixa(nota, f, dia)).length,
+              })),
+            ]}
+          />
+          <SegmentedLinks
+            ativo={ordem}
+            opcoes={Object.entries(ORDENS_DAS_ATRASADAS).map(([valor, rotulo]) => ({ valor, rotulo, href: link({ ordem: valor }) }))}
+          />
+        </div>
+      )}
+
+      <Card flush>
+        {aba === 'a-faturar' ? (
+          <TabelaAFaturar itens={paginaDeParcelas.itens} editar={editar} />
+        ) : aba === 'recebidas' ? (
+          <TabelaRecebidas {...tabela} />
+        ) : aba === 'todas' ? (
+          <TabelaTodas {...tabela} />
+        ) : (
+          <TabelaEmAberto {...tabela} editar={editar} comAtraso={aba === 'atrasadas'} />
+        )}
+        {paginado.total === 0 && (
+          <Vazio>
+            {VAZIO[aba]}
+            {faixa && aba === 'atrasadas' && ' nesta faixa'}
+            {q && ` com “${q}”`}
+            {abaUsaMes(aba) && ` ${periodo}`}.
+            {q && abaUsaMes(aba) && !todosOsMeses && (
+              <>
+                {' '}
+                <Link href={link({ mes: TODOS_OS_MESES })} className="link">
+                  Buscar em todos os meses
+                </Link>
+              </>
             )}
-          </Card>
-          <Paginacao {...paginado} href={(n) => link({ pagina: String(n) })} />
-        </>
+          </Vazio>
+        )}
+      </Card>
+      <Paginacao {...paginado} href={(n) => link({ pagina: String(n) })} />
+
+      {painel && (
+        <PainelLateral
+          key={`${painel.nota.id}:${acao ?? ''}`}
+          titulo={`NF ${painel.nota.numero}`}
+          subtitulo={
+            <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
+              {painel.cliente.nome} <SituacaoDaNota situacao={situacaoNota(painel.nota, dia)} />
+            </span>
+          }
+          fechar={link({ pagina })}
+        >
+          <DetalheDaNota dados={painel} editar={editar} acao={acao} />
+        </PainelLateral>
       )}
     </>
   )

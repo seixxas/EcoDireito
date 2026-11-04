@@ -1,6 +1,7 @@
 import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { AbasDoDia } from '@/components/layout/abas-do-dia'
 import { Badge } from '@/components/ui/badge'
 import { Busca } from '@/components/ui/busca'
 import { Expansivel, Vazio } from '@/components/ui/expansivel'
@@ -185,6 +186,7 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
 
   return (
     <>
+      <AbasDoDia ativa="diario" />
       <PageHeader
         titulo="Diário Oficial"
         resumo={`Edição de ${formatarDiaEData(edicao.data)}${lida}: ${edicao.totalAtos.toLocaleString('pt-BR')} atos, ${edicao.atosSvma} da Secretaria do Verde e ${paraRevisar}.`}

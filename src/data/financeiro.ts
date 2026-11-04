@@ -18,6 +18,8 @@ import { listarParcelasLiberadas } from './processos'
 import { exigirArea } from './sessao'
 import { ALIQUOTA_SIMPLES, FIXAS, OCASIONAIS } from './seed/financeiro'
 
+export type ItemNota = Awaited<ReturnType<typeof listarNotas>>['notas'][number]
+
 /** Notas do período do histórico, com cliente e processo. */
 export async function listarNotas() {
   const { hoje, clientes, processos, financeiro } = await carregar()

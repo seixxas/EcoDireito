@@ -3,7 +3,7 @@
 import { useActionState } from 'react'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
 import { MensagemFormulario } from '@/components/ui/form'
-import { cancelarNota } from '../../actions'
+import { cancelarNota } from '../notas/actions'
 
 export function BotaoCancelarNota({ notaId, numero }: { notaId: string; numero: number }) {
   const [estado, acao] = useActionState(cancelarNota, {})

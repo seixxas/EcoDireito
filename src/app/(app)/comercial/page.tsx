@@ -12,8 +12,9 @@ import { DIAS_PARA_RETORNO, ESTADOS_PROPOSTA, numerosDoComercial, type EstadoPro
 import { somarDias } from '@/lib/datas'
 import { brl, contar, formatarData } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
+import { AbasDoComercial } from './_components/abas-do-comercial'
 
-export const metadata: Metadata = { title: 'Comercial' }
+export const metadata: Metadata = { title: 'Propostas' }
 
 type Item = Awaited<ReturnType<typeof listarPropostas>>[number]
 
@@ -66,8 +67,9 @@ export default async function PaginaComercial() {
 
   return (
     <>
+      <AbasDoComercial ativa="propostas" />
       <PageHeader
-        titulo="Comercial"
+        titulo="Propostas"
         resumo={`${contar(numeros.quantasEmAberto, 'proposta em aberto', 'propostas em aberto')}${numeros.pedemRetorno ? `, ${numeros.pedemRetorno} sem resposta há mais de ${DIAS_PARA_RETORNO} dias` : ''}. Aprovada, a proposta vira processo na fase Documentação.`}
         acoes={
           pode(usuario.papel, 'comercial', 'editar') && (

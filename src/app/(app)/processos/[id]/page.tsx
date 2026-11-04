@@ -2,6 +2,7 @@ import { ExternalLink, Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { BotaoFixar } from '@/components/layout/fixados'
 import { LinhaPrazo } from '@/components/prazos/linha-prazo'
 import { descreverSituacao } from '@/components/prazos/situacao-prazo'
 import { Abas } from '@/components/ui/abas'
@@ -94,6 +95,7 @@ export default async function PaginaProcesso({
           }
           acoes={
             <>
+              <BotaoFixar href={`/processos/${processo.id}`} rotulo={processo.empreendimento} />
               {editar && (
                 <Link href={`/processos/${processo.id}/editar`} className={classeBotao('secundario')}>
                   Editar

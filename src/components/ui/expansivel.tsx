@@ -3,9 +3,9 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
 /** Conteúdo recolhido: o texto do ato, o cálculo do prazo, os movimentos da semana. */
-export function Expansivel({ resumo, className, children }: { resumo: ReactNode; className?: string; children: ReactNode }) {
+export function Expansivel({ resumo, aberto, className, children }: { resumo: ReactNode; aberto?: boolean; className?: string; children: ReactNode }) {
   return (
-    <details className={cn('group', className)}>
+    <details open={aberto} className={cn('group', className)}>
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-md border border-line bg-surface px-2 py-0.5 text-xs font-medium text-ink transition-colors hover:border-brand-300 hover:bg-brand-50 [&::-webkit-details-marker]:hidden">
         <ChevronRight className="size-3.5 text-brand-700 transition-transform group-open:rotate-90" />
         {resumo}
