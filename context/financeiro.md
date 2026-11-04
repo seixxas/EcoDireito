@@ -19,19 +19,48 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 ## Telas (redesign de 03/11, guia em `interface.md`)
 
 - Lançamentos: a observação aparece embaixo da descrição. A competência não tem coluna: só aparece, embaixo da descrição e em destaque, quando não é o mês do pagamento ("Competência set/26 · mês anterior ao pagamento", `textoDaCompetencia`), com a explicação no pé da tabela. A mesma explicação vai na tela do lançamento e na dica do campo.
-- Faturamento e Lançamentos abrem no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`) e "todos os meses" (`?mes=todos`, útil com a busca). Faturamento: parcelas prontas para faturar em lista e abas "Notas do mês" · "Faturado × recebido" (`?aba=grafico`) · "Lucratividade por projeto" (`?aba=lucratividade`).
+- Lançamentos abre no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`) e "todos os meses" (`?mes=todos`, útil com a busca). O Faturamento usa o mesmo seletor só nas abas Recebidas e Todas (veja "Faturamento: abas do ciclo").
 - Contratos: o contrato nasce com a proposta (as parcelas são o preço dela), mas a lista e os totais ("Contratado", "Aguardando evento" etc.) só contam processo com proposta aceita (`situacaoDoContrato`, que segue a `situacaoDaProposta` do Comercial: aceite até hoje e sem recusa). Propostas em aberto aparecem numa linha à parte, com link para o Comercial; recusadas (`proposta_recusada`) ficam de fora.
-- Contas a receber: atraso numa barra só, com as faixas clicáveis (`?faixa=`); notas em aberto das mais atrasadas para as menos, com busca (empresa, grupo, nº da NF, serviço, processo) e situação (`?situacao=atrasadas|a-vencer|parcial`). Busca, situação e faixa se somam; cada filtro conta o que os outros deixam passar. Embaixo, "Maiores saldos a receber" por empresa ou grupo (inclui o que ainda vai vencer); clicar filtra a lista.
-- Tabelas e listas paginadas de 10 em 10 (`paginar` + `Paginacao`, `?pagina=`, mantendo mês, situação e aba): notas do Faturamento, Contas a receber, Lançamentos, Contratos e as três abas do Extrato. Linha que abre detalhe tem setinha no fim (`AbrirLinha`); link no meio do texto usa a classe `link`.
-- DRE: custos, despesas e "fora da DRE" começam recolhidos (só o total do grupo). Cada valor de conta (mês ou total) abre os lançamentos que o formam: `/financeiro/lancamentos?mes=&conta=` (+ `regime=competencia` na DRE por competência, que filtra pela competência). Na competência, a receita vem das notas emitidas e o link vai para o Faturamento do mês.
+- Tabelas e listas paginadas de 10 em 10 (`paginar` + `Paginacao`, `?pagina=`, mantendo mês, situação e aba): as abas do Faturamento, Lançamentos, Contratos e as três abas do Extrato. Linha que abre detalhe tem setinha no fim (`AbrirLinha`); link no meio do texto usa a classe `link`.
+- DRE: custos, despesas e "fora da DRE" começam recolhidos (só o total do grupo). Cada valor de conta (mês ou total) abre os lançamentos que o formam: `/financeiro/lancamentos?mes=&conta=` (+ `regime=competencia` na DRE por competência, que filtra pela competência). Na competência, a receita vem das notas emitidas e o link vai para a aba Todas do Faturamento, no mês.
 - Fluxo: abas "Próximas 8 semanas" · "Realizado por mês" (`?aba=realizado`); movimentos da semana recolhidos. Clicar numa semana (barra do gráfico, data ou setinha da tabela) abre o zoom `?semana=AAAA-MM-DD` (segunda-feira): gráfico dia a dia só com entradas e saídas (sem a linha do saldo, que achataria as barras), ‹ › entre as semanas e, embaixo, os movimentos de cada dia com o saldo no fim do dia (`diasDaSemana`).
 - Extrato: importação compacta e abas "A classificar" · "Regras" · "Ignoradas" (`?aba=`). A busca vale nas três abas (descrição, valor e o texto da sugestão: NF, cliente, conta); "Confirmar as sugestões" confirma só as que estavam na tela (com a busca, as encontradas).
-- Busca (`Busca`, `?q=`, sem acento nem maiúscula): Faturamento (cliente, grupo, NF, serviço, processo; resumo e contagens seguem a busca), Contas a receber, Lançamentos, Contratos (processo, cliente, grupo, nº SEI) e Extrato. Busca e filtros se somam e a paginação conta o resultado.
+- Busca (`Busca`, `?q=`, sem acento nem maiúscula): Faturamento (cliente, grupo, NF, serviço, processo; na parcela, processo, nº SEI, cliente, grupo e parcela; frase, abas e contagens seguem a busca), Lançamentos, Contratos (processo, cliente, grupo, nº SEI) e Extrato. Busca e filtros se somam e a paginação conta o resultado.
 - Situação da nota é ponto + texto (`SituacaoDaNota`, em `components/financeiro/situacao-nota.tsx`).
+
+## Faturamento: abas do ciclo (`/financeiro`)
+
+Uma tela só, do faturar ao receber. Regras em `src/domain/financeiro/ciclo.ts` (com teste). Contas a receber saiu: `/financeiro/receber` redireciona para `?aba=atrasadas`, mantendo `q` e `faixa`.
+
+| Aba (`?aba=`) | O que entra | Valor da aba | Colunas |
+|---|---|---|---|
+| `a-faturar` | Parcelas liberadas sem nota | Soma das parcelas | Processo, parcela, cliente, liberada em, valor, "Registrar nota" |
+| `a-vencer` | Em aberto, previsão depois de hoje | Saldo | Cliente e NF, previsão, saldo, "Receber" e "Cobrar" |
+| `hoje` | Em aberto, previsão hoje | Saldo | Iguais às de A vencer |
+| `atrasadas` | Em aberto, previsão já passou | Saldo | Cliente e NF, previsão, atraso, saldo, "Receber" e "Cobrar" |
+| `recebidas` | Recebidas no mês do recebimento | Valor recebido | Cliente e NF, recebida em, valor recebido |
+| `todas` | Notas emitidas no mês, inclusive canceladas | Líquido, sem as canceladas | NF, emissão, cliente e serviço, líquido, previsão, situação |
+
+- Cada nota tem uma aba de estado só (`abaDaNota`), e vale a `situacaoNota`: a diferença de até R$ 1 que ela tolera conta como recebida. Em aberto inclui a recebida em parte, que segue a previsão, mostra o saldo e não entra em Recebidas. Cancelada só aparece em Todas. A linha de notas atrasadas do Hoje conta do mesmo jeito.
+- As quatro primeiras abas mostram o estado de agora. O mês (`?mes=`, com "todos os meses") só vale em Recebidas e Todas e só fica na URL delas; nas outras, essas duas contam o mês atual.
+- Sem `?aba=`, abre a primeira aba com itens (depois da busca); sem nenhuma, Todas. Todo link leva a aba na URL, para ela não mudar sozinha depois de um recebimento.
+- Atrasadas: faixas `?faixa=1-15|16-30|31-60|60+` e ordem `?ordem=saldo` ("Mais atrasadas" é o padrão). Faixa e ordem só valem nessa aba.
+- Quem não pode editar (contador) não vê "Registrar nota", "Receber" nem "Cobrar", e o painel fica só com os dados, mesmo com `?acao=` na URL.
+
+Painel da nota:
+
+- Clicar na linha abre o painel à direita (`?nota=<id>`), sem sair da lista; no celular ele ocupa a tela toda. O conteúdo é o `DetalheDaNota`, o mesmo de `/financeiro/notas/[id]`. Fecha pelo botão ou com Esc, mantendo aba, busca, filtros e página.
+- "Receber" (`&acao=receber`) põe o formulário de recebimento primeiro, com o saldo e a data de hoje (`recebimentoSugerido`).
+- **Recebida em parte:** a nota guarda um recebimento só e gravar de novo substitui o anterior. Por isso "Receber" traz o que já está gravado e explica que se informa o total: sugerir o saldo apagaria o que entrou antes. Dois recebimentos por nota precisam de mudança no schema.
+- "Cobrar" (`&acao=cobrar`) põe primeiro a mensagem pronta (`mensagemDeCobranca`: cliente, NF, valor ou saldo, dias de atraso), editável, com "Copiar mensagem". Não há envio nem registro de cobrança.
+
+## Faturado × recebido (`/financeiro/faturado-recebido`)
+
+Gráfico por mês: faturado pela emissão, recebido pelo caixa. Link discreto no Faturamento.
 
 ## Lucratividade por projeto (simulação)
 
-- Aba do Faturamento e detalhe em `/financeiro/lucratividade/[processoId]`. Regras em `src/domain/financeiro/lucratividade.ts` (com teste).
+- Lista em `/financeiro/lucratividade` e detalhe em `/financeiro/lucratividade/[processoId]`. Regras em `src/domain/financeiro/lucratividade.ts` (com teste).
 - Entram os processos com proposta aceita. Por projeto: contrato (soma das parcelas), faturado (notas não canceladas), recebido, custos diretos (saídas com o processo, por conta) e equipe.
 - **Equipe é simulada**: horas = faturado em R$ mil × horas por mil (licenciamento 1,5; manejo 2,5) × uma variação de 0,7 a 1,3 tirada do id do processo, vezes R$ 95/h. Troca pelo registro de horas quando existir.
 - Margem = faturado − custos diretos − equipe, sobre o faturado: boa a partir de 40%, atenção de 20% a 40%, ruim abaixo de 20%. Sem faturamento, sem margem (vai para o fim da lista).
@@ -43,7 +72,7 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 | Tela | O que faz |
 |---|---|
 | `/financeiro/notas/nova` | Registra a nota já emitida no site da Prefeitura. Com `?parcela=<id>` (botão "Registrar nota" da parcela liberada), já liga cliente, processo e parcela. |
-| `/financeiro/notas/[id]` | Detalhe da nota; registrar ou corrigir o recebimento; cancelar. |
+| `/financeiro/notas/[id]` | Detalhe da nota; registrar ou corrigir o recebimento; cancelar. O painel do Faturamento faz o mesmo (`DetalheDaNota`). |
 | `/financeiro/lancamentos` | Lançamentos do mês (ou de todos os meses) com busca (descrição, observação, conta, processo, valor), filtro de conta e de processo (`?processo=`, link da lucratividade); `?regime=competencia` filtra o mês pela competência (link da DRE). Lançamento manual (despesa ou receita) com conta, competência, processo e observação. |
 | `/financeiro/lancamentos/[id]` | Detalhe com a descrição original do extrato e a competência explicada; edita descrição, conta, competência, processo e observação; apaga. |
 | `/financeiro/contratos` | Contratado, faturado e a faturar por processo. `/financeiro/contratos/[processoId]` inclui, edita e apaga parcelas. |

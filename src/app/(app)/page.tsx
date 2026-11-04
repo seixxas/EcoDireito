@@ -13,7 +13,8 @@ import { hoje } from '@/data/hoje'
 import { listarParcelasLiberadas, listarPrazos, listarPropostas, type PrazoComProcesso } from '@/data/processos'
 import { listarPublicacoes } from '@/data/publicacoes'
 import { exigirUsuario } from '@/data/sessao'
-import { resumoNotas, situacaoNota } from '@/domain/financeiro/notas'
+import { abaDaNota } from '@/domain/financeiro/ciclo'
+import { resumoNotas } from '@/domain/financeiro/notas'
 import { estaAberto } from '@/domain/prazos'
 import { somarDias, type DataISO } from '@/lib/datas'
 import { cn } from '@/lib/cn'
@@ -95,7 +96,7 @@ export default async function Hoje() {
     todas.filter((nota) => nota.emissao > somarDias(dia, -30)),
     dia,
   )
-  const atrasadas = verFinanceiro ? notas.filter(({ nota }) => situacaoNota(nota, dia) === 'atrasada') : []
+  const atrasadas = verFinanceiro ? notas.filter(({ nota }) => abaDaNota(nota, dia) === 'atrasadas') : []
   const clientesAtrasados = [...new Set(atrasadas.map(({ cliente }) => cliente.nome))]
 
   const pendencias = [
@@ -131,7 +132,7 @@ export default async function Hoje() {
                 ))}
                 {atrasadas.length > 0 && (
                   <Item
-                    href="/financeiro/receber"
+                    href="/financeiro?aba=atrasadas"
                     situacao={<Situacao tom="danger">{contar(atrasadas.length, 'nota atrasada', 'notas atrasadas')}</Situacao>}
                     titulo="Cobrar clientes"
                     contexto={juntar(clientesAtrasados.length > 3 ? [...clientesAtrasados.slice(0, 3), `mais ${clientesAtrasados.length - 3}`] : clientesAtrasados)}

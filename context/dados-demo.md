@@ -21,7 +21,7 @@ para a demonstração fazer sentido.
 
 ## Casos montados de propósito
 
-- `p02` e `p10`: a última parcela liberada fica sem nota (lista "Prontas para faturar"). Controlado por `PARCELA_A_FATURAR`.
+- `p02` e `p10`: a última parcela liberada fica sem nota (aba "A faturar" do Faturamento). Controlado por `PARCELA_A_FATURAR`.
 - `p06`: Comunique-se vencido. `p05`: prazo vencendo hoje. `p08`: SVMA atrasada para emitir a guia.
 - `p11`: o Extrato do TCA dele está na caixa de entrada de hoje (achado pelo nº SEI).
 - `p13`: processo antigo; o Comunique-se de hoje só cita o nº SIMPROC no texto.

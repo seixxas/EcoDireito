@@ -4,6 +4,8 @@ Registro curto, do mais novo para o mais antigo. Mudou uma decisão? Acrescente 
 
 | Data | Decisão | Por quê |
 |---|---|---|
+| 2026-11-04 | Painel da nota por `?nota=` na própria página do Faturamento, com `obterNota`, sem rota paralela | Mantém aba, busca e filtros na mesma URL e não exige mexer no layout do financeiro. Abrir o painel e trocar de aba não piscam: o Next mantém a lista até a resposta chegar |
+| 2026-11-04 | `/financeiro/receber` é um Route Handler que só redireciona | Devolve um 307 de verdade e dispensa página e `loading.tsx` |
 | 2026-11-02 | Login com Better Auth (e-mail e senha, sem cadastro aberto), perfis em `src/lib/permissoes.ts` | Roda no nosso Postgres e vai junto para a hospedagem oficial; sem serviço externo |
 | 2026-11-02 | Recorte por perfil em `carregar()`, não só no layout | Layout e página renderizam em paralelo: a guarda do layout não impede a página de mandar dados |
 | 2026-11-02 | `BETTER_AUTH_URL` só na Vercel; no local, o endereço vem da requisição | Cada sessão roda numa porta diferente |

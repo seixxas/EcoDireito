@@ -160,6 +160,7 @@ describe('aba inicial', () => {
   it('reconhece o que vem da URL', () => {
     expect(ehAbaDoCiclo('atrasadas')).toBe(true)
     expect(ehAbaDoCiclo('grafico')).toBe(false)
+    expect(ehAbaDoCiclo('constructor')).toBe(false)
     expect(ehAbaDoCiclo(undefined)).toBe(false)
     expect(abaUsaMes('todas')).toBe(true)
     expect(abaUsaMes('atrasadas')).toBe(false)

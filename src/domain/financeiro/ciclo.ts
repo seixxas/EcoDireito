@@ -16,7 +16,7 @@ export const ABAS_DO_CICLO = {
 export type AbaDoCiclo = keyof typeof ABAS_DO_CICLO
 
 export function ehAbaDoCiclo(valor: string | undefined): valor is AbaDoCiclo {
-  return valor !== undefined && valor in ABAS_DO_CICLO
+  return valor !== undefined && Object.hasOwn(ABAS_DO_CICLO, valor)
 }
 
 /** Só estas duas abas olham o mês; as outras mostram o estado de agora. */
