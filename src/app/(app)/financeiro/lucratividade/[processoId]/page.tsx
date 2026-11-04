@@ -16,7 +16,7 @@ import { situacaoNota } from '@/domain/financeiro/notas'
 import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
 import { cn } from '@/lib/cn'
 import { brl, contar, formatarDataCurta, formatarPercentual } from '@/lib/formatar'
-import { AvisoDeSimulacao, MARGENS, Margem } from '../../_components/lucratividade'
+import { AvisoDeSimulacao, MARGENS, Margem } from '../_components/margem'
 
 export const metadata: Metadata = { title: 'Lucratividade do projeto' }
 
@@ -41,7 +41,7 @@ export default async function PaginaLucratividade({ params }: { params: Promise<
 
   return (
     <>
-      <Link href="/financeiro?aba=lucratividade" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
+      <Link href="/financeiro/lucratividade" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
         <ArrowLeft className="size-4" /> Lucratividade por projeto
       </Link>
       <PageHeader

@@ -19,7 +19,7 @@ const TODOS = 'todos'
  * Na competência, a receita vem das notas emitidas no mês, então o link vai para o Faturamento.
  */
 function origem(conta: string, regime: Regime, mes = TODOS) {
-  if (regime === 'competencia' && conta === 'receita_servicos') return `/financeiro?mes=${mes}`
+  if (regime === 'competencia' && conta === 'receita_servicos') return `/financeiro?aba=todas&mes=${mes}`
   return `/financeiro/lancamentos?mes=${mes}&conta=${conta}${regime === 'competencia' ? '&regime=competencia' : ''}`
 }
 

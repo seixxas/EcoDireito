@@ -26,7 +26,9 @@ src/
       processos/ + [id]/       lista e detalhe do processo; novo, editar e clientes/
       publicacoes/             caixa de entrada do Diário Oficial
       financeiro/              faturamento (notas)
-      financeiro/receber/      contas a receber
+      financeiro/receber/      redireciona para a aba Atrasadas do faturamento
+      financeiro/lucratividade/  lucratividade por projeto (simulação)
+      financeiro/faturado-recebido/  gráfico faturado × recebido
       financeiro/dre/          DRE caixa e competência
       financeiro/fluxo/        fluxo de caixa realizado e projetado
     portal/[id]/               portal do cliente (sem menu interno)
