@@ -57,7 +57,7 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 | `Busca({ valor, placeholder, manter, limpar })` | Caixa de busca na URL (`?q=`), acima da lista; filtre com `combina(q, ...textos)` (`src/lib/buscar.ts`: ignora acento e maiúscula; cada palavra buscada tem de ser o começo de uma palavra do texto, então "lumen" não acha "emolumentos"; para achar CNPJ sem pontuação, passe também `documento.replace(/\D/g, '')`). Buscar volta para a página 1 |
 | `Situacao({ tom, children })` | Status: ponto + texto |
 | `Badge({ tom })` | Etiqueta neutra (tipo, origem) |
-| `LinkRapido` | Igual ao `Link`, mas prepara a tela com o mouse em cima, foco ou toque. É o link padrão da área interna |
+| `LinkRapido` | Igual ao `Link`, mas prepara a tela com o mouse em cima, foco ou toque, e mostra uma barra fina no topo se a tela demorar mais de 200 ms. É o link padrão da área interna |
 | `Abas({ abas, ativa })` | Abas por URL (`?aba=`), sublinhadas. Com `detalhe` (valor em reais) e `alerta`, viram uma faixa em grade, sem rolagem, e substituem o `Resumo` (Faturamento) |
 | `SegmentedLinks` | Filtros por URL, controle com borda e ativo preenchido |
 | `Expansivel({ resumo, children })` | Conteúdo recolhido atrás de um botãozinho (texto do ato, cálculo, movimentos) |

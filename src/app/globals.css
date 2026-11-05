@@ -110,6 +110,15 @@ body {
   }
 }
 
+@keyframes barra-de-espera {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(0.9);
+  }
+}
+
 @layer components {
   /* Link dentro de texto ou de tabela: sublinhado para ficar claro que abre outra tela. */
   .link {
@@ -140,6 +149,11 @@ body {
   }
   .tabela .num {
     @apply whitespace-nowrap text-right tabular-nums;
+  }
+  /* Aviso de espera do LinkRapido. Só aparece depois de 200 ms, para não piscar quando a tela chega rápido. */
+  .barra-de-espera {
+    @apply fixed inset-x-0 top-0 z-50 h-0.5 origin-left bg-accent;
+    animation: barra-de-espera 8s cubic-bezier(0.1, 0.7, 0.2, 1) 200ms both;
   }
   /* Barra de rolagem da grade da DRE, no topo da tabela. */
   .rolagem-fina {
