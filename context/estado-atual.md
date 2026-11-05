@@ -19,7 +19,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/financeiro` | Faturamento | Abas do ciclo (`?aba=`): A faturar, A vencer, Vencem hoje, Atrasadas (faixas e ordem), Recebidas e Todas (com seletor de mês), cada uma com quantidade e valor; busca, botões na linha e painel lateral da nota (`?nota=`, `&acao=receber`, `&acao=cobrar`). `/financeiro/receber` redireciona para a aba Atrasadas |
 | `/financeiro/lucratividade` | Lucratividade por projeto | Simulação com busca, filtro de margem e paginação; detalhe em `/[processoId]` |
 | `/financeiro/faturado-recebido` | Faturado × recebido | Gráfico por mês, com link discreto no Faturamento |
-| `/financeiro/dre` | DRE | Caixa ou competência (`?regime=competencia`); cada valor abre os lançamentos da conta no mês |
+| `/financeiro/dre` | DRE | Grade no modelo da planilha: Meta (de exemplo), Realizado e Dif. % por mês, contas e período travados; blocos que abrem, caixa ou competência, período (completo, meses fechados, trimestre), lançamentos abaixo da tabela e "Exportar para Excel" |
 | `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas (clicar numa semana mostra dia a dia, `?semana=`) e realizado por mês |
 | `/financeiro/notas/nova` | Registrar nota | Nota avulsa ou a partir de parcela liberada (`?parcela=`) |
 | `/financeiro/notas/[id]` | Nota fiscal | Detalhe, registrar ou corrigir recebimento, cancelar |
