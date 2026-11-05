@@ -28,7 +28,7 @@ app/ (rotas e composição)  →  data/ (acesso a dados)  →  domain/ (regras p
 - A data de hoje vem **só** de `hoje()` em `src/data/hoje.ts`. Nunca use `new Date()` ou `Date.now()` em componente de servidor.
 - Toda leitura que uma tela usa tem de ter um tempo de vida, senão a tela não fica pronta antes do clique. `carregar()` já cuida disso; leitura direta no banco, fora dele, começa com `'use cache: private'` e `guardarNaTela()` (`src/data/telas.ts`). Não use `connection()`: ele trava isso.
 - Link interno é `LinkRapido` (`src/components/ui/link-rapido.tsx`). A exceção é link em massa, como as células da DRE: passar o mouse por eles não pode virar uma rajada de buscas.
-- Toda rota nova tem o seu `loading.tsx`, de uma linha: `export { Carregando as default } from '@/components/ui/carregando'`. Sem ele, o Next acusa navegação bloqueante.
+- Rota nova da área interna **não** tem `loading.tsx` nem `Suspense` próprio envolvendo a página: a fronteira é uma só, no layout de `(app)`. Uma fronteira por rota faz o esqueleto aparecer a cada clique, por pelo menos 300 ms.
 - Componente cliente que lê a URL (`usePathname`, `useSearchParams`) fica dentro de `<Suspense>` (veja `menu-lateral.tsx`).
 - `params` e `searchParams` são Promises: use `await`.
 - Filtros de lista ficam na URL (`?situacao=atrasada`), lidos com `searchParams`. Evite estado de cliente para isso.

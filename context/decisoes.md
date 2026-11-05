@@ -4,6 +4,7 @@ Registro curto, do mais novo para o mais antigo. Mudou uma decisão? Acrescente 
 
 | Data | Decisão | Por quê |
 |---|---|---|
+| 2026-11-05 | Uma fronteira de carregamento só, no layout de `(app)`; saem os `loading.tsx` das rotas. Substitui a decisão de 02/11 | No site, com a resposta em cerca de 150 ms, o clique ainda levava 330 ms: o React segura um esqueleto por pelo menos 300 ms. Sem esqueleto na navegação, a tela troca direto. O aviso de espera longa virou uma barra fina (`useLinkStatus`) |
 | 2026-11-05 | Funções da Vercel em `gru1`, junto do Neon | Rodavam em Washington e o banco fica em São Paulo: 13 consultas por clique atravessando o continente, cerca de 1 segundo por clique |
 | 2026-11-05 | Telas guardadas só no navegador (`use cache: private`, 60 s) e preparadas com o mouse em cima (`LinkRapido`) | Cache de dados no servidor (`use cache: remote`) foi descartado: exigiria invalidar 26 pontos de gravação, as validações das ações leriam dado velho, o `db:seed` não invalidaria nada e haveria uma cópia do financeiro no cache da Vercel. Com o servidor perto do banco, quase não renderia. O preço aceito: o que outra pessoa gravou aparece em até 60 segundos, ou com F5 |
 | 2026-11-05 | `cookieCache` do Better Auth continua desligado | Com ele, usuário removido seguiria lendo e gravando por alguns minutos, para ganhar pouco depois da mudança de região |

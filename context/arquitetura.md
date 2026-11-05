@@ -32,7 +32,6 @@ src/
       financeiro/dre/          DRE caixa e competência
       financeiro/fluxo/        fluxo de caixa realizado e projetado
     portal/[id]/               portal do cliente (sem menu interno)
-    (cada rota tem seu loading.tsx)
   components/
     ui/                        Card, Badge, PageHeader, SegmentedLinks, LinkRapido, Carregando
     layout/                    menu lateral
@@ -65,6 +64,7 @@ page.tsx → data/*.ts (await hoje(), lê seed) → domain/*.ts (calcula) → co
 - **Depois de gravar, `atualizarTelas()`.** O `updateTag` dali é indispensável: o Next retém a leitura privada até o fim da requisição, e sem ele a tela refeita na resposta da ação usaria a leitura de antes de gravar. Por isso também vale: dentro de uma ação, ler pela base depois de gravar sem chamar `atualizarTelas()` antes devolve o dado velho.
 - Sair e entrar também chamam `atualizarTelas()`: a próxima pessoa no mesmo navegador não pode ver a tela de quem saiu.
 - O que outra pessoa gravou aparece em até 60 segundos, ou com F5.
+- **Uma fronteira de carregamento só**, no layout de `(app)`, acima das páginas. Ao trocar de tela, o React mantém a tela atual até a nova ficar pronta. Com um `loading.tsx` por rota, o esqueleto aparecia a cada clique, e o React o segura por pelo menos 300 ms (`globalMostRecentFallbackTime + 300` em react-dom), mesmo com a resposta pronta antes. Espera longa aparece na barra do `LinkRapido`.
 
 ## Trocar o mock pelo banco (próximo passo estrutural)
 
