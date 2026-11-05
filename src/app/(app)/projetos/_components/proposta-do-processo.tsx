@@ -51,7 +51,7 @@ export function PropostaDoProcesso({ processo, cliente, proposta, situacao, parc
       tom: situacao.pedeRetorno ? ('warn' as const) : ('info' as const),
       texto: `Enviada em ${formatarData(situacao.enviadaEm ?? dia)}, há ${contar(situacao.diasSemResposta ?? 0, 'dia', 'dias')}.${situacao.pedeRetorno ? ` Passou de ${DIAS_PARA_RETORNO} dias sem resposta: vale ligar para o cliente.` : ''}`,
     },
-    aprovada: { tom: 'ok' as const, texto: `Aprovada em ${formatarData(situacao.aprovadaEm ?? dia)}. O processo seguiu para a fase ${FASES[processo.faseAtual - 1].nome}.` },
+    aprovada: { tom: 'ok' as const, texto: `Aprovada em ${formatarData(situacao.aprovadaEm ?? dia)}. O projeto seguiu para a fase ${FASES[processo.faseAtual - 1].nome}.` },
     recusada: { tom: 'danger' as const, texto: `Recusada em ${formatarData(situacao.recusadaEm ?? dia)}.${situacao.motivo ? ` Motivo: ${situacao.motivo}` : ''}` },
   }[situacao.estado]
 
@@ -87,11 +87,11 @@ export function PropostaDoProcesso({ processo, cliente, proposta, situacao, parc
         {situacao.estado === 'aprovada' && (
           <p className="text-sm text-muted">
             A 1ª parcela já pode ser faturada (aba{' '}
-            <LinkRapido href={`/processos/${processo.id}?aba=cobranca`} className="link">
+            <LinkRapido href={`/projetos/${processo.id}?aba=cobranca`} className="link">
               Cobrança
             </LinkRapido>
             ). Próximas etapas na{' '}
-            <LinkRapido href={`/processos/${processo.id}?aba=etapas`} className="link">
+            <LinkRapido href={`/projetos/${processo.id}?aba=etapas`} className="link">
               fase {FASES[processo.faseAtual - 1].nome}
             </LinkRapido>
             .

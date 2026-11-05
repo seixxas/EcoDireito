@@ -85,7 +85,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <Busca
           valor={q}
-          placeholder="Buscar na descrição, observação ou processo"
+          placeholder="Buscar na descrição, observação ou projeto"
           manter={{ mes: mes === atual ? undefined : mes, conta, processo: processo?.id }}
           limpar={link({ q: undefined })}
           className="min-w-60"
@@ -94,7 +94,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
         {processo && (
           <LinkRapido
             href={link({ processo: undefined })}
-            title="Tirar o filtro de processo"
+            title="Tirar o filtro de projeto"
             className="inline-flex h-9 max-w-full items-center gap-1 rounded-md border border-line bg-surface px-2.5 text-sm text-ink hover:bg-brand-50"
           >
             <span className="truncate">{processo.empreendimento}</span> <X className="size-3.5 shrink-0 text-muted" />
@@ -136,7 +136,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                     </LinkRapido>
                   )}
                   {!lancamento.notaId && lancamento.processoId && (
-                    <LinkRapido href={`/processos/${lancamento.processoId}`} className="link block w-fit text-xs">
+                    <LinkRapido href={`/projetos/${lancamento.processoId}`} className="link block w-fit text-xs">
                       {nomeDoProcesso(lancamento.processoId)}
                     </LinkRapido>
                   )}

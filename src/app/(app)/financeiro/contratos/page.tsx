@@ -42,7 +42,7 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
     <>
       <PageHeader
         titulo="Contratos"
-        resumo={`${brl(total(todas, 'liberada'))} pronto para faturar. A parcela fica pronta quando o evento dela é lançado no processo.`}
+        resumo={`${brl(total(todas, 'liberada'))} pronto para faturar. A parcela fica pronta quando o evento dela é lançado no projeto.`}
       />
 
       <Resumo className="mb-6">
@@ -69,12 +69,12 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
         </p>
       )}
 
-      <Busca valor={q} placeholder="Buscar processo, cliente, grupo ou nº SEI" limpar="/financeiro/contratos" className="mb-3" />
+      <Busca valor={q} placeholder="Buscar projeto, cliente, grupo ou nº SEI" limpar="/financeiro/contratos" className="mb-3" />
       <Card flush>
         <table className="tabela">
           <thead>
             <tr>
-              <th>Processo</th>
+              <th>Projeto</th>
               <th className="hidden sm:table-cell">Serviço</th>
               <th className="num hidden sm:table-cell">Parcelas</th>
               <th className="num">Contrato</th>
@@ -87,7 +87,7 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
             {paginado.itens.map(({ processo, cliente, parcelas }) => (
               <tr key={processo.id}>
                 <td className="sm:min-w-64">
-                  <LinkRapido href={`/processos/${processo.id}`} className="link font-medium">
+                  <LinkRapido href={`/projetos/${processo.id}`} className="link font-medium">
                     {processo.empreendimento}
                   </LinkRapido>
                   <p className="hidden text-xs text-muted sm:block">{cliente.nome}</p>
@@ -111,7 +111,7 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
             ))}
           </tbody>
         </table>
-        {encontrados.length === 0 && <Vazio>Nenhum processo com “{q}”.</Vazio>}
+        {encontrados.length === 0 && <Vazio>Nenhum projeto com “{q}”.</Vazio>}
       </Card>
       <Paginacao {...paginado} href={link} />
     </>

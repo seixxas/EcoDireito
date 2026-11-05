@@ -27,7 +27,7 @@ export async function criarProposta(_: EstadoFormulario, formData: FormData): Pr
   if ('estado' in lido) return lido.estado
   const id = await gravarProposta(lido.dados)
   atualizarTelas()
-  redirect(`/processos/${id}?aba=proposta`)
+  redirect(`/projetos/${id}?aba=proposta`)
 }
 
 const esquemaTexto = z.object({ processoId: campo.texto(), escopo: campo.texto('Descreva o que será feito'), validadeDias: validade() })

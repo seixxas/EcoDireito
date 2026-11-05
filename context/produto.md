@@ -9,6 +9,14 @@
   - Empresa irmã: **Ambiente Legal**. Faz o manejo e recebe empréstimos (mútuo) da Eco Direito.
 - **Clientes da Eco Direito**: construtoras e incorporadoras. Quase sempre uma **SPE** (empresa criada para um único empreendimento) de um grupo maior.
 
+## Vocabulário: projeto
+
+Na tela, o trabalho que a Eco Direito faz para um cliente, da proposta à compensação, é um **projeto**. A palavra vale em tudo o que a pessoa lê: menu, títulos, botões, mensagens e endereços (`/projetos`).
+
+- **"Processo" só para o processo oficial na Prefeitura**: abertura do processo na SVMA, processo SEI, processo antigo do SIMPROC e o texto dos atos do Diário Oficial. Trocar nesses casos deixaria o texto errado, inclusive na proposta enviada ao cliente.
+- **"Projeto ambiental"**, sempre com o adjetivo, é o documento técnico da Fase 2. Não confundir com o projeto como um todo.
+- **No código e no banco o nome continua `processo`** (`Processo`, `processoId`, tabela `processos`, `src/domain/processos.ts`). Renomear o banco é mudança de schema. Nesta documentação, "processo" sem mais contexto é o projeto.
+
 ## Módulos
 
 0. **Comercial** (`/comercial`): o funil de propostas. Cada proposta é a fase 1 de um processo; aprovada, o processo segue para a Documentação. Detalhe em `prazos.md` (seção Proposta). Prospecção (`/comercial/prospeccao`, em desenvolvimento) é só uma prévia: achar obras e empresas que vão precisar da Eco Direito (alvarás novos no Diário, SPEs de grupos clientes, terrenos com vegetação no GeoSampa).

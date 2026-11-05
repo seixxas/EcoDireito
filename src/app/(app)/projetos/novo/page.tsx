@@ -11,29 +11,29 @@ import { formatarData } from '@/lib/formatar'
 import { FormularioProcesso } from '../_components/formulario-processo'
 import { LinkVoltar } from '../_components/link-voltar'
 
-export const metadata: Metadata = { title: 'Novo processo' }
+export const metadata: Metadata = { title: 'Novo projeto' }
 
 /** `?ato=<id>` abre o cadastro a partir de um ato do Diário Oficial (cliente e nº SEI já preenchidos). */
 export default async function PaginaNovoProcesso({ searchParams }: { searchParams: Promise<{ ato?: string; cliente?: string }> }) {
   await exigirArea('prazos', 'editar')
   const { ato, cliente } = await searchParams
   const [clientes, publicacao] = await Promise.all([listarClientes(), ato ? obterPublicacao(ato) : undefined])
-  const daqui = ato ? `/processos/novo?ato=${encodeURIComponent(ato)}` : '/processos/novo'
+  const daqui = ato ? `/projetos/novo?ato=${encodeURIComponent(ato)}` : '/projetos/novo'
 
   return (
     <>
-      {publicacao ? <LinkVoltar href="/publicacoes">Diário Oficial</LinkVoltar> : <LinkVoltar href="/processos">Processos</LinkVoltar>}
+      {publicacao ? <LinkVoltar href="/publicacoes">Diário Oficial</LinkVoltar> : <LinkVoltar href="/projetos">Projetos</LinkVoltar>}
       <PageHeader
-        titulo="Novo processo"
+        titulo="Novo projeto"
         resumo={
           publicacao
             ? `A partir do ato de ${formatarData(publicacao.ato.data)} (${publicacao.ato.serie}). Ao cadastrar, ${
-                publicacao.evento ? `o ato é lançado no processo (marca a etapa “${EVENTOS[publicacao.evento].nome}”)` : 'o ato fica registrado como visto'
-              } e você volta ao Diário Oficial. Mantenha o nº SEI do ato: é por ele que o robô liga os atos ao processo.`
-            : 'Para um cliente novo, comece pela proposta, em Comercial. Aqui é para cadastrar um processo que já anda na SVMA.'
+                publicacao.evento ? `o ato é lançado no projeto (marca a etapa “${EVENTOS[publicacao.evento].nome}”)` : 'o ato fica registrado como visto'
+              } e você volta ao Diário Oficial. Mantenha o nº SEI do ato: é por ele que o robô liga os atos ao projeto.`
+            : 'Para um cliente novo, comece pela proposta, em Comercial. Aqui é para cadastrar um projeto que já anda na SVMA.'
         }
         acoes={
-          <LinkRapido href={`/processos/clientes/novo?voltar=${encodeURIComponent(daqui)}`} className={classeBotao('secundario')}>
+          <LinkRapido href={`/projetos/clientes/novo?voltar=${encodeURIComponent(daqui)}`} className={classeBotao('secundario')}>
             Cliente novo
           </LinkRapido>
         }
@@ -47,7 +47,7 @@ export default async function PaginaNovoProcesso({ searchParams }: { searchParam
             faseAtual: publicacao?.evento && EVENTOS[publicacao.evento].fase,
           }}
           voltar={publicacao && '/publicacoes'}
-          ato={publicacao && { id: publicacao.ato.id, enviar: publicacao.evento ? 'Cadastrar o processo e lançar' : 'Cadastrar o processo' }}
+          ato={publicacao && { id: publicacao.ato.id, enviar: publicacao.evento ? 'Cadastrar o projeto e lançar' : 'Cadastrar o projeto' }}
         />
       </Card>
     </>

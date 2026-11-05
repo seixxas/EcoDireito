@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: 'Novo cliente' }
 /** De onde a pessoa veio, para a seta de voltar dizer para onde vai. */
 function rotuloDaVolta(voltar: string) {
   if (voltar.startsWith('/comercial/nova')) return 'Voltar para a proposta'
-  if (voltar.startsWith('/processos/novo')) return 'Voltar para o novo processo'
+  if (voltar.startsWith('/projetos/novo')) return 'Voltar para o novo projeto'
   return 'Voltar'
 }
 
@@ -23,7 +23,7 @@ export default async function PaginaNovoCliente({ searchParams }: { searchParams
 
   return (
     <>
-      {voltar ? <LinkVoltar href={voltar}>{rotuloDaVolta(voltar)}</LinkVoltar> : <LinkVoltar href="/processos/clientes">Clientes</LinkVoltar>}
+      {voltar ? <LinkVoltar href={voltar}>{rotuloDaVolta(voltar)}</LinkVoltar> : <LinkVoltar href="/projetos/clientes">Clientes</LinkVoltar>}
       <PageHeader titulo="Novo cliente" resumo={voltar ? 'Ao salvar, você volta para onde estava, com este cliente já escolhido.' : undefined} />
       <Card>
         <FormularioCliente voltar={voltar} />

@@ -39,8 +39,8 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
         titulo={processo.empreendimento}
         resumo={`${cliente.nome} · contrato de ${brl(somar(parcelas.map((p) => p.parcela.valor)))}`}
         acoes={
-          <LinkRapido href={`/processos/${processo.id}`} className={classeBotao('secundario')}>
-            Ver processo
+          <LinkRapido href={`/projetos/${processo.id}`} className={classeBotao('secundario')}>
+            Ver projeto
           </LinkRapido>
         }
       />
@@ -72,7 +72,7 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
               </div>
             </li>
           ))}
-          {parcelas.length === 0 && <li className="px-4 py-8 text-center text-muted">Este processo ainda não tem parcelas.</li>}
+          {parcelas.length === 0 && <li className="px-4 py-8 text-center text-muted">Este projeto ainda não tem parcelas.</li>}
         </ul>
       </Card>
 

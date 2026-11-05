@@ -15,10 +15,13 @@ const NENHUM: Fixado[] = []
 /** O `useSyncExternalStore` compara por referência: a mesma lista guardada devolve o mesmo array. */
 let ultimo: { guardado: string | null; lista: Fixado[] } = { guardado: null, lista: NENHUM }
 
+/** Atalho guardado quando a tela ainda se chamava Processos. Sem isto, ele ficaria repetido ao fixar de novo. */
+const comEnderecoNovo = (item: Fixado) => ({ ...item, href: item.href.replace(/^\/processos/, '/projetos') })
+
 function ler() {
   try {
     const guardado = localStorage.getItem(CHAVE)
-    if (guardado !== ultimo.guardado) ultimo = { guardado, lista: guardado ? JSON.parse(guardado) : NENHUM }
+    if (guardado !== ultimo.guardado) ultimo = { guardado, lista: guardado ? JSON.parse(guardado).map(comEnderecoNovo) : NENHUM }
     return ultimo.lista
   } catch {
     return NENHUM
@@ -45,7 +48,7 @@ function gravar(lista: Fixado[]) {
 
 const useFixados = () => useSyncExternalStore(assinar, ler, () => NENHUM)
 
-/** Fixa o processo no menu. Fica neste navegador: é conveniência de cada pessoa, não dado do escritório. */
+/** Fixa o projeto no menu. Fica neste navegador: é conveniência de cada pessoa, não dado do escritório. */
 export function BotaoFixar({ href, rotulo }: Fixado) {
   const fixados = useFixados()
   const fixado = fixados.some((item) => item.href === href)

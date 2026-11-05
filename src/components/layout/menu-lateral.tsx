@@ -19,7 +19,7 @@ export type UsuarioDoMenu = { nome: string; papel: Papel }
 const ITENS: Item[] = [
   { href: '/', rotulo: 'Hoje', icone: ListTodo, area: 'prazos', tambem: ['/publicacoes', '/prazos'] },
   { href: '/comercial', rotulo: 'Propostas', icone: Handshake, area: 'comercial' },
-  { href: '/processos', rotulo: 'Processos', icone: FolderKanban, area: 'prazos' },
+  { href: '/projetos', rotulo: 'Projetos', icone: FolderKanban, area: 'prazos' },
   { href: '/financeiro', rotulo: 'Financeiro', icone: Landmark, area: 'financeiro' },
 ]
 

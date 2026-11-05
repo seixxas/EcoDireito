@@ -7,8 +7,8 @@ import { pode, type Area, type Papel } from '@/lib/permissoes'
 
 const OPCOES: { href: string; rotulo: string; area: Area }[] = [
   { href: '/comercial/nova', rotulo: 'Proposta', area: 'comercial' },
-  { href: '/processos/novo', rotulo: 'Processo', area: 'prazos' },
-  { href: '/processos/clientes/novo', rotulo: 'Cliente', area: 'prazos' },
+  { href: '/projetos/novo', rotulo: 'Projeto', area: 'prazos' },
+  { href: '/projetos/clientes/novo', rotulo: 'Cliente', area: 'prazos' },
   { href: '/financeiro/notas/nova', rotulo: 'Nota fiscal', area: 'financeiro' },
   { href: '/financeiro/lancamentos?novo=1', rotulo: 'Lançamento', area: 'financeiro' },
 ]

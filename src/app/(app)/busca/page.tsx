@@ -41,8 +41,8 @@ export default async function PaginaBusca({ searchParams }: { searchParams: Prom
   if (!q) {
     return (
       <>
-        <PageHeader titulo="Busca" resumo="Procure por cliente, processo, nº SEI ou nº da NF." />
-        <Busca placeholder="Cliente, processo, nº SEI ou nº da NF" limpar="/busca" />
+        <PageHeader titulo="Busca" resumo="Procure por cliente, projeto, nº SEI ou nº da NF." />
+        <Busca placeholder="Cliente, projeto, nº SEI ou nº da NF" limpar="/busca" />
       </>
     )
   }
@@ -54,12 +54,12 @@ export default async function PaginaBusca({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader titulo="Busca" resumo={total ? `${contar(total, 'resultado', 'resultados')} para “${q}”.` : `Nada encontrado para “${q}”.`} />
-      <Busca valor={q} placeholder="Cliente, processo, nº SEI ou nº da NF" limpar="/busca" className="mb-6" />
+      <Busca valor={q} placeholder="Cliente, projeto, nº SEI ou nº da NF" limpar="/busca" className="mb-6" />
       {total === 0 && <Vazio>Confira a grafia ou procure só pelo começo do nome.</Vazio>}
 
-      <Grupo titulo="Processos" total={processos.length} verTodos={`/processos?q=${emTexto}`}>
+      <Grupo titulo="Projetos" total={processos.length} verTodos={`/projetos?q=${emTexto}`}>
         {processos.slice(0, POR_GRUPO).map(({ processo, cliente, recusada }) => (
-          <Linha key={processo.id} href={`/processos/${processo.id}`}>
+          <Linha key={processo.id} href={`/projetos/${processo.id}`}>
             <span className="min-w-0 flex-1">
               <span className="block truncate font-medium text-ink">{processo.empreendimento}</span>
               <span className="block truncate text-xs text-muted">
@@ -71,9 +71,9 @@ export default async function PaginaBusca({ searchParams }: { searchParams: Prom
         ))}
       </Grupo>
 
-      <Grupo titulo="Clientes" total={clientes.length} verTodos={`/processos/clientes?q=${emTexto}`}>
+      <Grupo titulo="Clientes" total={clientes.length} verTodos={`/projetos/clientes?q=${emTexto}`}>
         {clientes.slice(0, POR_GRUPO).map((cliente) => (
-          <Linha key={cliente.id} href={`/processos/clientes/${cliente.id}`}>
+          <Linha key={cliente.id} href={`/projetos/clientes/${cliente.id}`}>
             <span className="min-w-0 flex-1">
               <span className="block truncate font-medium text-ink">{cliente.nome}</span>
               <span className="block truncate text-xs text-muted">

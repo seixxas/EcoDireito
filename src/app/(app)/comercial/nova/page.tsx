@@ -5,7 +5,7 @@ import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
 import { listarClientes } from '@/data/processos'
 import { exigirArea } from '@/data/sessao'
-import { LinkVoltar } from '../../processos/_components/link-voltar'
+import { LinkVoltar } from '../../projetos/_components/link-voltar'
 import { FormularioProposta } from '../_components/formulario-proposta'
 
 export const metadata: Metadata = { title: 'Nova proposta' }
@@ -20,9 +20,9 @@ export default async function PaginaNovaProposta({ searchParams }: { searchParam
       <LinkVoltar href="/comercial">Comercial</LinkVoltar>
       <PageHeader
         titulo="Nova proposta"
-        resumo="Cria o processo na fase Proposta. Depois é marcar quando foi enviada e quando o cliente aprovou."
+        resumo="Cria o projeto na fase Proposta. Depois é marcar quando foi enviada e quando o cliente aprovou."
         acoes={
-          <LinkRapido href={`/processos/clientes/novo?voltar=${encodeURIComponent('/comercial/nova')}`} className={classeBotao('secundario')}>
+          <LinkRapido href={`/projetos/clientes/novo?voltar=${encodeURIComponent('/comercial/nova')}`} className={classeBotao('secundario')}>
             Cliente novo
           </LinkRapido>
         }

@@ -17,7 +17,7 @@ export default async function PaginaEditarCliente({ params }: { params: Promise<
 
   return (
     <>
-      <LinkVoltar href="/processos/clientes">Clientes</LinkVoltar>
+      <LinkVoltar href="/projetos/clientes">Clientes</LinkVoltar>
       <PageHeader titulo={cliente.nome} />
       <Card>
         <FormularioCliente cliente={cliente} />

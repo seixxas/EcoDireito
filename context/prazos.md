@@ -64,7 +64,7 @@ Cada fase é um checklist de etapas (`EVENTOS` e `etapasDaFase` em `src/domain/p
 
 ## Edição (E3)
 
-- Clientes em `/processos/clientes`; processos em `/processos/novo` e `/processos/[id]/editar`. Gravações em `src/data/processos.ts`, actions em `src/app/(app)/processos/actions.ts`.
+- Clientes em `/projetos/clientes`; processos em `/projetos/novo` e `/projetos/[id]/editar`. Gravações em `src/data/processos.ts`, actions em `src/app/(app)/projetos/actions.ts`.
 - Processo novo começa na fase 1 (Proposta), sem nº SEI. O nº SEI entra na autuação (ou em "Editar") e não se repete: é por ele que o Diário Oficial acha o processo. Processo sem SEI só é achado pelo nº SIMPROC ou pelo CNPJ. Formatos validados: SEI `6027.2026/0000021-3`, SIMPROC `2016-0.084.512-3`.
 - Evento manual: "Marcar como feita" na etapa (aba Etapas). Os prazos não são gravados; o motor recalcula na leitura.
 - Apagar um evento (na linha do tempo) não mexe na fase: corrija em "Editar".
@@ -81,10 +81,10 @@ Na tela, situação é ponto + texto (`SituacaoPrazo`); prazo do órgão atrasad
 
 - Vistas: nossos prazos (padrão), aguardando a SVMA (`?filtro=orgao`) e cumpridos (`?filtro=cumpridos`, do mais recente ao mais antigo).
 - Busca (`?q=`) por cliente, grupo, empreendimento, nº SEI, título do prazo e responsável, e filtro por responsável (`?responsavel=`, nome completo; as opções saem dos processos). Busca, responsável e vista se somam; os contadores das vistas e dos responsáveis mostram o resultado filtrado. O resumo do topo é sempre do escritório inteiro.
-- Clientes (`/processos/clientes`): busca por nome, CNPJ (com ou sem pontuação) e grupo.
-- Processos (`/processos`): busca por empreendimento, endereço, cliente, grupo, nº SEI, SIMPROC e TCA e responsável, e filtro por fase (`?fase=1` a `8`; o botão mostra só a primeira palavra da fase). Os contadores das fases mostram o resultado da busca.
+- Clientes (`/projetos/clientes`): busca por nome, CNPJ (com ou sem pontuação) e grupo.
+- Processos (`/projetos`): busca por empreendimento, endereço, cliente, grupo, nº SEI, SIMPROC e TCA e responsável, e filtro por fase (`?fase=1` a `8`; o botão mostra só a primeira palavra da fase). Os contadores das fases mostram o resultado da busca.
 - Todas paginadas de 10 em 10 (`?pagina=`). A página corta a lista em ordem de vencimento e só então agrupa por `periodoDoPrazo`: vencidos, esta semana (até domingo), próximas semanas (as 4 seguintes) e mais adiante.
-- Também paginados: `/processos`, `/processos/clientes`, as abas do Diário Oficial e a linha do tempo do processo.
+- Também paginados: `/projetos`, `/projetos/clientes`, as abas do Diário Oficial e a linha do tempo do processo.
 - Cada prazo é uma `LinhaPrazo` (`src/components/prazos/linha-prazo.tsx`), a mesma da aba Prazos do processo. Data de outro ano aparece com o ano (`formatarDataNaLista`).
 
 ## Pontos a validar com a Eco Direito

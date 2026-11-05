@@ -18,7 +18,7 @@ export default async function PaginaLogin({ searchParams }: { searchParams: Prom
           <span className="font-display text-xl font-semibold text-ink">Eco Direito</span>
         </div>
         <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-ink">Entrar</h1>
-        <p className="mb-6 mt-1 text-muted">Prazos dos processos e financeiro do escritório.</p>
+        <p className="mb-6 mt-1 text-muted">Prazos dos projetos e financeiro do escritório.</p>
         <div className="rounded-lg border border-line bg-surface p-5">
           <FormularioLogin voltar={voltar} />
         </div>

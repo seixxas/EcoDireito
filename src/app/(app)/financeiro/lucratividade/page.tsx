@@ -121,7 +121,7 @@ export default async function PaginaLucratividade({ searchParams }: { searchPara
       </Card>
       <p className="mt-2 text-xs text-subtle">
         Margem = faturado − custos diretos − equipe (estimado). Boa a partir de {formatarPercentual(MARGEM_BOA)}, atenção de {formatarPercentual(MARGEM_MINIMA)} a{' '}
-        {formatarPercentual(MARGEM_BOA)}, ruim abaixo de {formatarPercentual(MARGEM_MINIMA)}. Só entram processos com proposta aceita.
+        {formatarPercentual(MARGEM_BOA)}, ruim abaixo de {formatarPercentual(MARGEM_MINIMA)}. Só entram projetos com proposta aceita.
       </p>
       <Paginacao {...paginado} href={(n) => link({ pagina: String(n) })} />
     </>

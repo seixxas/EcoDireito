@@ -30,7 +30,7 @@ import { PropostaDoProcesso } from '../_components/proposta-do-processo'
 import { LinkVoltar } from '../_components/link-voltar'
 import { apagarEvento } from '../actions'
 
-export const metadata: Metadata = { title: 'Processo' }
+export const metadata: Metadata = { title: 'Projeto' }
 
 const PARCELA: Record<SituacaoParcela, { rotulo: string; tom: Tom }> = {
   aguardando: { rotulo: 'Aguardando o evento', tom: 'neutral' },
@@ -69,7 +69,7 @@ export default async function PaginaProcesso({
     { valor: 'prazos', rotulo: 'Prazos', contagem: abertos.length },
     { valor: 'linha-do-tempo', rotulo: 'Linha do tempo', contagem: eventos.total },
     ...(pode(usuario.papel, 'financeiro') ? [{ valor: 'cobranca', rotulo: 'Cobrança', contagem: parcelas.length }] : []),
-  ].map((a) => ({ ...a, href: a.valor === padrao ? `/processos/${id}` : `/processos/${id}?aba=${a.valor}` }))
+  ].map((a) => ({ ...a, href: a.valor === padrao ? `/projetos/${id}` : `/projetos/${id}?aba=${a.valor}` }))
   const aba = abas.find((a) => a.valor === pedida)?.valor ?? padrao
 
   const dadosDoProcesso = [
@@ -85,19 +85,19 @@ export default async function PaginaProcesso({
   return (
     <>
       <div className="print:hidden">
-        {processo.faseAtual === 1 || recusada ? <LinkVoltar href="/comercial">Comercial</LinkVoltar> : <LinkVoltar href="/processos">Processos</LinkVoltar>}
+        {processo.faseAtual === 1 || recusada ? <LinkVoltar href="/comercial">Comercial</LinkVoltar> : <LinkVoltar href="/projetos">Projetos</LinkVoltar>}
         <PageHeader
           titulo={processo.empreendimento}
           resumo={
             recusada
-              ? `Proposta recusada em ${formatarData(situacaoProposta.recusadaEm!)}. Não aparece na lista de processos; fica no Comercial.`
+              ? `Proposta recusada em ${formatarData(situacaoProposta.recusadaEm!)}. Não aparece na lista de projetos; fica no Comercial.`
               : `Fase ${fase.numero} de ${FASES.length}, ${fase.nome}. ${proximo ? `Próximo prazo: ${proximo.regra.titulo} (${descreverSituacao(proximo, dia).rotulo.toLowerCase()}).` : 'Nenhum prazo em aberto.'}`
           }
           acoes={
             <>
-              <BotaoFixar href={`/processos/${processo.id}`} rotulo={processo.empreendimento} />
+              <BotaoFixar href={`/projetos/${processo.id}`} rotulo={processo.empreendimento} />
               {editar && (
-                <LinkRapido href={`/processos/${processo.id}/editar`} className={classeBotao('secundario')}>
+                <LinkRapido href={`/projetos/${processo.id}/editar`} className={classeBotao('secundario')}>
                   Editar
                 </LinkRapido>
               )}
@@ -110,14 +110,14 @@ export default async function PaginaProcesso({
 
         <p className="-mt-3 mb-5 text-sm text-muted">{dadosDoProcesso.join(' · ')}</p>
 
-        <ol className="mb-1 grid grid-cols-8 gap-1" aria-label="Fases do processo">
+        <ol className="mb-1 grid grid-cols-8 gap-1" aria-label="Fases do projeto">
           {FASES.map((f) => {
             const situacao = situacaoDaFase(processo, f.numero, dia)
             const vista = aba === 'etapas' && f.numero === faseVista
             return (
               <li key={f.numero}>
                 <LinkRapido
-                  href={`/processos/${id}?aba=etapas&fase=${f.numero}`}
+                  href={`/projetos/${id}?aba=etapas&fase=${f.numero}`}
                   scroll={false}
                   title={`Ver as etapas: ${f.descricao}`}
                   aria-current={vista ? 'step' : undefined}
@@ -184,7 +184,7 @@ export default async function PaginaProcesso({
           {editar && (
             <p className="mb-3 text-sm text-muted">
               Para lançar um evento, marque a etapa na{' '}
-              <LinkRapido href={`/processos/${id}?aba=etapas&fase=${fase.numero}`} className="link">
+              <LinkRapido href={`/projetos/${id}?aba=etapas&fase=${fase.numero}`} className="link">
                 fase {fase.nome}
               </LinkRapido>{' '}
               (ou em outra fase, clicando nela na barra acima).
@@ -201,7 +201,7 @@ export default async function PaginaProcesso({
                   <span className="block text-ink">{info.nome}</span>
                   {evento.observacao && <span className="block whitespace-pre-line text-sm text-muted">{evento.observacao}</span>}
                   {info.fecha && evento.data <= dia && (
-                    <span className="block text-xs text-ok">{seguinte ? `Fechou a fase ${FASES[info.fase - 1].nome}; o processo passou para ${seguinte.nome}` : 'Encerrou o processo'}</span>
+                    <span className="block text-xs text-ok">{seguinte ? `Fechou a fase ${FASES[info.fase - 1].nome}; o projeto passou para ${seguinte.nome}` : 'Encerrou o projeto'}</span>
                   )}
                 </span>
                 <span className="hidden w-44 shrink-0 truncate text-xs text-subtle md:block">
@@ -231,7 +231,7 @@ export default async function PaginaProcesso({
             })}
           </Lista>
           {eventos.total === 0 && <Vazio>Nenhum evento ainda.</Vazio>}
-          <Paginacao {...eventos} href={(n) => `/processos/${id}?aba=linha-do-tempo${n > 1 ? `&pagina=${n}` : ''}`} />
+          <Paginacao {...eventos} href={(n) => `/projetos/${id}?aba=linha-do-tempo${n > 1 ? `&pagina=${n}` : ''}`} />
         </>
       )}
 
@@ -287,7 +287,7 @@ export default async function PaginaProcesso({
               </table>
             </div>
           ) : (
-            <Vazio>Nenhum contrato cadastrado para este processo.</Vazio>
+            <Vazio>Nenhum contrato cadastrado para este projeto.</Vazio>
           )}
         </Secao>
       )}

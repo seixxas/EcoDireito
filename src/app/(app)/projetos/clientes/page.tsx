@@ -20,7 +20,7 @@ function endereco(q?: string, pagina = 1) {
   const busca = new URLSearchParams()
   if (q) busca.set('q', q)
   if (pagina > 1) busca.set('pagina', String(pagina))
-  return busca.size ? `/processos/clientes?${busca}` : '/processos/clientes'
+  return busca.size ? `/projetos/clientes?${busca}` : '/projetos/clientes'
 }
 
 export default async function PaginaClientes({ searchParams }: { searchParams: Promise<{ q?: string; pagina?: string }> }) {
@@ -33,13 +33,13 @@ export default async function PaginaClientes({ searchParams }: { searchParams: P
 
   return (
     <>
-      <LinkVoltar href="/processos">Processos</LinkVoltar>
+      <LinkVoltar href="/projetos">Projetos</LinkVoltar>
       <PageHeader
         titulo="Clientes"
         resumo={`${contar(itens.length, 'cliente', 'clientes')}. O robô do Diário Oficial também procura pelo CNPJ de cada um.`}
         acoes={
           editar && (
-            <LinkRapido href="/processos/clientes/novo" className={classeBotao()}>
+            <LinkRapido href="/projetos/clientes/novo" className={classeBotao()}>
               Novo cliente
             </LinkRapido>
           )
@@ -48,7 +48,7 @@ export default async function PaginaClientes({ searchParams }: { searchParams: P
       <Busca valor={q} placeholder="Nome, CNPJ ou grupo" limpar={endereco()} className="mb-4" />
       <Lista>
         {paginado.itens.map(({ cliente, processos }) => (
-          <Linha key={cliente.id} href={editar ? `/processos/clientes/${cliente.id}` : undefined}>
+          <Linha key={cliente.id} href={editar ? `/projetos/clientes/${cliente.id}` : undefined}>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium text-ink">{cliente.nome}</p>
               <p className="truncate text-xs tabular-nums text-muted">
@@ -56,7 +56,7 @@ export default async function PaginaClientes({ searchParams }: { searchParams: P
                 {cliente.grupo && ` · ${cliente.grupo}`}
               </p>
             </div>
-            <span className="shrink-0 text-sm tabular-nums text-muted">{contar(processos, 'processo', 'processos')}</span>
+            <span className="shrink-0 text-sm tabular-nums text-muted">{contar(processos, 'projeto', 'projetos')}</span>
           </Linha>
         ))}
       </Lista>

@@ -29,7 +29,7 @@ export async function salvarCliente(_: EstadoFormulario, formData: FormData): Pr
   const gravado = await gravarCliente(dados, id)
   atualizarTelas()
   // Cliente novo criado no meio de uma proposta (ou processo): volta para lá com ele já escolhido.
-  const volta = destino(voltar, '/processos/clientes')
+  const volta = destino(voltar, '/projetos/clientes')
   redirect(!id && voltar && volta === voltar ? `${volta}${volta.includes('?') ? '&' : '?'}cliente=${gravado}` : volta)
 }
 
@@ -63,7 +63,7 @@ export async function salvarProcesso(_: EstadoFormulario, formData: FormData): P
   if ('estado' in lido) return lido.estado
   const { id, voltar, ato, ...dados } = lido.dados
   if (await seiEmUso(dados.numeroSei, id)) {
-    return { erro: 'Confira os campos destacados.', erros: { numeroSei: 'Já existe um processo com este nº SEI' }, valores: valoresDoFormulario(formData) }
+    return { erro: 'Confira os campos destacados.', erros: { numeroSei: 'Já existe um projeto com este nº SEI' }, valores: valoresDoFormulario(formData) }
   }
   const gravado = await gravarProcesso(dados, id)
   if (ato && !id) await lancarNoProcessoNovo(ato, { ...dados, id: gravado, eventos: [] })
@@ -71,7 +71,7 @@ export async function salvarProcesso(_: EstadoFormulario, formData: FormData): P
   if (ato && !id) {
     redirect(`/publicacoes?lancado=${encodeURIComponent(ato)}`)
   }
-  redirect(destino(voltar, `/processos/${gravado}`))
+  redirect(destino(voltar, `/projetos/${gravado}`))
 }
 
 const esquemaEvento = z.object({
@@ -96,10 +96,10 @@ export async function lancarEvento(_: EstadoFormulario, formData: FormData): Pro
   const recusar = (nome: string, mensagem: string) => ({ erro: 'Confira os campos destacados.', erros: { [nome]: mensagem }, valores: valoresDoFormulario(formData) })
 
   const [dados, dia] = await Promise.all([obterProcesso(processoId), hoje()])
-  if (!dados) return { erro: 'Processo não encontrado.' }
+  if (!dados) return { erro: 'Projeto não encontrado.' }
   if (evento.data > dia && !info.planejada) return recusar('data', 'Marque a etapa depois que ela acontecer, com a data em que aconteceu.')
   const seiNovo = evento.tipo === 'autuacao' && !dados.processo.numeroSei ? numeroSei : undefined
-  if (await seiEmUso(seiNovo, processoId)) return recusar('numeroSei', 'Já existe um processo com este nº SEI')
+  if (await seiEmUso(seiNovo, processoId)) return recusar('numeroSei', 'Já existe um projeto com este nº SEI')
 
   await gravarEvento(
     dados.processo,

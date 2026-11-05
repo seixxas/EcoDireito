@@ -77,7 +77,7 @@ export function FormularioProposta({ clientes, clienteId }: { clientes: { id: st
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-subtle">As parcelas viram o contrato do processo. Dá para ajustar depois, em Financeiro &gt; Contratos.</p>
+          <p className="mt-2 text-xs text-subtle">As parcelas viram o contrato do projeto. Dá para ajustar depois, em Financeiro &gt; Contratos.</p>
         </div>
       </div>
       <MensagemFormulario estado={estado} />

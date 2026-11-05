@@ -16,7 +16,7 @@ export function AvisoDeSimulacao({ className }: { className?: string }) {
     <p className={cn('flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-muted', className)}>
       <Badge tom="warn">Simulação</Badge>
       <span>
-        Contrato, faturado, recebido e custos diretos vêm das notas e dos lançamentos ligados ao processo (dados fictícios). O custo da equipe é estimado: horas
+        Contrato, faturado, recebido e custos diretos vêm das notas e dos lançamentos ligados ao projeto (dados fictícios). O custo da equipe é estimado: horas
         simuladas × {brl(CUSTO_HORA_EQUIPE)}/h, até a equipe registrar as horas.
       </span>
     </p>

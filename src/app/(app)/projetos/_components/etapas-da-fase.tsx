@@ -64,7 +64,7 @@ export function EtapasDaFase({ processo, fase, dia, prazos, editar }: Props) {
         {final && (
           <>
             {' '}
-            {fase === FASES.length ? 'O processo termina' : 'Passa para a fase seguinte'} quando a etapa <strong className="font-medium text-ink">{EVENTOS[final].nome}</strong> é marcada.
+            {fase === FASES.length ? 'O projeto termina' : 'Passa para a fase seguinte'} quando a etapa <strong className="font-medium text-ink">{EVENTOS[final].nome}</strong> é marcada.
           </>
         )}
       </p>

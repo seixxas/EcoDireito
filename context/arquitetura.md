@@ -23,7 +23,7 @@ src/
     (app)/                     área interna com menu lateral (loading.tsx = Suspense)
       page.tsx                 Painel
       prazos/                  vencimentos de todos os processos
-      processos/ + [id]/       lista e detalhe do processo; novo, editar e clientes/
+      projetos/ + [id]/        lista e detalhe do projeto; novo, editar e clientes/
       publicacoes/             caixa de entrada do Diário Oficial
       financeiro/              faturamento (notas)
       financeiro/receber/      redireciona para a aba Atrasadas do faturamento

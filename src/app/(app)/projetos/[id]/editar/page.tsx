@@ -7,7 +7,7 @@ import { exigirArea } from '@/data/sessao'
 import { FormularioProcesso } from '../../_components/formulario-processo'
 import { LinkVoltar } from '../../_components/link-voltar'
 
-export const metadata: Metadata = { title: 'Editar processo' }
+export const metadata: Metadata = { title: 'Editar projeto' }
 
 export default async function PaginaEditarProcesso({ params }: { params: Promise<{ id: string }> }) {
   await exigirArea('prazos', 'editar')
@@ -18,8 +18,8 @@ export default async function PaginaEditarProcesso({ params }: { params: Promise
 
   return (
     <>
-      <LinkVoltar href={`/processos/${id}`}>{processo.empreendimento}</LinkVoltar>
-      <PageHeader titulo="Editar processo" resumo={`Os ${eventos.length} eventos não mudam aqui: use a linha do tempo do processo.`} />
+      <LinkVoltar href={`/projetos/${id}`}>{processo.empreendimento}</LinkVoltar>
+      <PageHeader titulo="Editar projeto" resumo={`Os ${eventos.length} eventos não mudam aqui: use a linha do tempo do projeto.`} />
       <Card>
         <FormularioProcesso clientes={clientes.map(({ cliente }) => ({ id: cliente.id, nome: cliente.nome }))} valores={processo} />
       </Card>

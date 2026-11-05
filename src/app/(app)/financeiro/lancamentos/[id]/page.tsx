@@ -65,9 +65,9 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
                 )}
                 <span className="mt-1 block max-w-prose text-xs text-subtle">{EXPLICACAO_COMPETENCIA}</span>
               </Dado>
-              <Dado rotulo="Processo">
+              <Dado rotulo="Projeto">
                 {processo ? (
-                  <LinkRapido href={`/processos/${processo.id}`} className="link">
+                  <LinkRapido href={`/projetos/${processo.id}`} className="link">
                     {processo.empreendimento}
                   </LinkRapido>
                 ) : (

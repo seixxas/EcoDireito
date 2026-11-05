@@ -27,8 +27,8 @@ export function BuscaGeral() {
         type="search"
         name="q"
         placeholder="Buscar"
-        aria-label="Buscar cliente, processo ou nota"
-        title="Cliente, processo, nº SEI ou nº da NF (Ctrl+K)"
+        aria-label="Buscar cliente, projeto ou nota"
+        title="Cliente, projeto, nº SEI ou nº da NF (Ctrl+K)"
         className="h-9 w-full rounded-md border border-white/15 bg-white/8 pl-8 pr-2 text-sm text-white outline-none placeholder:text-nav-muted focus:border-white/40"
       />
     </Form>

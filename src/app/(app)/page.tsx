@@ -46,7 +46,7 @@ function Item({ href, situacao, titulo, contexto, direita }: { href?: string; si
 function ItemPrazo({ prazo, dia }: { prazo: PrazoComProcesso; dia: DataISO }) {
   return (
     <Item
-      href={`/processos/${prazo.processo.id}?aba=etapas&fase=${EVENTOS[prazo.regra.cumpridoPor].fase}`}
+      href={`/projetos/${prazo.processo.id}?aba=etapas&fase=${EVENTOS[prazo.regra.cumpridoPor].fase}`}
       situacao={<SituacaoPrazo prazo={prazo} hoje={dia} />}
       titulo={prazo.regra.titulo}
       contexto={`${prazo.processo.empreendimento} · ${prazo.processo.responsavel}`}
@@ -163,7 +163,7 @@ export default async function Hoje() {
                         {ato.serie}
                       </LinkRapido>
                     }
-                    contexto={processo ? processo.empreendimento : `${cliente.nome} · processo ainda não cadastrado`}
+                    contexto={processo ? processo.empreendimento : `${cliente.nome} · projeto ainda não cadastrado`}
                     direita={pode(usuario.papel, 'prazos', 'editar') ? <AcoesPublicacao id={ato.id} temProcesso={Boolean(processo)} marcaEtapa={Boolean(evento)} /> : 'A revisar'}
                   />
                 ))}
@@ -180,7 +180,7 @@ export default async function Hoje() {
                 {retornos.map(({ processo, cliente, situacao }) => (
                   <Item
                     key={processo.id}
-                    href={`/processos/${processo.id}?aba=proposta`}
+                    href={`/projetos/${processo.id}?aba=proposta`}
                     situacao={<Situacao tom="warn">{`Sem resposta há ${contar(situacao.diasSemResposta ?? 0, 'dia', 'dias')}`}</Situacao>}
                     titulo="Pedir retorno da proposta"
                     contexto={`${processo.empreendimento} · ${cliente.nome}`}
