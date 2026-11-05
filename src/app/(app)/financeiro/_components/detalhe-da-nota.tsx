@@ -50,7 +50,7 @@ export function DetalheDaNota({ dados: { hoje: dia, nota, cliente, processo, par
 
   return (
     <div className="@container">
-      <div className="grid gap-6 @3xl:grid-cols-3 @3xl:gap-8">
+      <div className="grid grid-cols-1 gap-6 @3xl:grid-cols-3 @3xl:gap-8">
         {mensagem && (
           <Card titulo="Cobrar">
             <MensagemDeCobranca texto={mensagem} />

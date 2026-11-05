@@ -59,7 +59,7 @@ export function EtapasDaFase({ processo, fase, dia, prazos, editar }: Props) {
         </h2>
         <Situacao tom={SITUACAO_FASE[situacao]}>{rotuloFase}</Situacao>
       </div>
-      <p className="mb-4 max-w-3xl text-sm text-muted">
+      <p className="mb-4 text-sm text-muted">
         {descricao}
         {final && (
           <>

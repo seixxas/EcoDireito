@@ -6,7 +6,7 @@ import { BotaoTema } from '@/components/layout/botao-tema'
 export function TopoDoPortal({ comSair }: { comSair: boolean }) {
   return (
     <header className="border-b border-line bg-rail">
-      <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
         <span className="flex items-center gap-2">
           <span className="flex size-7 items-center justify-center rounded-md bg-brand-700 text-on-brand">
             <Leaf className="size-4" />

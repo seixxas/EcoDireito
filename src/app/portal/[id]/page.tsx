@@ -43,7 +43,7 @@ export default async function Portal({ params }: { params: Promise<{ id: string 
   return (
     <>
       <TopoDoPortal comSair={usuario.papel === 'cliente'} />
-      <main className="mx-auto max-w-3xl px-5 py-10">
+      <main className="mx-auto max-w-6xl px-5 py-10">
         <p className="text-sm text-muted">Acompanhamento do licenciamento ambiental</p>
         <h1 className="mt-1 font-display text-[1.75rem] font-semibold leading-tight text-ink">{processo.empreendimento}</h1>
         <p className="text-muted">{processo.endereco}</p>

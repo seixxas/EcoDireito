@@ -56,10 +56,10 @@ export function PropostaDoProcesso({ processo, cliente, proposta, situacao, parc
   }[situacao.estado]
 
   return (
-    <>
-      <div className="mb-5 space-y-3 print:hidden">
+    <div className="grid grid-cols-1 items-start gap-x-8 gap-y-5 xl:grid-cols-[minmax(0,1fr)_22rem] print:block">
+      <div className="space-y-3 xl:order-last print:hidden">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Situacao tom={status.tom} className="whitespace-normal">
+          <Situacao tom={status.tom} className="whitespace-normal!">
             {status.texto}
           </Situacao>
           <BotaoImprimir />
@@ -99,7 +99,7 @@ export function PropostaDoProcesso({ processo, cliente, proposta, situacao, parc
         )}
       </div>
 
-      <article className="max-w-3xl rounded-lg border border-line bg-surface px-8 py-7 text-ink print:max-w-none print:border-0 print:px-0 print:py-0">
+      <article className="rounded-lg border border-line bg-surface px-8 py-7 text-ink print:border-0 print:px-0 print:py-0">
         <header className="flex items-start justify-between gap-4 border-b border-line pb-4">
           <div className="flex items-center gap-2">
             <span className="flex size-8 items-center justify-center rounded-md bg-brand-700 text-on-brand">
@@ -167,6 +167,6 @@ export function PropostaDoProcesso({ processo, cliente, proposta, situacao, parc
           {processo.responsavel ? `${processo.responsavel} · ` : ''}Eco Direito Ambiental
         </footer>
       </article>
-    </>
+    </div>
   )
 }
