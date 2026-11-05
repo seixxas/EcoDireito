@@ -50,7 +50,7 @@ export function FilaDoExtrato({
             <span className={cn('font-medium tabular-nums', linha.valor > 0 && 'text-ok')}>{brl(linha.valor)}</span>
           </div>
           <div className="mt-1.5 flex flex-wrap items-center gap-3 sm:pl-24">
-            <Situacao tom={linha.sugestao?.tom ?? 'neutral'}>{linha.sugestao?.texto ?? 'Sem sugestão'}</Situacao>
+            <Situacao tom={linha.sugestao?.tom ?? 'neutral'} className="whitespace-normal!">{linha.sugestao?.texto ?? 'Sem sugestão'}</Situacao>
             {editar && linha.sugestao && (
               <form action={confirmarSugestao}>
                 <input type="hidden" name="linhaId" value={linha.id} />
