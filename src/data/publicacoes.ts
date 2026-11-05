@@ -7,6 +7,7 @@ import { eventoDoAto, prazoDoAto, vincularAto } from '@/domain/publicacoes'
 import type { DataISO } from '@/lib/datas'
 import { baixarEdicao } from '@/robo/doc-sp'
 import { carregar } from './base'
+import { hoje } from './hoje'
 import { gravacoesDoEvento } from './processos'
 
 export async function listarPublicacoes() {
@@ -49,7 +50,6 @@ const aindaNova = (id: string) => and(eq(schema.publicacoes.id, id), eq(schema.p
 /** Confirma o ato. Se a série do ato vira evento, lança o evento no processo (com o prazo escrito no ato) na mesma transação. */
 export async function gravarConfirmacao(item: PublicacaoNaCaixa & { processo: Processo }) {
   exigirBanco()
-  const { hoje } = await carregar()
   if (!item.evento) {
     await db.update(schema.publicacoes).set({ status: 'confirmada' }).where(aindaNova(item.ato.id))
     return
@@ -57,7 +57,7 @@ export async function gravarConfirmacao(item: PublicacaoNaCaixa & { processo: Pr
   // Id fixo por ato: duas confirmações ao mesmo tempo gravam um evento só.
   const evento = { id: `diario-${item.ato.id}`, tipo: item.evento, data: item.ato.data, origem: 'diario' as const, diasNoAto: item.diasNoAto }
   await db.batch([
-    ...gravacoesDoEvento(item.processo, evento, hoje),
+    ...gravacoesDoEvento(item.processo, evento, await hoje()),
     db.update(schema.publicacoes).set({ status: 'confirmada', eventoId: evento.id }).where(aindaNova(item.ato.id)),
   ])
 }

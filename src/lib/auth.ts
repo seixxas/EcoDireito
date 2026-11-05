@@ -17,4 +17,3 @@ export const auth = betterAuth({
   plugins: [nextCookies()],
 })
 
-export type Sessao = typeof auth.$Infer.Session

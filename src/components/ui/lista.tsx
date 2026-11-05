@@ -1,7 +1,7 @@
 import { ChevronRight } from 'lucide-react'
-import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
+import { LinkRapido } from './link-rapido'
 
 /** Lista de linhas numa caixa com borda. */
 export function Lista({ className, children }: { className?: string; children: ReactNode }) {
@@ -19,9 +19,9 @@ export function Linha({ href, className, children }: { href?: string; className?
   return (
     <li>
       {href ? (
-        <Link href={href} className="group block transition-colors hover:bg-brand-50">
+        <LinkRapido href={href} className="group block transition-colors hover:bg-brand-50">
           {conteudo}
-        </Link>
+        </LinkRapido>
       ) : (
         conteudo
       )}

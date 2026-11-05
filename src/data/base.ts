@@ -1,5 +1,4 @@
 import { asc, desc } from 'drizzle-orm'
-import { cache } from 'react'
 import { db, schema, temBanco } from '@/db'
 import type { Lancamento } from '@/domain/financeiro/lancamentos'
 import type { NotaFiscal } from '@/domain/financeiro/notas'
@@ -11,6 +10,7 @@ import { somar } from '@/lib/dinheiro'
 import { pode } from '@/lib/permissoes'
 import { hoje } from './hoje'
 import { exigirUsuario, type Usuario } from './sessao'
+import { guardarNaTela } from './telas'
 import { gerarBase, type Base } from './seed'
 import type { StatusPublicacao } from './seed/publicacoes'
 
@@ -23,7 +23,7 @@ function daMemoria(dia: DataISO) {
 }
 
 async function doBanco(dia: DataISO): Promise<Base> {
-  const [clientes, processos, eventos, propostas, contratos, parcelas, notas, lancamentos, atos, edicoes, contas] = await Promise.all([
+  const [clientes, processos, eventos, propostas, contratos, parcelas, notas, lancamentos, atos, edicoes, contas] = await db.batch([
     db.select().from(schema.clientes).orderBy(asc(schema.clientes.nome)),
     db.select().from(schema.processos).orderBy(asc(schema.processos.id)),
     db.select().from(schema.eventos).orderBy(asc(schema.eventos.data)),
@@ -150,8 +150,15 @@ function recortarPorPerfil(base: Base, usuario: Usuario): Base {
   }
 }
 
-/** Toda a base do dia que o usuário pode ver, uma leitura por requisição. As funções de src/data partem daqui. */
-export const carregar = cache(async () => {
-  const [dia, usuario] = await Promise.all([hoje(), exigirUsuario()])
-  return { hoje: dia, usuario, ...recortarPorPerfil(temBanco ? await doBanco(dia) : daMemoria(dia), usuario) }
-})
+/**
+ * Toda a base do dia que o usuário pode ver, uma leitura por requisição. As funções de src/data partem daqui.
+ * Fica guardada só no navegador de quem pediu (`guardarNaTela`): o servidor sempre lê o banco, e o recorte por perfil vale antes de qualquer coisa sair daqui.
+ * Sessão e base em paralelo: sem sessão, `exigirUsuario` redireciona e nada do que foi lido sai.
+ */
+export async function carregar() {
+  'use cache: private'
+  guardarNaTela()
+  const dia = await hoje()
+  const [usuario, base] = await Promise.all([exigirUsuario(), temBanco ? doBanco(dia) : daMemoria(dia)])
+  return { hoje: dia, usuario, ...recortarPorPerfil(base, usuario) }
+}

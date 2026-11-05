@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import { cn } from '@/lib/cn'
+import { LinkRapido } from './link-rapido'
 
 export type OpcaoFiltro = { valor: string; rotulo: string; href: string; contagem?: number }
 
@@ -8,7 +8,7 @@ export function SegmentedLinks({ opcoes, ativo }: { opcoes: OpcaoFiltro[]; ativo
   return (
     <nav className="inline-flex max-w-full flex-wrap gap-0.5 rounded-lg border border-line bg-surface p-0.5">
       {opcoes.map((opcao) => (
-        <Link
+        <LinkRapido
           key={opcao.valor}
           href={opcao.href}
           scroll={false}
@@ -19,7 +19,7 @@ export function SegmentedLinks({ opcoes, ativo }: { opcoes: OpcaoFiltro[]; ativo
         >
           {opcao.rotulo}
           {opcao.contagem !== undefined && <span className="ml-1.5 tabular-nums opacity-70">{opcao.contagem}</span>}
-        </Link>
+        </LinkRapido>
       ))}
     </nav>
   )

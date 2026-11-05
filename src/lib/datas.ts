@@ -11,7 +11,7 @@ function deMs(ms: number): DataISO {
   return new Date(ms).toISOString().slice(0, 10)
 }
 
-/** Só `src/data/hoje.ts` deve chamar: no servidor, a data atual exige `connection()`. */
+/** Só `src/data/hoje.ts` deve chamar: ali a data atual fica num escopo de cache, como o Next exige. */
 export function hojeEmSaoPaulo(): DataISO {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date())
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { Card } from '@/components/ui/card'
 import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
@@ -33,9 +33,9 @@ export default async function PaginaNovoProcesso({ searchParams }: { searchParam
             : 'Para um cliente novo, comece pela proposta, em Comercial. Aqui é para cadastrar um processo que já anda na SVMA.'
         }
         acoes={
-          <Link href={`/processos/clientes/novo?voltar=${encodeURIComponent(daqui)}`} className={classeBotao('secundario')}>
+          <LinkRapido href={`/processos/clientes/novo?voltar=${encodeURIComponent(daqui)}`} className={classeBotao('secundario')}>
             Cliente novo
-          </Link>
+          </LinkRapido>
         }
       />
       <Card>

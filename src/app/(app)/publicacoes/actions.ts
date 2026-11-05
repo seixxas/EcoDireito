@@ -1,7 +1,7 @@
 'use server'
 
-import { refresh } from 'next/cache'
 import { z } from 'zod'
+import { atualizarTelas } from '@/data/telas'
 import { hoje } from '@/data/hoje'
 import { gravarConfirmacao, gravarDescarte, importarEdicao, obterPublicacao } from '@/data/publicacoes'
 import { exigirArea } from '@/data/sessao'
@@ -17,7 +17,7 @@ export async function lancarAto(_: EstadoFormulario, formData: FormData): Promis
   if (!item || item.ato.status !== 'nova') return { erro: 'Este ato já foi revisado.' }
   if (!item.processo) return { erro: 'Cadastre o processo antes de lançar.' }
   await gravarConfirmacao({ ...item, processo: item.processo })
-  refresh()
+  atualizarTelas()
   return {}
 }
 
@@ -33,7 +33,7 @@ export async function buscarEdicao(_: EstadoFormulario, formData: FormData): Pro
   } catch (erro) {
     return { erro: erro instanceof Error ? erro.message : 'Não foi possível ler o Diário Oficial.', valores: { data } }
   }
-  refresh()
+  atualizarTelas()
   if (!resultado) return { ok: `Não houve edição em ${formatarData(data)} (fim de semana, feriado ou ponto facultativo).`, valores: { data } }
   const { atosSvma, novos } = resultado
   return { ok: `Edição de ${formatarData(data)}: ${atosSvma} atos da Secretaria do Verde, ${novos === 1 ? '1 novo' : `${novos} novos`} para revisar.`, valores: { data } }
@@ -50,6 +50,6 @@ export async function ignorarAto(_: EstadoFormulario, formData: FormData): Promi
   if ('estado' in lido) return lido.estado
   const { id, motivo, outro } = lido.dados
   await gravarDescarte(id, motivo === 'outro' && outro ? outro : motivo)
-  refresh()
+  atualizarTelas()
   return {}
 }

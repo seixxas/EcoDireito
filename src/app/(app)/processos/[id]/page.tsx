@@ -1,6 +1,6 @@
 import { ExternalLink, Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { notFound } from 'next/navigation'
 import { BotaoFixar } from '@/components/layout/fixados'
 import { LinhaPrazo } from '@/components/prazos/linha-prazo'
@@ -97,13 +97,13 @@ export default async function PaginaProcesso({
             <>
               <BotaoFixar href={`/processos/${processo.id}`} rotulo={processo.empreendimento} />
               {editar && (
-                <Link href={`/processos/${processo.id}/editar`} className={classeBotao('secundario')}>
+                <LinkRapido href={`/processos/${processo.id}/editar`} className={classeBotao('secundario')}>
                   Editar
-                </Link>
+                </LinkRapido>
               )}
-              <Link href={`/portal/${processo.id}`} target="_blank" className={classeBotao('secundario')}>
+              <LinkRapido href={`/portal/${processo.id}`} target="_blank" className={classeBotao('secundario')}>
                 Ver como o cliente vê <ExternalLink className="size-4" />
-              </Link>
+              </LinkRapido>
             </>
           }
         />
@@ -116,7 +116,7 @@ export default async function PaginaProcesso({
             const vista = aba === 'etapas' && f.numero === faseVista
             return (
               <li key={f.numero}>
-                <Link
+                <LinkRapido
                   href={`/processos/${id}?aba=etapas&fase=${f.numero}`}
                   scroll={false}
                   title={`Ver as etapas: ${f.descricao}`}
@@ -132,7 +132,7 @@ export default async function PaginaProcesso({
                   >
                     {f.numero}. {f.nome}
                   </span>
-                </Link>
+                </LinkRapido>
               </li>
             )
           })}
@@ -184,9 +184,9 @@ export default async function PaginaProcesso({
           {editar && (
             <p className="mb-3 text-sm text-muted">
               Para lançar um evento, marque a etapa na{' '}
-              <Link href={`/processos/${id}?aba=etapas&fase=${fase.numero}`} className="link">
+              <LinkRapido href={`/processos/${id}?aba=etapas&fase=${fase.numero}`} className="link">
                 fase {fase.nome}
-              </Link>{' '}
+              </LinkRapido>{' '}
               (ou em outra fase, clicando nela na barra acima).
             </p>
           )}
@@ -240,9 +240,9 @@ export default async function PaginaProcesso({
           titulo="Contrato"
           acao={
             editarFinanceiro && (
-              <Link href={`/financeiro/contratos/${processo.id}`} className="link text-sm font-medium">
+              <LinkRapido href={`/financeiro/contratos/${processo.id}`} className="link text-sm font-medium">
                 Editar contrato
-              </Link>
+              </LinkRapido>
             )
           }
         >
@@ -274,9 +274,9 @@ export default async function PaginaProcesso({
                         {nota ? (
                           `NF ${nota.numero} · ${formatarData(nota.emissao)}`
                         ) : situacao === 'liberada' && editarFinanceiro ? (
-                          <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="link font-medium">
+                          <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="link font-medium">
                             Emitir nota
-                          </Link>
+                          </LinkRapido>
                         ) : (
                           '—'
                         )}

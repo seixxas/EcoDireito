@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import type { ReactNode } from 'react'
 import { Card } from '@/components/ui/card'
 import { Linha, Lista } from '@/components/ui/lista'
@@ -68,9 +68,9 @@ export function DetalheDaNota({ dados: { hoje: dia, nota, cliente, processo, par
               <Dado rotulo="Previsão de pagamento">{formatarData(nota.previsao)}</Dado>
               <Dado rotulo="Processo">
                 {processo ? (
-                  <Link href={`/processos/${processo.id}`} className="link">
+                  <LinkRapido href={`/processos/${processo.id}`} className="link">
                     {processo.empreendimento}
-                  </Link>
+                  </LinkRapido>
                 ) : (
                   '—'
                 )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { Star, X } from 'lucide-react'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { useSyncExternalStore } from 'react'
 import { classeBotao } from '@/components/ui/form'
 import { cn } from '@/lib/cn'
@@ -70,9 +70,9 @@ export function ListaFixados() {
       <ul className="flex flex-col gap-px">
         {fixados.map(({ href, rotulo }) => (
           <li key={href} className="group/fixado flex items-center rounded-md hover:bg-white/6">
-            <Link href={href} className="min-w-0 flex-1 truncate px-2 py-1 text-sm text-nav-ink/85 hover:text-white">
+            <LinkRapido href={href} className="min-w-0 flex-1 truncate px-2 py-1 text-sm text-nav-ink/85 hover:text-white">
               {rotulo}
-            </Link>
+            </LinkRapido>
             <button
               type="button"
               title="Tirar dos fixados"

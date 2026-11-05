@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { Busca } from '@/components/ui/busca'
 import { Vazio } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
@@ -39,9 +39,9 @@ export default async function PaginaClientes({ searchParams }: { searchParams: P
         resumo={`${contar(itens.length, 'cliente', 'clientes')}. O robô do Diário Oficial também procura pelo CNPJ de cada um.`}
         acoes={
           editar && (
-            <Link href="/processos/clientes/novo" className={classeBotao()}>
+            <LinkRapido href="/processos/clientes/novo" className={classeBotao()}>
               Novo cliente
-            </Link>
+            </LinkRapido>
           )
         }
       />

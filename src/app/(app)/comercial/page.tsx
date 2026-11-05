@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
 import { ItemResumo, Resumo } from '@/components/ui/resumo'
@@ -35,7 +35,7 @@ function Cartao({ item }: { item: Item }) {
   const { processo, cliente, valor, situacao } = item
   return (
     <li>
-      <Link
+      <LinkRapido
         href={`/processos/${processo.id}?aba=proposta`}
         className="block rounded-md border border-line bg-surface p-3 transition-colors hover:border-brand-300 hover:bg-brand-50"
       >
@@ -49,7 +49,7 @@ function Cartao({ item }: { item: Item }) {
           </Situacao>
         )}
         {situacao.estado === 'recusada' && situacao.motivo && <p className="mt-1 text-xs text-subtle">{situacao.motivo}</p>}
-      </Link>
+      </LinkRapido>
     </li>
   )
 }
@@ -73,9 +73,9 @@ export default async function PaginaComercial() {
         resumo={`${contar(numeros.quantasEmAberto, 'proposta em aberto', 'propostas em aberto')}${numeros.pedemRetorno ? `, ${numeros.pedemRetorno} sem resposta há mais de ${DIAS_PARA_RETORNO} dias` : ''}. Aprovada, a proposta vira processo na fase Documentação.`}
         acoes={
           pode(usuario.papel, 'comercial', 'editar') && (
-            <Link href="/comercial/nova" className={classeBotao()}>
+            <LinkRapido href="/comercial/nova" className={classeBotao()}>
               Nova proposta
-            </Link>
+            </LinkRapido>
           )
         }
       />

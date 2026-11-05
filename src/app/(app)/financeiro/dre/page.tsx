@@ -1,5 +1,6 @@
+import { Download } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import type { ReactNode } from 'react'
 import { Expansivel } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
@@ -7,13 +8,12 @@ import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { dadosDaDre } from '@/data/financeiro'
-import { csvDaDre, itensDaLinha, montarDre, periodosDaDre, rotuloDaLinha, type ItemDaDre, type LinhaDre, type Regime } from '@/domain/financeiro/dre'
+import { itensDaLinha, montarDre, periodosDaDre, rotuloDaLinha, type ItemDaDre, type LinhaDre, type Regime } from '@/domain/financeiro/dre'
 import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
 import { brl, formatarData, formatarMes, formatarPercentual } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
-import { BotaoExportar } from './_components/botao-exportar'
 import { RolarParaVista } from './_components/rolar-para-vista'
 import { TabelaDre } from './_components/tabela-dre'
 
@@ -60,9 +60,9 @@ function QuadroDeLancamentos(props: { linha: LinhaDre; periodo: string; itens: I
           </p>
           <h2 className="text-base font-semibold text-ink">{itens.length === 1 ? `1 lançamento soma ${soma}` : `${itens.length} lançamentos somam ${soma}`}</h2>
         </div>
-        <Link href={hrefFechar} scroll={false} className={classeBotao('secundario')}>
+        <LinkRapido href={hrefFechar} scroll={false} className={classeBotao('secundario')}>
           Fechar
-        </Link>
+        </LinkRapido>
       </header>
       <div className="mt-2 overflow-x-auto">
         <table className="tabela">
@@ -79,9 +79,9 @@ function QuadroDeLancamentos(props: { linha: LinhaDre; periodo: string; itens: I
               <tr key={item.id}>
                 <td className="whitespace-nowrap">{formatarData(item.data)}</td>
                 <td>
-                  <Link href={linkDoItem(item)} className="link">
+                  <LinkRapido href={linkDoItem(item)} className="link">
                     {item.descricao}
-                  </Link>
+                  </LinkRapido>
                 </td>
                 {linha.tipo === 'bloco' && <td className="text-muted">{nomeDaConta(item.contaId)}</td>}
                 <td className="num">{brl(item.valor)}</td>
@@ -137,7 +137,12 @@ export default async function PaginaDre({ searchParams }: { searchParams: Promis
             {receitaLiquida ? `, ${formatarPercentual(resultado / receitaLiquida)} da receita líquida` : ''}. {REGIMES[regime].explicacao}
           </>
         }
-        acoes={<BotaoExportar csv={csvDaDre(linhas, meses)} arquivo={`dre-eco-direito-${regime}-${periodo.id}.csv`} />}
+        acoes={
+          <a href={`/financeiro/dre/exportar${consulta ? `?${consulta}` : ''}`} download className={classeBotao()}>
+            <Download className="size-4" />
+            Exportar para Excel
+          </a>
+        }
       />
 
       <div className="mb-4 flex flex-wrap items-end gap-x-5 gap-y-3">

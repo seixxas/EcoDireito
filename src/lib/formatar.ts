@@ -17,13 +17,6 @@ export function brl(valor: Centavos) {
   return moeda.format(valor / 100)
 }
 
-const moedaInteira = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
-
-/** R$ 12.345 — para tabelas grandes, como a DRE. */
-export function brlInteiro(valor: Centavos) {
-  return moedaInteira.format(valor / 100)
-}
-
 const inteiro = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 })
 
 /** 12.345 ou −12.345, sem o R$: para a grade da DRE, onde o título já diz a moeda. */
@@ -82,12 +75,4 @@ export function juntar(partes: string[]) {
 /** 'AAAA-MM' → out/26 */
 export function formatarMes(mes: string) {
   return `${MESES[Number(mes.slice(5, 7)) - 1]}/${mes.slice(2, 4)}`
-}
-
-/** "em 6 dias", "hoje", "há 2 dias" */
-export function formatarDistancia(dias: number) {
-  if (dias === 0) return 'hoje'
-  if (dias === 1) return 'amanhã'
-  if (dias === -1) return 'ontem'
-  return dias > 0 ? `em ${dias} dias` : `há ${-dias} dias`
 }

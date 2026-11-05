@@ -1,10 +1,10 @@
 'use client'
 
 import { FolderKanban, Handshake, Landmark, Leaf, ListTodo, LogOut, Users, type LucideIcon } from 'lucide-react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Suspense } from 'react'
 import { sair } from '@/app/(auth)/actions'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { cn } from '@/lib/cn'
 import { PAPEIS, pode, type Area, type Papel } from '@/lib/permissoes'
 import { BotaoNovo } from './botao-novo'
@@ -29,12 +29,12 @@ function ativo(pathname: string, { href, tambem = [] }: Item) {
 
 function Marca() {
   return (
-    <Link href="/" className="flex items-center gap-2">
+    <LinkRapido href="/" className="flex items-center gap-2">
       <span className="flex size-7 items-center justify-center rounded-md bg-brand-500 text-white">
         <Leaf className="size-4" />
       </span>
       <span className="font-display text-lg font-semibold leading-none text-white">Eco Direito</span>
-    </Link>
+    </LinkRapido>
   )
 }
 
@@ -73,7 +73,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
               const { href, rotulo, icone: Icone } = item
               return (
                 <li key={href}>
-                  <Link
+                  <LinkRapido
                     href={href}
                     className={cn(
                       'flex items-center gap-2.5 rounded-md px-2 py-2 text-sm transition-colors',
@@ -82,7 +82,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
                   >
                     <Icone className={cn('size-4', ativo(pathname, item) ? 'text-white' : 'text-nav-muted')} />
                     {rotulo}
-                  </Link>
+                  </LinkRapido>
                 </li>
               )
             })}
@@ -92,9 +92,9 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
         {usuario && (
           <div className="border-t border-white/10 px-2 pt-3">
             {pode(usuario.papel, 'usuarios') && (
-              <Link href="/usuarios" className="mb-2 flex items-center gap-2 text-sm text-nav-ink/85 hover:text-white">
+              <LinkRapido href="/usuarios" className="mb-2 flex items-center gap-2 text-sm text-nav-ink/85 hover:text-white">
                 <Users className="size-4 text-nav-muted" /> Usuários
-              </Link>
+              </LinkRapido>
             )}
             <div className="flex items-center gap-2.5">
               <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-nav">
@@ -138,13 +138,13 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
         )}
         <nav className="-mx-4 mt-3 flex gap-1 overflow-x-auto px-4">
           {[...itens, ...(usuario && pode(usuario.papel, 'usuarios') ? [{ href: '/usuarios', rotulo: 'Usuários', icone: Users, area: 'usuarios' as const }] : [])].map((item) => (
-            <Link
+            <LinkRapido
               key={item.href}
               href={item.href}
               className={cn('whitespace-nowrap rounded-md px-2.5 py-1 text-sm', ativo(pathname, item) ? 'bg-white/15 font-medium text-white' : 'text-nav-ink/85')}
             >
               {item.rotulo}
-            </Link>
+            </LinkRapido>
           ))}
         </nav>
       </header>

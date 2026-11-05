@@ -1,7 +1,7 @@
 'use server'
 
-import { refresh } from 'next/cache'
 import { z } from 'zod'
+import { atualizarTelas } from '@/data/telas'
 import { adicionarParcela, alterarParcela, apagarParcela, listarContratos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import { EVENTOS, type TipoEvento } from '@/domain/processos'
@@ -24,7 +24,7 @@ export async function salvarParcela(_: EstadoFormulario, formData: FormData): Pr
   const { processoId, id, ...dados } = lido.dados
   if (id) await alterarParcela(id, dados)
   else await adicionarParcela(processoId, dados)
-  refresh()
+  atualizarTelas()
   return { ok: id ? 'Parcela salva.' : 'Parcela incluída.' }
 }
 
@@ -34,5 +34,5 @@ export async function excluirParcela(formData: FormData) {
   const id = String(formData.get('id'))
   const item = (await listarContratos()).flatMap((c) => c.parcelas).find((p) => p.parcela.id === id)
   if (item && !item.nota) await apagarParcela(id)
-  refresh()
+  atualizarTelas()
 }

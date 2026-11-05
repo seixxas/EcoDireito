@@ -16,6 +16,7 @@ import type { Cliente } from '@/domain/processos'
 import { carregar } from './base'
 import { listarParcelasLiberadas } from './processos'
 import { exigirArea } from './sessao'
+import { guardarNaTela } from './telas'
 import { ALIQUOTA_SIMPLES, FIXAS, OCASIONAIS } from './seed/financeiro'
 
 export type ItemNota = Awaited<ReturnType<typeof listarNotas>>['notas'][number]
@@ -142,13 +143,22 @@ export async function lucratividadeDoProjeto(processoId: string) {
 }
 
 /** O lançamento com a nota e a linha do extrato de onde veio (a descrição original do banco). */
+/** A linha do extrato que originou o lançamento. */
+async function linhaDoLancamento(id: string) {
+  'use cache: private'
+  guardarNaTela()
+  // Leitura direta no banco, fora de carregar(): a guarda tem de estar aqui.
+  await exigirArea('financeiro')
+  if (!temBanco) return undefined
+  const [linha] = await db.select().from(schema.extratoLinhas).where(eq(schema.extratoLinhas.lancamentoId, id)).limit(1)
+  return linha
+}
+
 export async function obterLancamento(id: string) {
   const { hoje, processos, financeiro } = await carregar()
   const lancamento = financeiro.lancamentos.find((l) => l.id === id)
   if (!lancamento) return undefined
-  // Leitura direta no banco, fora de carregar(): a guarda tem de estar aqui.
-  await exigirArea('financeiro')
-  const [linhaExtrato] = temBanco ? await db.select().from(schema.extratoLinhas).where(eq(schema.extratoLinhas.lancamentoId, id)).limit(1) : []
+  const linhaExtrato = await linhaDoLancamento(id)
   return {
     hoje,
     lancamento,
@@ -304,6 +314,8 @@ export type LinhaDoExtrato = typeof schema.extratoLinhas.$inferSelect
 
 /** Linhas do extrato e regras. Sem banco, tudo vazio: não há extrato fictício. */
 async function extratoERegras() {
+  'use cache: private'
+  guardarNaTela()
   // Leitura direta no banco, fora de carregar(): a guarda tem de estar aqui.
   await exigirArea('financeiro')
   if (!temBanco) return { linhas: [], regras: [] }

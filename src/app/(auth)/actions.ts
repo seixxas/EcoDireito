@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { atualizarTelas } from '@/data/telas'
 import { auth } from '@/lib/auth'
 import { campo, lerFormulario, type EstadoFormulario } from '@/lib/formulario'
 import { caminhoInterno, ehPapel, inicioDoPapel } from '@/lib/permissoes'
@@ -25,10 +26,12 @@ export async function entrar(_: EstadoFormulario, formData: FormData): Promise<E
   } catch {
     return { erro: 'E-mail ou senha incorretos.', valores: { email } }
   }
+  atualizarTelas()
   redirect(destino)
 }
 
 export async function sair() {
   await auth.api.signOut({ headers: await headers() })
+  atualizarTelas()
   redirect('/login')
 }

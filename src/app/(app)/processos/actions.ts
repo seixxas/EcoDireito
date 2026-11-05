@@ -1,8 +1,8 @@
 'use server'
 
-import { refresh } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { atualizarTelas } from '@/data/telas'
 import { gravarCliente, gravarEvento, gravarProcesso, obterProcesso, removerEvento, seiEmUso } from '@/data/processos'
 import { hoje } from '@/data/hoje'
 import { lancarNoProcessoNovo } from '@/data/publicacoes'
@@ -27,6 +27,7 @@ export async function salvarCliente(_: EstadoFormulario, formData: FormData): Pr
   if ('estado' in lido) return lido.estado
   const { id, voltar, ...dados } = lido.dados
   const gravado = await gravarCliente(dados, id)
+  atualizarTelas()
   // Cliente novo criado no meio de uma proposta (ou processo): volta para lá com ele já escolhido.
   const volta = destino(voltar, '/processos/clientes')
   redirect(!id && voltar && volta === voltar ? `${volta}${volta.includes('?') ? '&' : '?'}cliente=${gravado}` : volta)
@@ -65,8 +66,9 @@ export async function salvarProcesso(_: EstadoFormulario, formData: FormData): P
     return { erro: 'Confira os campos destacados.', erros: { numeroSei: 'Já existe um processo com este nº SEI' }, valores: valoresDoFormulario(formData) }
   }
   const gravado = await gravarProcesso(dados, id)
+  if (ato && !id) await lancarNoProcessoNovo(ato, { ...dados, id: gravado, eventos: [] })
+  atualizarTelas()
   if (ato && !id) {
-    await lancarNoProcessoNovo(ato, { ...dados, id: gravado, eventos: [] })
     redirect(`/publicacoes?lancado=${encodeURIComponent(ato)}`)
   }
   redirect(destino(voltar, `/processos/${gravado}`))
@@ -104,12 +106,12 @@ export async function lancarEvento(_: EstadoFormulario, formData: FormData): Pro
     { ...evento, diasNoAto: info.prazoNoAto ? evento.diasNoAto : undefined, observacao: evento.observacao, origem: 'manual' },
     seiNovo,
   )
-  refresh()
+  atualizarTelas()
   return { ok: `${info.nome}: marcado.` }
 }
 
 export async function apagarEvento(id: string) {
   await exigirArea('prazos', 'editar')
   await removerEvento(id)
-  refresh()
+  atualizarTelas()
 }

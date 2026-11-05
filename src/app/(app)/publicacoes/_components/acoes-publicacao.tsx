@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { useActionState, useState } from 'react'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
 import { Botao, Entrada, MensagemFormulario, Selecao, classeBotao } from '@/components/ui/form'
@@ -54,9 +54,9 @@ export function AcoesPublicacao({ id, temProcesso, marcaEtapa }: { id: string; t
             <BotaoEnviar>{marcaEtapa ? 'Lançar no processo' : 'Marcar como visto'}</BotaoEnviar>
           </form>
         ) : (
-          <Link href={`/processos/novo?ato=${encodeURIComponent(id)}`} className={classeBotao()}>
+          <LinkRapido href={`/processos/novo?ato=${encodeURIComponent(id)}`} className={classeBotao()}>
             {marcaEtapa ? 'Cadastrar o processo e lançar' : 'Cadastrar o processo'}
-          </Link>
+          </LinkRapido>
         )}
         <Botao variante="secundario" onClick={() => setIgnorando(true)}>
           Ignorar

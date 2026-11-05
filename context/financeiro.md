@@ -120,7 +120,7 @@ Receita bruta → (−) Simples Nacional → Receita líquida → (−) Custos (
 - **Linhas**: todo valor tem sinal (receita positiva, despesa negativa), então cada subtotal é a soma do que veio acima. Grupo com mais de uma conta vira bloco; o que não compõe o resultado fica na seção "Movimentação de caixa", sem meta, e fecha em Variação de caixa.
 - **Meta**: a Eco Direito ainda não definiu metas, então a grade mostra só o realizado, como a planilha do Ecoamper faz sem meta. Meta real pede tabela nova e tela de edição.
 - **Período** (`?periodo=`): completo, até o último mês fechado ou trimestre, mesmo incompleto. Trocar período ou regime fecha o quadro de lançamentos.
-- **Excel**: CSV com `;`, vírgula decimal e BOM (`csvDaDre`), com todas as linhas, mesmo recolhidas, no período e no regime da tela. Rótulo que começa com = + - @ leva apóstrofo, senão o Excel lê como fórmula.
+- **Excel**: `/financeiro/dre/exportar`, rota própria para o CSV não viajar em todo clique. CSV com `;`, vírgula decimal e BOM (`csvDaDre`), com todas as linhas, mesmo recolhidas, no período e no regime da tela. Rótulo que começa com = + - @ leva apóstrofo, senão o Excel lê como fórmula.
 - A grade e o quadro de lançamentos saem da mesma função (`itensDoRegime`): o que abre sempre soma o valor da célula.
 - Modelo: DRE do Ecoamper, só a planilha. De lá ficaram de fora os filtros de empresa e centro de custo (a Eco Direito não tem), as categorias abaixo de cada conta (aqui a conta é o menor nível), a importação e, por enquanto, as colunas de meta. Valores em reais, não em R$ mil: as contas pequenas sumiriam.
 

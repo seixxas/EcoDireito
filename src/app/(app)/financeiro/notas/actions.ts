@@ -1,8 +1,8 @@
 'use server'
 
-import { refresh } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { atualizarTelas } from '@/data/telas'
 import { dadosParaNovaNota, gravarCancelamento, gravarNota, gravarRecebimento, obterNota } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import { errosDaNota, errosDoRecebimento, montarNota, motivoParaNaoCancelar } from '@/domain/financeiro/notas'
@@ -35,6 +35,7 @@ export async function registrarNota(_: EstadoFormulario, formData: FormData): Pr
   if (Object.keys(erros).length) return { erro: 'Confira os campos destacados.', erros, valores: valoresDoFormulario(formData) }
 
   await gravarNota(nota)
+  atualizarTelas()
   redirect(`/financeiro/notas/${nota.id}`)
 }
 
@@ -52,7 +53,7 @@ export async function registrarRecebimento(_: EstadoFormulario, formData: FormDa
   if (Object.keys(erros).length) return { erro: 'Confira os campos destacados.', erros, valores: valoresDoFormulario(formData) }
 
   await gravarRecebimento(dados.nota, dados.cliente, recebimento)
-  refresh()
+  atualizarTelas()
   return { ok: 'Recebimento registrado. A receita entrou nos lançamentos.' }
 }
 
@@ -64,6 +65,6 @@ export async function cancelarNota(_: EstadoFormulario, formData: FormData): Pro
   if (motivo) return { erro: motivo }
 
   await gravarCancelamento(dados.nota.id)
-  refresh()
+  atualizarTelas()
   return { ok: 'Nota cancelada.' }
 }

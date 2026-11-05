@@ -34,7 +34,7 @@ src/
     portal/[id]/               portal do cliente (sem menu interno)
     (cada rota tem seu loading.tsx)
   components/
-    ui/                        Card, Badge, Stat, PageHeader, SegmentedLinks, Carregando
+    ui/                        Card, Badge, PageHeader, SegmentedLinks, LinkRapido, Carregando
     layout/                    menu lateral
     charts/                    gráficos (cliente)
     prazos/ financeiro/ processos/   componentes de domínio compartilhados
@@ -55,6 +55,16 @@ page.tsx → data/*.ts (await hoje(), lê seed) → domain/*.ts (calcula) → co
 - `data/` expõe funções assíncronas (`listarProcessos()`, `listarNotas()`). Elas já têm a assinatura que o banco vai usar.
 - O seed é gerado a partir da data de hoje e fica em cache em memória, uma geração por dia.
 - `DATA_DEMO=2026-11-03` no `.env.local` congela a data para uma apresentação.
+
+## Velocidade da navegação
+
+- As funções rodam em `gru1` (São Paulo), junto do banco (`vercel.json`). Em `iad1`, cada consulta atravessava o continente.
+- `carregar()` lê as 11 tabelas num `db.batch` (um pedido só ao Neon), em paralelo com a sessão.
+- **Não há cache de dados no servidor.** `use cache: private` guarda a tela pronta só no navegador de quem pediu, por 60 segundos (`src/data/telas.ts`). O servidor sempre lê o banco.
+- `LinkRapido` prepara a tela com o mouse em cima (ou foco, ou toque), então o clique já a encontra pronta. Voltar a uma tela vista há menos de 60 segundos não vai ao servidor.
+- **Depois de gravar, `atualizarTelas()`.** O `updateTag` dali é indispensável: o Next retém a leitura privada até o fim da requisição, e sem ele a tela refeita na resposta da ação usaria a leitura de antes de gravar. Por isso também vale: dentro de uma ação, ler pela base depois de gravar sem chamar `atualizarTelas()` antes devolve o dado velho.
+- Sair e entrar também chamam `atualizarTelas()`: a próxima pessoa no mesmo navegador não pode ver a tela de quem saiu.
+- O que outra pessoa gravou aparece em até 60 segundos, ou com F5.
 
 ## Trocar o mock pelo banco (próximo passo estrutural)
 

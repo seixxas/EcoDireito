@@ -1,5 +1,5 @@
 import { Leaf } from 'lucide-react'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { Expansivel } from '@/components/ui/expansivel'
 import { Situacao } from '@/components/ui/situacao'
 import type { Parcela } from '@/domain/financeiro/parcelas'
@@ -87,13 +87,13 @@ export function PropostaDoProcesso({ processo, cliente, proposta, situacao, parc
         {situacao.estado === 'aprovada' && (
           <p className="text-sm text-muted">
             A 1ª parcela já pode ser faturada (aba{' '}
-            <Link href={`/processos/${processo.id}?aba=cobranca`} className="link">
+            <LinkRapido href={`/processos/${processo.id}?aba=cobranca`} className="link">
               Cobrança
-            </Link>
+            </LinkRapido>
             ). Próximas etapas na{' '}
-            <Link href={`/processos/${processo.id}?aba=etapas`} className="link">
+            <LinkRapido href={`/processos/${processo.id}?aba=etapas`} className="link">
               fase {FASES[processo.faseAtual - 1].nome}
-            </Link>
+            </LinkRapido>
             .
           </p>
         )}

@@ -17,7 +17,7 @@ app/ (rotas e composição)  →  data/ (acesso a dados)  →  domain/ (regras p
 ```
 
 - **`src/domain`**: regras de negócio puras. Sem React, sem Next, sem I/O. Toda regra com teste.
-- **`src/data`**: a única porta para os dados. Hoje lê `src/data/seed`; amanhã, o banco. Páginas nunca importam `seed` direto.
+- **`src/data`**: a única porta para os dados. Lê o banco; sem `DATABASE_URL`, usa `src/data/seed`. Páginas nunca importam `seed` direto.
 - **`src/app`**: páginas buscam dados em `data/`, calculam com `domain/` e montam a tela.
 - **`src/components`**: UI reutilizável. Componente usado por uma rota só fica em `app/<rota>/_components/`.
 
@@ -25,7 +25,9 @@ app/ (rotas e composição)  →  data/ (acesso a dados)  →  domain/ (regras p
 
 - Server Component é o padrão. `"use client"` só para interação: gráfico, estado local, clique.
 - Componente cliente recebe dados prontos e serializáveis (strings, números, arrays). Nada de funções nem `Date`.
-- A data de hoje vem **só** de `hoje()` em `src/data/hoje.ts`, que chama `connection()`. Nunca use `new Date()` ou `Date.now()` em componente de servidor.
+- A data de hoje vem **só** de `hoje()` em `src/data/hoje.ts`. Nunca use `new Date()` ou `Date.now()` em componente de servidor.
+- Toda leitura que uma tela usa tem de ter um tempo de vida, senão a tela não fica pronta antes do clique. `carregar()` já cuida disso; leitura direta no banco, fora dele, começa com `'use cache: private'` e `guardarNaTela()` (`src/data/telas.ts`). Não use `connection()`: ele trava isso.
+- Link interno é `LinkRapido` (`src/components/ui/link-rapido.tsx`). A exceção é link em massa, como as células da DRE: passar o mouse por eles não pode virar uma rajada de buscas.
 - Toda rota nova tem o seu `loading.tsx`, de uma linha: `export { Carregando as default } from '@/components/ui/carregando'`. Sem ele, o Next acusa navegação bloqueante.
 - Componente cliente que lê a URL (`usePathname`, `useSearchParams`) fica dentro de `<Suspense>` (veja `menu-lateral.tsx`).
 - `params` e `searchParams` são Promises: use `await`.
@@ -37,7 +39,7 @@ app/ (rotas e composição)  →  data/ (acesso a dados)  →  domain/ (regras p
 2. A action fica em `app/<rota>/actions.ts` com `'use server'`:
    - valida com `lerFormulario(esquema, formData)` de `src/lib/formulario.ts` (Zod; campos prontos em `campo.*`);
    - chama a função de `data/`;
-   - termina com `refresh()` de `next/cache` (para continuar na página) ou `redirect()`.
+   - termina com `atualizarTelas()` de `src/data/telas.ts`, seguido de `redirect()` quando for mudar de página. Sem ele, quem gravou vê a tela antiga.
 3. O formulário é um componente cliente com `useActionState(action, {})`. O React 19 limpa o formulário depois da action; para não perder o que foi digitado, use `defaultValue={estado.valores?.campo ?? padrao}` (o `lerFormulario` já devolve `valores`; em outros erros, `valoresDoFormulario(formData)`). Use `Campo`, `Entrada`, `Selecao`, `AreaTexto`, `MensagemFormulario` (`ui/form.tsx`) e `BotaoEnviar` (`ui/botao-enviar.tsx`). Link com cara de botão: `classeBotao()`.
 4. Ids novos com `crypto.randomUUID()`. Dinheiro digitado vira centavos com `campo.dinheiro()`.
 5. Schema do banco: `src/db/schema/<area>.ts`, mantido pela sessão A (veja `plano.md`).
@@ -52,7 +54,7 @@ app/ (rotas e composição)  →  data/ (acesso a dados)  →  domain/ (regras p
 ## Nomes
 
 - Domínio em português, sem acento: `processo`, `prazo`, `notaFiscal`, `calcularVencimento`.
-- UI genérica em inglês: `Card`, `Badge`, `Stat`.
+- UI genérica em inglês: `Card`, `Badge`.
 - Arquivos em kebab-case. Componentes em PascalCase, com export nomeado. `export default` só onde o Next exige (page, layout, loading).
 
 ## Estilo

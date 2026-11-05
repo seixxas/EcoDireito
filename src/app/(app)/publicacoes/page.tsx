@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { AbasDoDia } from '@/components/layout/abas-do-dia'
 import { Badge } from '@/components/ui/badge'
 import { Busca } from '@/components/ui/busca'
@@ -41,9 +41,9 @@ function endereco(aba: Aba, q?: string, pagina = 1) {
 }
 
 const linkDoProcesso = (processo: NonNullable<PublicacaoNaCaixa['processo']>) => (
-  <Link href={`/processos/${processo.id}`} className="link">
+  <LinkRapido href={`/processos/${processo.id}`} className="link">
     {processo.empreendimento}
-  </Link>
+  </LinkRapido>
 )
 
 /** Por que o ato está na caixa: como o robô o ligou a um processo ou cliente. */
@@ -96,9 +96,9 @@ function AvisoDoCadastro({ item }: { item: PublicacaoNaCaixa }) {
       <span>
         {lancado ? `Processo cadastrado e ato ${item.evento ? 'lançado' : 'registrado como visto'}. ` : 'Processo cadastrado com outro nº SEI: o ato não foi lançado e continua aqui para revisar.'}
         {lancado && item.processo && (
-          <Link href={`/processos/${item.processo.id}`} className="link">
+          <LinkRapido href={`/processos/${item.processo.id}`} className="link">
             Abrir o processo
-          </Link>
+          </LinkRapido>
         )}
       </span>
     </p>

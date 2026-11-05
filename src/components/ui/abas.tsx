@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import { cn } from '@/lib/cn'
+import { LinkRapido } from './link-rapido'
 
 export type Aba = {
   valor: string
@@ -18,7 +18,7 @@ export function Abas({ abas, ativa, className }: { abas: Aba[]; ativa: string; c
   return (
     <nav className={cn('mb-5 border-b border-line print:hidden', emGrade ? 'grid grid-cols-2 gap-x-1 sm:grid-cols-3 xl:grid-cols-6' : 'flex gap-6 overflow-x-auto', className)}>
       {abas.map((aba) => (
-        <Link
+        <LinkRapido
           key={aba.valor}
           href={aba.href}
           scroll={false}
@@ -33,7 +33,7 @@ export function Abas({ abas, ativa, className }: { abas: Aba[]; ativa: string; c
           {aba.rotulo}
           {aba.contagem !== undefined && <span className="ml-1.5 rounded bg-rail px-1.5 py-0.5 text-xs tabular-nums text-muted">{aba.contagem}</span>}
           {aba.detalhe && <span className={cn('mt-1 block truncate text-base font-semibold tabular-nums', aba.alerta ? 'text-danger' : 'text-ink')}>{aba.detalhe}</span>}
-        </Link>
+        </LinkRapido>
       ))}
     </nav>
   )

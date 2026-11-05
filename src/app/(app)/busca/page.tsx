@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import type { ReactNode } from 'react'
 import { SituacaoDaNota } from '@/components/financeiro/situacao-nota'
 import { Busca } from '@/components/ui/busca'
@@ -24,9 +24,9 @@ function Grupo({ titulo, total, verTodos, children }: { titulo: string; total: n
       titulo={`${titulo} · ${total}`}
       acao={
         total > POR_GRUPO && (
-          <Link href={verTodos} className="link text-sm">
+          <LinkRapido href={verTodos} className="link text-sm">
             Ver todos
-          </Link>
+          </LinkRapido>
         )
       }
     >

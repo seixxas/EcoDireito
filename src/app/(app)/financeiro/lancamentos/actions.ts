@@ -1,8 +1,8 @@
 'use server'
 
-import { refresh } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { atualizarTelas } from '@/data/telas'
 import { alterarLancamento, apagarLancamento, gravarLancamento, obterLancamento } from '@/data/financeiro'
 import { hoje } from '@/data/hoje'
 import { exigirArea } from '@/data/sessao'
@@ -34,7 +34,7 @@ export async function registrarLancamento(_: EstadoFormulario, formData: FormDat
   if (Object.keys(erros).length) return { erro: 'Confira os campos destacados.', erros, valores: valoresDoFormulario(formData) }
 
   await gravarLancamento(lancamento)
-  refresh()
+  atualizarTelas()
   return { ok: 'Lançamento registrado.' }
 }
 
@@ -51,7 +51,7 @@ export async function editarLancamento(_: EstadoFormulario, formData: FormData):
   if ('estado' in lido) return lido.estado
 
   await alterarLancamento(lancamento.id, alteracoesDoLancamento(lancamento, { ...lancamento, ...lido.dados }))
-  refresh()
+  atualizarTelas()
   return { ok: 'Alterações salvas.' }
 }
 
@@ -60,6 +60,6 @@ export async function excluirLancamento(formData: FormData) {
   await exigirArea('financeiro', 'editar')
   await apagarLancamento(String(formData.get('id')))
   const voltar = String(formData.get('voltar') ?? '')
+  atualizarTelas()
   if (voltar.startsWith('/financeiro/lancamentos')) redirect(voltar)
-  refresh()
 }

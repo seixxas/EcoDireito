@@ -1,17 +1,19 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { cache } from 'react'
 import { temBanco } from '@/db'
 import { auth } from '@/lib/auth'
 import { ehPapel, inicioDoPapel, pode, type Acesso, type Area, type Papel } from '@/lib/permissoes'
+import { guardarNaTela } from './telas'
 
 export type Usuario = { id: string; nome: string; email: string; papel: Papel; clienteId?: string }
 
 /** Sem banco não há login: todo mundo entra como sócia de demonstração. */
 const USUARIO_SEM_BANCO: Usuario = { id: 'demo', nome: 'Elaine', email: 'demo@local', papel: 'socia' }
 
-/** Usuário logado (uma consulta por requisição) ou undefined. */
-export const usuarioAtual = cache(async (): Promise<Usuario | undefined> => {
+/** Usuário logado (uma leitura por requisição) ou undefined. Fica só no navegador de quem entrou, nunca no servidor. */
+export async function usuarioAtual(): Promise<Usuario | undefined> {
+  'use cache: private'
+  guardarNaTela()
   if (!temBanco) return USUARIO_SEM_BANCO
   const sessao = await auth.api.getSession({ headers: await headers() })
   if (!sessao) return undefined
@@ -23,7 +25,7 @@ export const usuarioAtual = cache(async (): Promise<Usuario | undefined> => {
     papel: ehPapel(user.papel) ? user.papel : 'equipe',
     clienteId: user.clienteId ?? undefined,
   }
-})
+}
 
 export async function exigirUsuario() {
   const usuario = await usuarioAtual()

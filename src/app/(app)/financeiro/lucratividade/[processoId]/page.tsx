@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { notFound } from 'next/navigation'
 import { SituacaoDaNota } from '@/components/financeiro/situacao-nota'
 import { Card } from '@/components/ui/card'
@@ -41,20 +41,20 @@ export default async function PaginaLucratividade({ params }: { params: Promise<
 
   return (
     <>
-      <Link href="/financeiro/lucratividade" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
+      <LinkRapido href="/financeiro/lucratividade" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
         <ArrowLeft className="size-4" /> Lucratividade por projeto
-      </Link>
+      </LinkRapido>
       <PageHeader
         titulo={processo.empreendimento}
         resumo={`${cliente.nome} · ${processo.servico === 'manejo' ? 'manejo' : 'licenciamento'} · contrato de ${brl(contratado)}`}
         acoes={
           <>
-            <Link href={lancamentos()} className={classeBotao('secundario')}>
+            <LinkRapido href={lancamentos()} className={classeBotao('secundario')}>
               Lançamentos do processo
-            </Link>
-            <Link href={`/processos/${processo.id}`} className={classeBotao('secundario')}>
+            </LinkRapido>
+            <LinkRapido href={`/processos/${processo.id}`} className={classeBotao('secundario')}>
               Ver processo
-            </Link>
+            </LinkRapido>
           </>
         }
       />
@@ -115,9 +115,9 @@ export default async function PaginaLucratividade({ params }: { params: Promise<
                   <td className="num hidden text-muted sm:table-cell">{doFaturado(p.valor)}</td>
                   <td className="text-right">
                     {p.href && (
-                      <Link href={p.href} className="link whitespace-nowrap text-sm">
+                      <LinkRapido href={p.href} className="link whitespace-nowrap text-sm">
                         lançamentos
-                      </Link>
+                      </LinkRapido>
                     )}
                   </td>
                 </tr>

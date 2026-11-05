@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { AbasDoDia } from '@/components/layout/abas-do-dia'
@@ -159,9 +159,9 @@ export default async function Hoje() {
                     key={ato.id}
                     situacao={<Situacao tom="info">Nova no Diário</Situacao>}
                     titulo={
-                      <Link href="/publicacoes" className="hover:text-brand-700">
+                      <LinkRapido href="/publicacoes" className="hover:text-brand-700">
                         {ato.serie}
-                      </Link>
+                      </LinkRapido>
                     }
                     contexto={processo ? processo.empreendimento : `${cliente.nome} · processo ainda não cadastrado`}
                     direita={pode(usuario.papel, 'prazos', 'editar') ? <AcoesPublicacao id={ato.id} temProcesso={Boolean(processo)} marcaEtapa={Boolean(evento)} /> : 'A revisar'}
@@ -195,9 +195,9 @@ export default async function Hoje() {
             <Secao
               titulo="Próximos 7 dias"
               acao={
-                <Link href="/prazos" className="link text-sm">
+                <LinkRapido href="/prazos" className="link text-sm">
                   Todos os prazos
-                </Link>
+                </LinkRapido>
               }
             >
               <Lista>
@@ -214,9 +214,9 @@ export default async function Hoje() {
             <Secao
               titulo="Dinheiro"
               acao={
-                <Link href="/financeiro" className="link text-sm">
+                <LinkRapido href="/financeiro" className="link text-sm">
                   Financeiro
-                </Link>
+                </LinkRapido>
               }
             >
               <dl className="divide-y divide-line rounded-lg border border-line bg-surface px-4">
@@ -231,9 +231,9 @@ export default async function Hoje() {
           <Secao
             titulo="Diário Oficial"
             acao={
-              <Link href="/publicacoes" className="link text-sm">
+              <LinkRapido href="/publicacoes" className="link text-sm">
                 Abrir
-              </Link>
+              </LinkRapido>
             }
           >
             <p className="rounded-lg border border-line bg-surface p-4 text-muted">

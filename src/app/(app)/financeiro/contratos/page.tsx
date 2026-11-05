@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { Busca } from '@/components/ui/busca'
 import { Card } from '@/components/ui/card'
 import { Vazio } from '@/components/ui/expansivel'
@@ -58,9 +58,9 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
             <>
               {' '}
               (
-              <Link href="/comercial" className="link">
+              <LinkRapido href="/comercial" className="link">
                 ver no Comercial
-              </Link>
+              </LinkRapido>
               ).
             </>
           ) : (
@@ -87,9 +87,9 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
             {paginado.itens.map(({ processo, cliente, parcelas }) => (
               <tr key={processo.id}>
                 <td className="sm:min-w-64">
-                  <Link href={`/processos/${processo.id}`} className="link font-medium">
+                  <LinkRapido href={`/processos/${processo.id}`} className="link font-medium">
                     {processo.empreendimento}
-                  </Link>
+                  </LinkRapido>
                   <p className="hidden text-xs text-muted sm:block">{cliente.nome}</p>
                   {/* No celular a coluna "A faturar" some; o valor vem para cá. */}
                   {total(parcelas, 'liberada') > 0 && <p className="text-xs text-warn sm:hidden">{brl(total(parcelas, 'liberada'))} a faturar</p>}
@@ -101,10 +101,10 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
                 <td className="num hidden text-warn sm:table-cell">{total(parcelas, 'liberada') ? brl(total(parcelas, 'liberada')) : ''}</td>
                 {editar && (
                   <td className="text-right">
-                    <Link href={`/financeiro/contratos/${processo.id}`} className="link whitespace-nowrap text-sm font-medium">
+                    <LinkRapido href={`/financeiro/contratos/${processo.id}`} className="link whitespace-nowrap text-sm font-medium">
                       {parcelas.length ? 'Editar' : 'Montar'}
                       <span className="hidden sm:inline">{parcelas.length ? ' parcelas' : ' contrato'}</span>
-                    </Link>
+                    </LinkRapido>
                   </td>
                 )}
               </tr>

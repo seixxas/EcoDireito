@@ -1,4 +1,5 @@
 import { Search, X } from 'lucide-react'
+import Form from 'next/form'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 
@@ -13,16 +14,17 @@ type Props = {
   className?: string
 }
 
-/** Caixa de busca na URL (`?q=`). Formulário GET: funciona sem JavaScript. Filtre com `combina` (`src/lib/buscar.ts`). */
+/** Caixa de busca na URL (`?q=`). Buscar não recarrega a página, e funciona sem JavaScript. Filtre com `combina` (`src/lib/buscar.ts`). */
 export function Busca({ valor, placeholder = 'Buscar', manter = {}, limpar, className }: Props) {
   return (
-    <form method="get" role="search" className={cn('flex max-w-md flex-1 items-center gap-2', className)}>
+    <Form action={limpar.split('?')[0]} scroll={false} role="search" className={cn('flex max-w-md flex-1 items-center gap-2', className)}>
       {Object.entries(manter).map(([nome, v]) => v && <input key={nome} type="hidden" name={nome} value={v} />)}
       <label className="relative flex-1">
         <span className="sr-only">{placeholder}</span>
         <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-subtle" />
         <input
           type="search"
+          key={valor}
           name="q"
           defaultValue={valor}
           placeholder={placeholder}
@@ -34,6 +36,6 @@ export function Busca({ valor, placeholder = 'Buscar', manter = {}, limpar, clas
           <X className="size-4" /> Limpar
         </Link>
       )}
-    </form>
+    </Form>
   )
 }

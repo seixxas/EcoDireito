@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { notFound } from 'next/navigation'
 import { SituacaoDaNota } from '@/components/financeiro/situacao-nota'
 import { PageHeader } from '@/components/ui/page-header'
@@ -20,9 +20,9 @@ export default async function PaginaNota({ params }: { params: Promise<{ id: str
 
   return (
     <>
-      <Link href="/financeiro" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
+      <LinkRapido href="/financeiro" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
         <ArrowLeft className="size-4" /> Faturamento
-      </Link>
+      </LinkRapido>
       <PageHeader
         titulo={`NF ${nota.numero}`}
         resumo={
