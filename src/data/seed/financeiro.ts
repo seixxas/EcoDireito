@@ -2,7 +2,7 @@ import { diasEntre, mesDe, mesesEntre, somarDias, somarMeses, type DataISO } fro
 import { reais, somar, type Centavos } from '@/lib/dinheiro'
 import { diaUtilAnterior, ehDiaUtil, proximoDiaUtil } from '@/domain/feriados'
 import type { Lancamento } from '@/domain/financeiro/lancamentos'
-import type { NotaFiscal } from '@/domain/financeiro/notas'
+import { ALIQUOTA_ISS, type NotaFiscal } from '@/domain/financeiro/notas'
 import type { Contrato } from '@/domain/financeiro/parcelas'
 import type { ContaId } from '@/domain/financeiro/plano-de-contas'
 import type { Processo } from '@/domain/processos'
@@ -12,7 +12,6 @@ import { PARCELA_A_FATURAR } from './processos'
 
 export const MESES_DE_HISTORICO = 10
 export const ALIQUOTA_SIMPLES = 0.155
-export const ALIQUOTA_ISS = 0.05
 const RETENCAO = 0.055
 const NUMERO_PRIMEIRA_NOTA = 512
 
