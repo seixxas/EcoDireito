@@ -18,7 +18,7 @@ import { contar } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 
-export const metadata: Metadata = { title: 'Processos' }
+export const metadata: Metadata = { title: 'Projetos' }
 
 type Filtros = { fase?: NumeroFase; q?: string; pagina?: number }
 
@@ -27,7 +27,7 @@ function endereco({ fase, q, pagina = 1 }: Filtros) {
   if (fase) busca.set('fase', String(fase))
   if (q) busca.set('q', q)
   if (pagina > 1) busca.set('pagina', String(pagina))
-  return busca.size ? `/processos?${busca}` : '/processos'
+  return busca.size ? `/projetos?${busca}` : '/projetos'
 }
 
 export default async function PaginaProcessos({ searchParams }: { searchParams: Promise<{ fase?: string; q?: string; pagina?: string }> }) {
@@ -48,16 +48,16 @@ export default async function PaginaProcessos({ searchParams }: { searchParams: 
   return (
     <>
       <PageHeader
-        titulo="Processos"
-        resumo={`${contar(itens.length, 'processo', 'processos')}${comVencido ? `, ${comVencido} com prazo vencido` : ''}. Os que vencem primeiro vêm antes.`}
+        titulo="Projetos"
+        resumo={`${contar(itens.length, 'projeto', 'projetos')}${comVencido ? `, ${comVencido} com prazo vencido` : ''}. Os que vencem primeiro vêm antes.`}
         acoes={
           <>
-            <LinkRapido href="/processos/clientes" className={classeBotao('secundario')}>
+            <LinkRapido href="/projetos/clientes" className={classeBotao('secundario')}>
               Clientes
             </LinkRapido>
             {pode(usuario.papel, 'prazos', 'editar') && (
-              <LinkRapido href="/processos/novo" className={classeBotao()}>
-                Novo processo
+              <LinkRapido href="/projetos/novo" className={classeBotao()}>
+                Novo projeto
               </LinkRapido>
             )}
           </>
@@ -86,7 +86,7 @@ export default async function PaginaProcessos({ searchParams }: { searchParams: 
       </div>
       <Lista>
         {paginado.itens.map(({ processo, cliente, proximo }) => (
-          <Linha key={processo.id} href={`/processos/${processo.id}`} className="flex-wrap gap-y-1 sm:flex-nowrap">
+          <Linha key={processo.id} href={`/projetos/${processo.id}`} className="flex-wrap gap-y-1 sm:flex-nowrap">
             <div className="min-w-0 basis-full sm:basis-auto sm:flex-1">
               <p className="truncate font-medium text-ink">{processo.empreendimento}</p>
               <p className="truncate text-xs text-muted">
@@ -111,7 +111,7 @@ export default async function PaginaProcessos({ searchParams }: { searchParams: 
           </Linha>
         ))}
       </Lista>
-      {paginado.total === 0 && <Vazio>{q || fase ? 'Nenhum processo com esse filtro.' : 'Nenhum processo cadastrado.'}</Vazio>}
+      {paginado.total === 0 && <Vazio>{q || fase ? 'Nenhum projeto com esse filtro.' : 'Nenhum projeto cadastrado.'}</Vazio>}
       <Paginacao {...paginado} href={(n) => endereco({ ...filtros, pagina: n })} />
     </>
   )

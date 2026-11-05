@@ -35,7 +35,7 @@ export function FormularioEdicao({
           <Campo rotulo="Competência" erro={erros.competencia} dica={DICA_COMPETENCIA}>
             <Entrada name="competencia" type="month" defaultValue={valores.competencia ?? lancamento.competencia} />
           </Campo>
-          <Campo rotulo="Processo">
+          <Campo rotulo="Projeto">
             <Selecao name="processoId" defaultValue={valores.processoId ?? lancamento.processoId ?? ''}>
               <option value="">Nenhum</option>
               {processos.map((p) => (

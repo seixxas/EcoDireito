@@ -59,7 +59,7 @@ Pode mexer em: `src/db/**`, `src/data/base.ts`, `src/data/hoje.ts`, `src/lib/aut
 1. Antes da E1 chegar: E5, a parte que não precisa de banco. Coletor do DOC-SP em `src/robo/doc-sp.ts` (download da edição, filtro da SVMA, conversão para `Ato`), com testes usando um arquivo de exemplo.
 2. Com a E1 na `main`: E3, e depois gravar o resultado do robô na caixa de entrada.
 
-Pode mexer em: `src/domain/prazos.ts`, `src/domain/processos.ts`, `src/domain/publicacoes.ts`, `src/robo/**`, `src/data/processos.ts`, `src/data/publicacoes.ts`, `src/app/(app)/prazos/**`, `src/app/(app)/processos/**`, `src/app/(app)/publicacoes/**`, `src/app/api/robo/**`.
+Pode mexer em: `src/domain/prazos.ts`, `src/domain/processos.ts`, `src/domain/publicacoes.ts`, `src/robo/**`, `src/data/processos.ts`, `src/data/publicacoes.ts`, `src/app/(app)/prazos/**`, `src/app/(app)/projetos/**`, `src/app/(app)/publicacoes/**`, `src/app/api/robo/**`.
 
 ### Sessão C: financeiro (branch `feat/extrato`, depois `feat/edicao-financeira`)
 
@@ -82,5 +82,5 @@ Pode mexer em: `src/domain/financeiro/**`, `src/data/financeiro.ts`, `src/app/(a
 
 | De | Para | Pedido | Feito |
 |---|---|---|---|
-| C | B | Em `/processos/[id]`, no card de parcelas, para quem edita o financeiro: link "Editar parcelas" para `/financeiro/contratos/[id]` e, na parcela pronta para faturar, "Registrar nota" para `/financeiro/notas/nova?parcela=<id>`. | |
+| C | B | Em `/projetos/[id]`, no card de parcelas, para quem edita o financeiro: link "Editar parcelas" para `/financeiro/contratos/[id]` e, na parcela pronta para faturar, "Registrar nota" para `/financeiro/notas/nova?parcela=<id>`. | |
 | B | A | `publicacoes.link`, `edicoes_diario.erro` e unique (data, documento) para o robô não duplicar | sim (feat/fundacao) |

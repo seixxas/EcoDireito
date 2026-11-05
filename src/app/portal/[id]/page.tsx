@@ -15,7 +15,7 @@ import { diasEntre } from '@/lib/datas'
 import { formatarData } from '@/lib/formatar'
 import { TopoDoPortal } from '../_components/topo'
 
-export const metadata: Metadata = { title: 'Acompanhamento do processo' }
+export const metadata: Metadata = { title: 'Acompanhamento do projeto' }
 
 function contagem(dias: number): { texto: string; tom: Tom } {
   if (dias < 0) return { texto: `venceu há ${-dias} ${dias === -1 ? 'dia' : 'dias'}`, tom: 'danger' }
@@ -75,7 +75,7 @@ export default async function Portal({ params }: { params: Promise<{ id: string 
           )}
         </div>
 
-        <Secao titulo="As etapas do processo">
+        <Secao titulo="As etapas do projeto">
           <ol>
             {FASES.map((f, i) => {
               const estado = f.numero < fase.numero ? 'feita' : f.numero === fase.numero ? 'atual' : 'futura'

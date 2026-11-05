@@ -15,7 +15,7 @@ export async function lancarAto(_: EstadoFormulario, formData: FormData): Promis
   if ('estado' in lido) return lido.estado
   const item = await obterPublicacao(lido.dados.id)
   if (!item || item.ato.status !== 'nova') return { erro: 'Este ato já foi revisado.' }
-  if (!item.processo) return { erro: 'Cadastre o processo antes de lançar.' }
+  if (!item.processo) return { erro: 'Cadastre o projeto antes de lançar.' }
   await gravarConfirmacao({ ...item, processo: item.processo })
   atualizarTelas()
   return {}

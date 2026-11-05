@@ -36,7 +36,7 @@ function Cartao({ item }: { item: Item }) {
   return (
     <li>
       <LinkRapido
-        href={`/processos/${processo.id}?aba=proposta`}
+        href={`/projetos/${processo.id}?aba=proposta`}
         className="block rounded-md border border-line bg-surface p-3 transition-colors hover:border-brand-300 hover:bg-brand-50"
       >
         <p className="font-medium text-ink">{processo.empreendimento}</p>
@@ -70,7 +70,7 @@ export default async function PaginaComercial() {
       <AbasDoComercial ativa="propostas" />
       <PageHeader
         titulo="Propostas"
-        resumo={`${contar(numeros.quantasEmAberto, 'proposta em aberto', 'propostas em aberto')}${numeros.pedemRetorno ? `, ${numeros.pedemRetorno} sem resposta há mais de ${DIAS_PARA_RETORNO} dias` : ''}. Aprovada, a proposta vira processo na fase Documentação.`}
+        resumo={`${contar(numeros.quantasEmAberto, 'proposta em aberto', 'propostas em aberto')}${numeros.pedemRetorno ? `, ${numeros.pedemRetorno} sem resposta há mais de ${DIAS_PARA_RETORNO} dias` : ''}. Aprovada, a proposta vira projeto na fase Documentação.`}
         acoes={
           pode(usuario.papel, 'comercial', 'editar') && (
             <LinkRapido href="/comercial/nova" className={classeBotao()}>
@@ -82,7 +82,7 @@ export default async function PaginaComercial() {
 
       <Resumo className="mb-8">
         {verValores && <ItemResumo rotulo="Em aberto" valor={brl(numeros.emAberto)} detalhe="em elaboração e enviadas" />}
-        <ItemResumo rotulo="Viram processo" valor={numeros.conversao !== undefined ? `${numeros.conversao}%` : '—'} detalhe="das decididas nos últimos 6 meses" />
+        <ItemResumo rotulo="Viram projeto" valor={numeros.conversao !== undefined ? `${numeros.conversao}%` : '—'} detalhe="das decididas nos últimos 6 meses" />
         <ItemResumo rotulo="Tempo até aprovar" valor={numeros.diasAteAprovar !== undefined ? contar(numeros.diasAteAprovar, 'dia', 'dias') : '—'} detalhe="mediana, do envio ao aceite" />
         <ItemResumo rotulo="Pedem retorno" valor={String(numeros.pedemRetorno)} detalhe={`enviadas há mais de ${DIAS_PARA_RETORNO} dias`} tom={numeros.pedemRetorno ? 'warn' : 'neutral'} />
       </Resumo>

@@ -39,7 +39,7 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 
 ## Layout
 
-- Menu lateral verde escuro (`nav`), estreito, com 4 itens na ordem do negócio: Hoje, Propostas, Processos e Financeiro. Em cima, a busca geral (`BuscaGeral`, Ctrl+K, resultado em `/busca`) e o botão "Novo" (`BotaoNovo`, só o que o perfil pode criar). Embaixo dos itens, os atalhos fixados (`BotaoFixar` no processo, `ListaFixados` no menu), guardados no navegador de cada pessoa. Usuários, tema e "Sair" no pé.
+- Menu lateral verde escuro (`nav`), estreito, com 4 itens na ordem do negócio: Hoje, Propostas, Projetos e Financeiro. Em cima, a busca geral (`BuscaGeral`, Ctrl+K, resultado em `/busca`) e o botão "Novo" (`BotaoNovo`, só o que o perfil pode criar). Embaixo dos itens, os atalhos fixados (`BotaoFixar` no processo, `ListaFixados` no menu), guardados no navegador de cada pessoa. Usuários, tema e "Sair" no pé.
 - As telas de cada item ficam em abas no topo da página, acima do título, sempre com o componente `Abas`: Hoje tem Para fazer · Diário Oficial · Prazos (`AbasDoDia`, com a contagem do que espera alguém); Propostas tem Propostas · Prospecção (`AbasDoComercial`); Financeiro tem as abas no layout da área (`AbasDoFinanceiro`). As URLs antigas continuam valendo.
 - Na lista Para fazer, o que se resolve ali tem botão na linha (Lançar no processo, Ignorar); o resto abre o lugar exato (o prazo abre a etapa dele, em `?aba=etapas&fase=`). Linha com botão não é link: o título é que leva à tela.
 - A área de conteúdo usa a largura toda (até 120rem, para monitor muito largo). A partir de 1600 px, a fonte da raiz sobe para 106,25% e tudo cresce junto. Formulário usa a largura em colunas (`xl:grid-cols-4`), não campo esticado. A proposta é documento: em tela larga, a situação e as ações ficam ao lado dele.
@@ -76,7 +76,7 @@ Texto de resumo: `contar(n, 'prazo', 'prazos')`, `juntar(['a', 'b', 'c'])` → "
 |---|---|
 | Hoje (`/`) | Feito. Uma lista em três grupos (Atrasado, Hoje, Próximos 7 dias) com os prazos da Eco Direito, publicações a revisar, parcelas a faturar e uma linha só para as notas atrasadas. Ao lado, o dinheiro em linhas e a edição do Diário. Os prazos da SVMA ficam em /prazos (A) |
 | Prazos | Agrupar por período (Vencidos, Esta semana, Próximas semanas, Mais adiante) em linhas compactas; cálculo e base legal em `Expansivel` (B) |
-| Processos / processo | Lista compacta. No processo: barra das 8 fases clicável, dados em uma linha e abas Etapas (checklist da fase) · Prazos · Linha do tempo · Cobrança |
+| Projetos / projeto | Lista compacta. No processo: barra das 8 fases clicável, dados em uma linha e abas Etapas (checklist da fase) · Prazos · Linha do tempo · Cobrança |
 | Diário Oficial | Linhas compactas (série, cliente/processo, como achou, prazo sugerido, ações); texto do ato em `Expansivel` (B) |
 | Faturamento | Feito. Frase, faixa de abas do ciclo, busca e a tabela da aba, com botões de texto na linha. Clicar na linha abre o painel à direita (`?nota=`), sem sair da lista: `LinhaDaNota` + `PainelLateral`, em `financeiro/_components`. Detalhes em `financeiro.md` |
 | Financeiro | Mês atual por padrão com navegação de mês; `Resumo` no topo; gráfico em página própria ou atrás de aba; DRE em grade de planilha, com blocos que abrem e lançamentos abaixo (`financeiro.md`) |
@@ -85,6 +85,7 @@ Texto de resumo: `contar(n, 'prazo', 'prazos')`, `juntar(['a', 'b', 'c'])` → "
 
 ## Textos
 
+- O trabalho para o cliente é **projeto**, nunca "processo". "Processo" só para o processo oficial na SVMA (veja `produto.md`).
 - Português do Brasil, frases curtas. Datas `dd/mm/aaaa` (ou `ter, 03/11` em listas), dinheiro `R$ 1.234,56`.
 - Contagem de prazo sempre explicável, mas recolhida.
 - O aviso "Dados fictícios" fica discreto, no pé do menu.

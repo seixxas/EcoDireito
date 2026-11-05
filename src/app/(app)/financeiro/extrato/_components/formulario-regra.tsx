@@ -17,7 +17,7 @@ export function FormularioRegra({ processos }: { processos: { id: string; nome: 
       <Campo rotulo="Lançar em" erro={erros.contaId}>
         <SelecaoConta name="contaId" defaultValue={valores.contaId ?? ''} required />
       </Campo>
-      <Campo rotulo="Processo">
+      <Campo rotulo="Projeto">
         <Selecao name="processoId" defaultValue={valores.processoId ?? ''}>
           <option value="">Nenhum</option>
           {processos.map((p) => (

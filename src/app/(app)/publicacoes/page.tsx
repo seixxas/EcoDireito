@@ -41,18 +41,18 @@ function endereco(aba: Aba, q?: string, pagina = 1) {
 }
 
 const linkDoProcesso = (processo: NonNullable<PublicacaoNaCaixa['processo']>) => (
-  <LinkRapido href={`/processos/${processo.id}`} className="link">
+  <LinkRapido href={`/projetos/${processo.id}`} className="link">
     {processo.empreendimento}
   </LinkRapido>
 )
 
 /** Por que o ato está na caixa: como o robô o ligou a um processo ou cliente. */
 function PorQue({ ato, vinculo, processo }: PublicacaoNaCaixa) {
-  if (processo && vinculo.comoAchou === 'simproc') return <>Achado pelo nº SIMPROC do processo {linkDoProcesso(processo)}, escrito no texto do ato.</>
-  if (processo) return <>Achado pelo nº SEI do processo {linkDoProcesso(processo)}.</>
+  if (processo && vinculo.comoAchou === 'simproc') return <>Achado pelo nº SIMPROC do projeto {linkDoProcesso(processo)}, escrito no texto do ato.</>
+  if (processo) return <>Achado pelo nº SEI do projeto {linkDoProcesso(processo)}.</>
   return (
     <>
-      Achado pelo CNPJ do cliente, escrito no texto do ato. O processo deste ato{' '}
+      Achado pelo CNPJ do cliente, escrito no texto do ato. O projeto deste ato{' '}
       {ato.processo && (
         <>
           (SEI <span className="whitespace-nowrap">{ato.processo}</span>){' '}
@@ -69,7 +69,7 @@ function AoLancar({ evento, prazosSugeridos, processo, dia }: PublicacaoNaCaixa 
     return processo ? (
       <>Este tipo de ato não marca etapa: marcar como visto registra só que ele é nosso.</>
     ) : (
-      <>Este tipo de ato não marca etapa: ao cadastrar o processo, ele fica registrado como visto.</>
+      <>Este tipo de ato não marca etapa: ao cadastrar o projeto, ele fica registrado como visto.</>
     )
   }
   return (
@@ -94,10 +94,10 @@ function AvisoDoCadastro({ item }: { item: PublicacaoNaCaixa }) {
     <p className={cn('-mt-3 mb-5 flex items-start gap-1.5 text-sm', lancado ? 'text-ok' : 'text-warn')}>
       <span className={cn('mt-1.5 size-2 shrink-0 rounded-full', lancado ? 'bg-ok' : 'bg-accent')} />
       <span>
-        {lancado ? `Processo cadastrado e ato ${item.evento ? 'lançado' : 'registrado como visto'}. ` : 'Processo cadastrado com outro nº SEI: o ato não foi lançado e continua aqui para revisar.'}
+        {lancado ? `Projeto cadastrado e ato ${item.evento ? 'lançado' : 'registrado como visto'}. ` : 'Projeto cadastrado com outro nº SEI: o ato não foi lançado e continua aqui para revisar.'}
         {lancado && item.processo && (
-          <LinkRapido href={`/processos/${item.processo.id}`} className="link">
-            Abrir o processo
+          <LinkRapido href={`/projetos/${item.processo.id}`} className="link">
+            Abrir o projeto
           </LinkRapido>
         )}
       </span>
@@ -179,8 +179,8 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
   const grupos =
     aba === 'nova'
       ? [
-          { titulo: 'De processos que já acompanhamos', itens: lista.itens.filter((item) => item.processo) },
-          { titulo: 'De clientes, mas o processo ainda não está cadastrado', itens: lista.itens.filter((item) => !item.processo) },
+          { titulo: 'De projetos que já acompanhamos', itens: lista.itens.filter((item) => item.processo) },
+          { titulo: 'De clientes, mas o projeto ainda não está cadastrado', itens: lista.itens.filter((item) => !item.processo) },
         ]
       : [{ titulo: undefined, itens: lista.itens }]
 
@@ -219,7 +219,7 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
       </div>
       {aba === 'nova' && (
         <p className="mb-6 text-sm text-muted">
-          O robô lê o Diário Oficial e traz os atos que parecem ser dos nossos clientes. Para cada um, decida: lançar no processo (marca a etapa e conta o
+          O robô lê o Diário Oficial e traz os atos que parecem ser dos nossos clientes. Para cada um, decida: lançar no projeto (marca a etapa e conta o
           prazo) ou ignorar.
         </p>
       )}

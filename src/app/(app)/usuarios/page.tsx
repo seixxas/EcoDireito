@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: 'Usuários' }
 
 /** "edita prazos e financeiro e cuida dos acessos", em vez de uma tabela de permissões. */
 function oQuePode(papel: Papel) {
-  if (papel === 'cliente') return 'vê só o portal dos próprios processos'
+  if (papel === 'cliente') return 'vê só o portal dos próprios projetos'
   const { prazos, financeiro, usuarios } = PAPEIS[papel]
   const partes = [
     prazos !== 'nada' && `${prazos === 'editar' ? 'edita' : 'vê'} prazos`,

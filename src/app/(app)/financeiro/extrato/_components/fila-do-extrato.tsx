@@ -106,7 +106,7 @@ function FormularioClassificacao({ linha, processos, notas }: { linha: LinhaDaFi
       <Campo rotulo="Conta" erro={erros.contaId}>
         <SelecaoConta name="contaId" defaultValue={valores.contaId ?? ''} />
       </Campo>
-      <Campo rotulo="Processo">
+      <Campo rotulo="Projeto">
         <Selecao name="processoId" defaultValue={valores.processoId ?? ''}>
           <option value="">Nenhum</option>
           {processos.map((p) => (

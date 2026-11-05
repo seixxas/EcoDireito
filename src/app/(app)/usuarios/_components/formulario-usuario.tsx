@@ -28,7 +28,7 @@ export function FormularioUsuario({ clientes }: { clientes: { id: string; nome: 
         </Selecao>
       </Campo>
       {papel === 'cliente' ? (
-        <Campo rotulo="Cliente" erro={estado.erros?.clienteId} dica="Ele verá só os processos deste cliente">
+        <Campo rotulo="Cliente" erro={estado.erros?.clienteId} dica="Ele verá só os projetos deste cliente">
           <Selecao name="clienteId" defaultValue="">
             <option value="" disabled>
               Escolha…

@@ -50,10 +50,10 @@ export default async function PaginaLucratividade({ params }: { params: Promise<
         acoes={
           <>
             <LinkRapido href={lancamentos()} className={classeBotao('secundario')}>
-              Lançamentos do processo
+              Lançamentos do projeto
             </LinkRapido>
-            <LinkRapido href={`/processos/${processo.id}`} className={classeBotao('secundario')}>
-              Ver processo
+            <LinkRapido href={`/projetos/${processo.id}`} className={classeBotao('secundario')}>
+              Ver projeto
             </LinkRapido>
           </>
         }

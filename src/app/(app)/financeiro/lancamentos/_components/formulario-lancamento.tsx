@@ -35,7 +35,7 @@ export function FormularioLancamento({ hoje, processos }: { hoje: string; proces
       <Campo rotulo="Competência" erro={erros.competencia} dica={DICA_COMPETENCIA}>
         <Entrada name="competencia" type="month" defaultValue={valores.competencia} />
       </Campo>
-      <Campo rotulo="Processo" dica="Opcional, para a margem do projeto.">
+      <Campo rotulo="Projeto" dica="Opcional, para a margem do projeto.">
         <Selecao name="processoId" defaultValue={valores.processoId ?? ''}>
           <option value="">Nenhum</option>
           {processos.map((p) => (

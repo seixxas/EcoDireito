@@ -108,7 +108,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
 
       <Busca
         valor={q}
-        placeholder={aba === 'regras' ? 'Buscar trecho, conta ou processo' : 'Buscar descrição, valor, NF ou cliente'}
+        placeholder={aba === 'regras' ? 'Buscar trecho, conta ou projeto' : 'Buscar descrição, valor, NF ou cliente'}
         manter={{ aba: aba === 'fila' ? undefined : aba }}
         limpar={link({ q: undefined })}
         className="mb-3"

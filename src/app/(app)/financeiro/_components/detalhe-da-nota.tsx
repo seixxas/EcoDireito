@@ -66,9 +66,9 @@ export function DetalheDaNota({ dados: { hoje: dia, nota, cliente, processo, par
               </div>
               <Dado rotulo="Emissão">{formatarData(nota.emissao)}</Dado>
               <Dado rotulo="Previsão de pagamento">{formatarData(nota.previsao)}</Dado>
-              <Dado rotulo="Processo">
+              <Dado rotulo="Projeto">
                 {processo ? (
-                  <LinkRapido href={`/processos/${processo.id}`} className="link">
+                  <LinkRapido href={`/projetos/${processo.id}`} className="link">
                     {processo.empreendimento}
                   </LinkRapido>
                 ) : (

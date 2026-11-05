@@ -45,9 +45,9 @@ export function FormularioNota({ clientes, processos, padrao }: { clientes: Opca
               ))}
             </Selecao>
           </Campo>
-          <Campo rotulo="Processo" erro={erros.processoId} dica="Opcional. Liga a nota à margem do processo.">
+          <Campo rotulo="Projeto" erro={erros.processoId} dica="Opcional. Liga a nota à margem do projeto.">
             <Selecao name="processoId" defaultValue={valores.processoId ?? ''}>
-              <option value="">Sem processo</option>
+              <option value="">Sem projeto</option>
               {processos.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.nome}

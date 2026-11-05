@@ -171,7 +171,7 @@ export function TabelaAFaturar({ itens, editar }: { itens: Awaited<ReturnType<ty
     <table className="tabela">
       <thead>
         <tr>
-          <th>Processo</th>
+          <th>Projeto</th>
           <th className="hidden xl:table-cell">Parcela</th>
           <th className="hidden xl:table-cell">Cliente</th>
           <th className="hidden sm:table-cell">Liberada em</th>
@@ -189,7 +189,7 @@ export function TabelaAFaturar({ itens, editar }: { itens: Awaited<ReturnType<ty
           return (
             <tr key={parcela.id}>
               <td className="sm:min-w-48">
-                <LinkRapido href={`/processos/${processo.id}`} className="link">
+                <LinkRapido href={`/projetos/${processo.id}`} className="link">
                   {processo.empreendimento}
                 </LinkRapido>
                 {/* Em tela estreita, parcela, cliente, data e botão vêm para esta coluna. */}

@@ -42,11 +42,11 @@ const DEFINICAO = {
     fase: 1,
     quem: 'Cliente',
     quando: 'só se o cliente recusar',
-    ajuda: 'Escreva o motivo na observação. A proposta sai da lista de processos e fica no Comercial, entre as recusadas.',
+    ajuda: 'Escreva o motivo na observação. A proposta sai da lista de projetos e fica no Comercial, entre as recusadas.',
   },
   projeto_elaborado: { nome: 'Projeto ambiental elaborado', fase: 2, quem: 'Eco Direito' },
   documentacao_recebida: { nome: 'Documentação do cliente recebida', fase: 2, quem: 'Cliente' },
-  autuacao: { nome: 'Processo aberto na SVMA (autuação)', fase: 2, quem: 'Eco Direito', fecha: true, ajuda: 'A SVMA gera o nº SEI, que o robô usa para achar o processo no Diário Oficial.' },
+  autuacao: { nome: 'Processo aberto na SVMA (autuação)', fase: 2, quem: 'Eco Direito', fecha: true, ajuda: 'A SVMA gera o nº SEI, que o robô usa para achar o projeto no Diário Oficial.' },
   guia_emitida: { nome: 'Guia de vistoria emitida', fase: 3, quem: 'SVMA' },
   guia_paga: { nome: 'Guia paga e comprovante enviado', fase: 3, quem: 'Cliente paga, Eco Direito envia' },
   vistoria_realizada: { nome: 'Vistoria realizada', fase: 3, quem: 'SVMA', fecha: true },
@@ -68,7 +68,7 @@ const DEFINICAO = {
     nome: 'FEMA quitada ou mudas entregues',
     fase: 5,
     quem: 'Cliente e Eco Direito',
-    ajuda: 'Corre em paralelo: são 6 meses a partir do protocolo do Alvará, mesmo com o processo já no manejo.',
+    ajuda: 'Corre em paralelo: são 6 meses a partir do protocolo do Alvará, mesmo com o projeto já no manejo.',
   },
   corte_planejado: { nome: 'Data do corte marcada', fase: 6, quem: 'Eco Direito', planejada: true, ajuda: 'Use a data em que o corte vai acontecer: o aviso vence 10 dias antes.' },
   aviso_corte_enviado: { nome: 'Aviso de início do manejo enviado', fase: 6, quem: 'Eco Direito' },
@@ -81,7 +81,7 @@ const DEFINICAO = {
   plantio_concluido: { nome: 'Plantio concluído', fase: 8, quem: 'Eco Direito' },
   relatorio_plantio_entregue: { nome: 'Relatório fotográfico do plantio entregue', fase: 8, quem: 'Eco Direito' },
   crp_emitido: { nome: 'CRP emitido (vistoria de verificação)', fase: 8, quem: 'SVMA', diario: true },
-  certificado_definitivo: { nome: 'Certificado de Recebimento Definitivo', fase: 8, quem: 'SVMA', diario: true, fecha: true, ajuda: 'Encerra o processo.' },
+  certificado_definitivo: { nome: 'Certificado de Recebimento Definitivo', fase: 8, quem: 'SVMA', diario: true, fecha: true, ajuda: 'Encerra o projeto.' },
 } as const satisfies Record<string, InfoEvento>
 
 export type TipoEvento = keyof typeof DEFINICAO

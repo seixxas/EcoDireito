@@ -51,11 +51,11 @@ export function AcoesPublicacao({ id, temProcesso, marcaEtapa }: { id: string; t
         {temProcesso ? (
           <form action={lancar}>
             <input type="hidden" name="id" value={id} />
-            <BotaoEnviar>{marcaEtapa ? 'Lançar no processo' : 'Marcar como visto'}</BotaoEnviar>
+            <BotaoEnviar>{marcaEtapa ? 'Lançar no projeto' : 'Marcar como visto'}</BotaoEnviar>
           </form>
         ) : (
-          <LinkRapido href={`/processos/novo?ato=${encodeURIComponent(id)}`} className={classeBotao()}>
-            {marcaEtapa ? 'Cadastrar o processo e lançar' : 'Cadastrar o processo'}
+          <LinkRapido href={`/projetos/novo?ato=${encodeURIComponent(id)}`} className={classeBotao()}>
+            {marcaEtapa ? 'Cadastrar o projeto e lançar' : 'Cadastrar o projeto'}
           </LinkRapido>
         )}
         <Botao variante="secundario" onClick={() => setIgnorando(true)}>

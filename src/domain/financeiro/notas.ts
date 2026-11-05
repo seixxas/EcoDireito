@@ -97,7 +97,7 @@ export function errosDaNota(nota: NotaFiscal, notas: NotaFiscal[], processo?: Pr
   if (notas.some((n) => n.numero === nota.numero)) erros.numero = `A NF ${nota.numero} já foi registrada`
   if (nota.valor <= 0) erros.valor = 'Informe um valor maior que zero'
   if (nota.previsao < nota.emissao) erros.previsao = 'A previsão não pode ser antes da emissão'
-  if (processo && processo.clienteId !== nota.clienteId) erros.processoId = 'Este processo é de outro cliente'
+  if (processo && processo.clienteId !== nota.clienteId) erros.processoId = 'Este projeto é de outro cliente'
   if (nota.parcelaId && notaDaParcela(nota.parcelaId, notas)) erros.parcelaId = 'Esta parcela já tem nota'
   return erros
 }

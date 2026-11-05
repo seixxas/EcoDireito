@@ -16,7 +16,7 @@ contas a receber, DRE, fluxo de caixa). Hoje roda com dados fictícios em memór
 | Produto e glossário | `context/produto.md` | regra de negócio nova, termos (SEI, TCA, Comunique-se) |
 | Arquitetura | `context/arquitetura.md` | pastas, camadas, rotas, troca do mock por banco |
 | Interface | `context/interface.md` | telas, componentes, cores, textos |
-| Prazos e processos | `context/prazos.md` | `src/domain/prazos.ts`, `src/domain/processos.ts`, `/prazos`, `/processos`, `/portal` |
+| Prazos e processos | `context/prazos.md` | `src/domain/prazos.ts`, `src/domain/processos.ts`, `/prazos`, `/projetos`, `/portal` |
 | Diário Oficial | `context/publicacoes.md` | `src/domain/publicacoes.ts`, `/publicacoes` |
 | Financeiro | `context/financeiro.md` | `src/domain/financeiro/*`, `/financeiro/*` |
 | Dados fictícios | `context/dados-demo.md` | `src/data/seed/*` |

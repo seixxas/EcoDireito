@@ -62,7 +62,7 @@ export function FormularioProcesso({ clientes, valores, voltar, ato }: Props) {
         <Campo rotulo="Nº TCA" erro={erros.numeroTca} dica="Quando o Termo de Compromisso for publicado.">
           <Entrada name="numeroTca" defaultValue={valor('numeroTca')} placeholder="318/2026" />
         </Campo>
-        <Campo rotulo="Fase atual" erro={erros.faseAtual} dica="Processo novo começa na Proposta. Depois, a fase avança sozinha quando a etapa final dela é marcada.">
+        <Campo rotulo="Fase atual" erro={erros.faseAtual} dica="Projeto novo começa na Proposta. Depois, a fase avança sozinha quando a etapa final dela é marcada.">
           <Selecao name="faseAtual" defaultValue={valor('faseAtual') ?? 1}>
             {FASES.map((fase) => (
               <option key={fase.numero} value={fase.numero}>
@@ -73,7 +73,7 @@ export function FormularioProcesso({ clientes, valores, voltar, ato }: Props) {
         </Campo>
       </div>
       <MensagemFormulario estado={estado} />
-      <BotaoEnviar>{valores.id ? 'Salvar alterações' : (ato?.enviar ?? 'Cadastrar processo')}</BotaoEnviar>
+      <BotaoEnviar>{valores.id ? 'Salvar alterações' : (ato?.enviar ?? 'Cadastrar projeto')}</BotaoEnviar>
     </form>
   )
 }

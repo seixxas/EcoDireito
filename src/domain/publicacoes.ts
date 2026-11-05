@@ -24,7 +24,7 @@ export type ComoAchou = 'sei' | 'simproc' | 'cnpj'
 export type Vinculo = { comoAchou: ComoAchou; clienteId: string; processoId?: string }
 
 /** Motivos para ignorar um ato da caixa de entrada; "Outro" pede o texto. */
-export const MOTIVOS_PARA_IGNORAR = ['Não é processo nosso', 'Já foi lançado', 'Não muda nada no processo'] as const
+export const MOTIVOS_PARA_IGNORAR = ['Não é projeto nosso', 'Já foi lançado', 'Não muda nada no projeto'] as const
 
 const SERIE_PARA_EVENTO: Record<string, TipoEvento> = {
   'Comunique-se': 'comunique_se',
