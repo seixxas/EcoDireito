@@ -22,7 +22,7 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 - Lançamentos abre no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`) e "todos os meses" (`?mes=todos`, útil com a busca). O Faturamento usa o mesmo seletor só nas abas Recebidas e Todas (veja "Faturamento: abas do ciclo").
 - Contratos: o contrato nasce com a proposta (as parcelas são o preço dela), mas a lista e os totais ("Contratado", "Aguardando evento" etc.) só contam processo com proposta aceita (`situacaoDoContrato`, que segue a `situacaoDaProposta` do Comercial: aceite até hoje e sem recusa). Propostas em aberto aparecem numa linha à parte, com link para o Comercial; recusadas (`proposta_recusada`) ficam de fora.
 - Tabelas e listas paginadas de 10 em 10 (`paginar` + `Paginacao`, `?pagina=`, mantendo mês, situação e aba): as abas do Faturamento, Lançamentos, Contratos e as três abas do Extrato. Linha que abre detalhe tem setinha no fim (`AbrirLinha`); link no meio do texto usa a classe `link`.
-- DRE: custos, despesas e "fora da DRE" começam recolhidos (só o total do grupo). Cada valor de conta (mês ou total) abre os lançamentos que o formam: `/financeiro/lancamentos?mes=&conta=` (+ `regime=competencia` na DRE por competência, que filtra pela competência). Na competência, a receita vem das notas emitidas e o link vai para a aba Todas do Faturamento, no mês.
+- DRE: grade no modelo da planilha do Ecoamper (detalhes na seção DRE, abaixo). Abre só com os blocos e os resultados; contas abrem com um clique ou "Abrir tudo". Cada valor de conta ou bloco (mês ou período) abre, abaixo da tabela e sem sair dela, o que o forma (`?linha=&mes=`, 10 por página). Subtotal não abre. Na competência, a receita abre as notas emitidas.
 - Fluxo: abas "Próximas 8 semanas" · "Realizado por mês" (`?aba=realizado`); movimentos da semana recolhidos. Clicar numa semana (barra do gráfico, data ou setinha da tabela) abre o zoom `?semana=AAAA-MM-DD` (segunda-feira): gráfico dia a dia só com entradas e saídas (sem a linha do saldo, que achataria as barras), ‹ › entre as semanas e, embaixo, os movimentos de cada dia com o saldo no fim do dia (`diasDaSemana`).
 - Extrato: importação compacta e abas "A classificar" · "Regras" · "Ignoradas" (`?aba=`). A busca vale nas três abas (descrição, valor e o texto da sugestão: NF, cliente, conta); "Confirmar as sugestões" confirma só as que estavam na tela (com a busca, as encontradas).
 - Busca (`Busca`, `?q=`, sem acento nem maiúscula): Faturamento (cliente, grupo, NF, serviço, processo; na parcela, processo, nº SEI, cliente, grupo e parcela; frase, abas e contagens seguem a busca), Lançamentos, Contratos (processo, cliente, grupo, nº SEI) e Extrato. Busca e filtros se somam e a paginação conta o resultado.
@@ -73,7 +73,7 @@ Gráfico por mês: faturado pela emissão, recebido pelo caixa. Link discreto no
 |---|---|
 | `/financeiro/notas/nova` | Registra a nota já emitida no site da Prefeitura. Com `?parcela=<id>` (botão "Registrar nota" da parcela liberada), já liga cliente, processo e parcela. |
 | `/financeiro/notas/[id]` | Detalhe da nota; registrar ou corrigir o recebimento; cancelar. O painel do Faturamento faz o mesmo (`DetalheDaNota`). |
-| `/financeiro/lancamentos` | Lançamentos do mês (ou de todos os meses) com busca (descrição, observação, conta, processo, valor), filtro de conta e de processo (`?processo=`, link da lucratividade); `?regime=competencia` filtra o mês pela competência (link da DRE). Lançamento manual (despesa ou receita) com conta, competência, processo e observação. |
+| `/financeiro/lancamentos` | Lançamentos do mês (ou de todos os meses) com busca (descrição, observação, conta, processo, valor), filtro de conta e de processo (`?processo=`, link da lucratividade). Lançamento manual (despesa ou receita) com conta, competência, processo e observação. |
 | `/financeiro/lancamentos/[id]` | Detalhe com a descrição original do extrato e a competência explicada; edita descrição, conta, competência, processo e observação; apaga. |
 | `/financeiro/contratos` | Contratado, faturado e a faturar por processo. `/financeiro/contratos/[processoId]` inclui, edita e apaga parcelas. |
 
@@ -116,6 +116,13 @@ Receita bruta → (−) Simples Nacional → Receita líquida → (−) Custos (
 - **Caixa**: tudo pela data do dinheiro.
 - **Competência**: receita pela emissão da nota; o resto pela competência do lançamento.
 - Plano de contas em `src/domain/financeiro/plano-de-contas.ts`.
+- **Grade**: cada mês é um bloco com o realizado. A coluna das contas fica travada à esquerda e o bloco do período (realizado e % da receita líquida), à direita, em tela larga. Rolagem lateral pela barra de cima (`TabelaRolavel`).
+- **Linhas**: todo valor tem sinal (receita positiva, despesa negativa), então cada subtotal é a soma do que veio acima. Grupo com mais de uma conta vira bloco; o que não compõe o resultado fica na seção "Movimentação de caixa", sem meta, e fecha em Variação de caixa.
+- **Meta**: a Eco Direito ainda não definiu metas, então a grade mostra só o realizado, como a planilha do Ecoamper faz sem meta. Meta real pede tabela nova e tela de edição.
+- **Período** (`?periodo=`): completo, até o último mês fechado ou trimestre, mesmo incompleto. Trocar período ou regime fecha o quadro de lançamentos.
+- **Excel**: CSV com `;`, vírgula decimal e BOM (`csvDaDre`), com todas as linhas, mesmo recolhidas, no período e no regime da tela. Rótulo que começa com = + - @ leva apóstrofo, senão o Excel lê como fórmula.
+- A grade e o quadro de lançamentos saem da mesma função (`itensDoRegime`): o que abre sempre soma o valor da célula.
+- Modelo: DRE do Ecoamper, só a planilha. De lá ficaram de fora os filtros de empresa e centro de custo (a Eco Direito não tem), as categorias abaixo de cada conta (aqui a conta é o menor nível), a importação e, por enquanto, as colunas de meta. Valores em reais, não em R$ mil: as contas pequenas sumiriam.
 
 ## Fluxo de caixa
 

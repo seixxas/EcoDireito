@@ -16,7 +16,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <Suspense fallback={<MenuLateral />}>
         <MenuDoUsuario />
       </Suspense>
-      <main className="mx-auto w-full max-w-6xl min-w-0 px-4 py-6 lg:px-10 lg:py-9">{children}</main>
+      <main className="mx-auto w-full max-w-[120rem] min-w-0 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
     </div>
   )
 }

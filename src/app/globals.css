@@ -34,6 +34,10 @@
   --color-nav: #14301e;
   --color-nav-ink: #d3e6da;
   --color-nav-muted: #8fbf9f;
+  --color-nav-danger: #f7a399;
+
+  /* Linha forte da grade da DRE: borda dos blocos de cada mês. */
+  --color-grade: #8c9289;
 
   /* Leitura: texto corrido em 15 px e miúdo em 13 px. */
   --text-sm: 0.9375rem;
@@ -81,6 +85,14 @@
 
   --color-on-brand: #0f2016;
   --color-nav: #0f2016;
+  --color-grade: #68716b;
+}
+
+/* Monitor grande: tudo cresce junto, porque as medidas estão em rem. */
+@media (min-width: 1600px) {
+  html {
+    font-size: 106.25%;
+  }
 }
 
 body {
@@ -130,5 +142,10 @@ body {
   }
   .tabela .num {
     @apply whitespace-nowrap text-right tabular-nums;
+  }
+  /* Barra de rolagem da grade da DRE, no topo da tabela. */
+  .rolagem-fina {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-muted) var(--color-rail);
   }
 }

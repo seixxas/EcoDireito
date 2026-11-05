@@ -11,7 +11,7 @@ export function FormularioUsuario({ clientes }: { clientes: { id: string; nome: 
   const [papel, setPapel] = useState<Papel>('equipe')
 
   return (
-    <form action={acao} className="grid gap-4 sm:grid-cols-2">
+    <form action={acao} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <Campo rotulo="Nome" erro={estado.erros?.nome}>
         <Entrada name="nome" defaultValue={estado.valores?.nome} required />
       </Campo>
@@ -49,7 +49,7 @@ export function FormularioUsuario({ clientes }: { clientes: { id: string; nome: 
       <div className="flex items-end">
         <BotaoEnviar>Criar acesso</BotaoEnviar>
       </div>
-      <div className="sm:col-span-2">
+      <div className="col-span-full">
         <MensagemFormulario estado={estado} />
       </div>
     </form>

@@ -4,6 +4,11 @@ Registro curto, do mais novo para o mais antigo. Mudou uma decisão? Acrescente 
 
 | Data | Decisão | Por quê |
 |---|---|---|
+| 2026-11-04 | DRE sem meta por enquanto, nem de exemplo: só o realizado e o % da receita líquida | Decisão do dono do produto. Substitui a meta de exemplo. Quando a Eco Direito definir metas, entram com tabela nova e tela de edição |
+| 2026-11-04 | DRE copia a grade da planilha do Ecoamper, com as contas da Eco Direito | Pedido do dono do produto. A forma vem de lá; contas, nomes e os dois regimes continuam os que a Eco Direito usa |
+| 2026-11-04 | Meta de exemplo calculada dos lançamentos, sem tabela nova | A Eco Direito não tem meta cadastrada e tabela nova pede aprovação. A tela avisa que é exemplo |
+| 2026-11-04 | Quadro de lançamentos por `?linha=&mes=` na própria página, sem API | Os dados já vêm em `carregar()`; igual ao painel da nota |
+| 2026-11-04 | Telas na largura toda e fonte 6% maior a partir de 1600 px | Pedido do dono do produto: o conteúdo ficava pequeno e no centro. Em rem, tudo cresce junto com uma linha de CSS |
 | 2026-11-04 | Navegação "caixa única": 4 itens no menu, abas dentro de cada área, busca geral e botão Novo | Escolha do dono do produto entre três caminhos (referências: Karbon, Linear, Stripe). O que precisa de alguém deixa de morar em três telas e o menu cai de 13 itens para 4 |
 | 2026-11-04 | Busca geral numa página (`/busca`), sem lista suspensa enquanto digita | Menos código, funciona sem JavaScript e reaproveita as listas |
 | 2026-11-04 | Fixados no `localStorage` | É conveniência de cada pessoa, não dado do escritório; não pede tabela nova |

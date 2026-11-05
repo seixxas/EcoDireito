@@ -34,8 +34,8 @@ export async function listarNotas() {
 }
 
 export async function dadosDaDre() {
-  const { financeiro } = await carregar()
-  return { meses: financeiro.meses, notas: financeiro.notas, lancamentos: financeiro.lancamentos }
+  const { hoje, financeiro } = await carregar()
+  return { hoje, meses: financeiro.meses, notas: financeiro.notas, lancamentos: financeiro.lancamentos }
 }
 
 /** Média dos 3 últimos meses fechados vira despesa prevista. Mútuo, imobilizado e distribuições extras ficam fora. */

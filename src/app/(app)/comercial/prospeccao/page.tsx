@@ -112,7 +112,7 @@ export default async function PaginaProspeccao() {
       </Secao>
 
       <Secao titulo="De onde vêm as oportunidades">
-        <ul className="max-w-3xl space-y-1.5 text-sm text-ink">
+        <ul className="space-y-1.5 text-sm text-ink">
           {FONTES.map(([fonte, como]) => (
             <li key={fonte}>
               <strong className="font-medium">{fonte}:</strong> <span className="text-muted">{como}</span>
@@ -122,7 +122,7 @@ export default async function PaginaProspeccao() {
       </Secao>
 
       <Secao titulo="O que esta área vai fazer">
-        <ul className="max-w-3xl list-disc space-y-1.5 pl-5 text-sm text-ink marker:text-subtle">
+        <ul className="list-disc space-y-1.5 pl-5 text-sm text-ink marker:text-subtle">
           {IDEIAS.map((ideia) => (
             <li key={ideia}>{ideia}</li>
           ))}

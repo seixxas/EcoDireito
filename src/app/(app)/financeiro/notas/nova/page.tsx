@@ -25,13 +25,13 @@ export default async function PaginaNovaNota({ searchParams }: { searchParams: P
       <PageHeader titulo="Registrar nota fiscal" resumo="A nota já emitida no site da Prefeitura. ISS (5%) e retenção (5,5%) saem do valor." />
 
       {deParcela && (
-        <p className="mb-4 max-w-3xl rounded-lg bg-warn-soft px-4 py-3 text-sm text-ink">
+        <p className="mb-4 rounded-lg bg-warn-soft px-4 py-3 text-sm text-ink">
           Faturando a parcela <strong>{deParcela.parcela.descricao.toLowerCase()}</strong> ({brl(deParcela.parcela.valor)}) de{' '}
           <strong>{deParcela.processo.empreendimento}</strong>, {nomeDoCliente(deParcela.processo.clienteId)}.
         </p>
       )}
 
-      <Card className="max-w-3xl">
+      <Card>
         <FormularioNota
           clientes={clientes.map((c) => ({ id: c.id, nome: c.nome }))}
           processos={processos.map((p) => ({ id: p.id, nome: `${p.empreendimento} · ${nomeDoCliente(p.clienteId)}` }))}

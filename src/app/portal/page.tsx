@@ -17,7 +17,7 @@ export default async function PortalInicio() {
   return (
     <>
       <TopoDoPortal comSair />
-      <main className="mx-auto max-w-3xl px-5 py-10">
+      <main className="mx-auto max-w-6xl px-5 py-10">
         <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-ink">Seus processos</h1>
         <p className="mb-6 mt-1 text-muted">Escolha o empreendimento para ver a fase e o próximo prazo.</p>
         {processos.length ? (

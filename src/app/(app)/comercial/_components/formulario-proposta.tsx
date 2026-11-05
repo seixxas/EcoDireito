@@ -25,20 +25,20 @@ export function FormularioProposta({ clientes, clienteId }: { clientes: { id: st
   }
 
   return (
-    <form action={acao} className="max-w-3xl space-y-4">
-      <Campo rotulo="Cliente" erro={erros.clienteId}>
-        <Selecao name="clienteId" defaultValue={v.clienteId ?? clienteId ?? ''} required>
-          <option value="" disabled>
-            Escolha o cliente
-          </option>
-          {clientes.map((cliente) => (
-            <option key={cliente.id} value={cliente.id}>
-              {cliente.nome}
+    <form action={acao} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Campo rotulo="Cliente" erro={erros.clienteId} className="sm:col-span-2">
+          <Selecao name="clienteId" defaultValue={v.clienteId ?? clienteId ?? ''} required>
+            <option value="" disabled>
+              Escolha o cliente
             </option>
-          ))}
-        </Selecao>
-      </Campo>
-      <div className="grid gap-4 sm:grid-cols-2">
+            {clientes.map((cliente) => (
+              <option key={cliente.id} value={cliente.id}>
+                {cliente.nome}
+              </option>
+            ))}
+          </Selecao>
+        </Campo>
         <Campo rotulo="Empreendimento" erro={erros.empreendimento}>
           <Entrada name="empreendimento" defaultValue={v.empreendimento} placeholder="Ex.: Residencial Jardim Sul" required />
         </Campo>
@@ -54,11 +54,6 @@ export function FormularioProposta({ clientes, clienteId }: { clientes: { id: st
         <Campo rotulo="Responsável na Eco Direito" erro={erros.responsavel}>
           <Entrada name="responsavel" defaultValue={v.responsavel} />
         </Campo>
-      </div>
-      <Campo rotulo="O que será feito" erro={erros.escopo} dica="Vai no texto da proposta. Muda sozinho ao trocar o serviço, enquanto você não editar.">
-        <AreaTexto name="escopo" value={escopo} onChange={(e) => setEscopo(e.target.value)} rows={4} required />
-      </Campo>
-      <div className="grid gap-4 sm:grid-cols-2">
         <Campo rotulo="Valor total (R$)" erro={erros.valor}>
           <Entrada name="valor" value={valor} onChange={(e) => setValor(e.target.value)} placeholder="95.000,00" inputMode="decimal" required />
         </Campo>
@@ -66,19 +61,24 @@ export function FormularioProposta({ clientes, clienteId }: { clientes: { id: st
           <Entrada type="number" name="validadeDias" defaultValue={v.validadeDias ?? VALIDADE_PADRAO} min={1} max={365} inputMode="numeric" />
         </Campo>
       </div>
-      <div className="rounded-lg border border-line bg-canvas/60 px-4 py-3 text-sm">
-        <p className="font-medium text-ink">Forma de pagamento</p>
-        <ul className="mt-1 space-y-0.5 text-muted">
-          {parcelasDaProposta(servico, total ?? 0).map((parcela) => (
-            <li key={parcela.descricao} className="flex justify-between gap-4">
-              <span>
-                {parcela.descricao} <span className="text-subtle">· libera quando: {EVENTOS[parcela.gatilho].nome}</span>
-              </span>
-              <span className="tabular-nums text-ink">{total ? brl(parcela.valor) : '—'}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-2 text-xs text-subtle">As parcelas viram o contrato do processo. Dá para ajustar depois, em Financeiro &gt; Contratos.</p>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Campo rotulo="O que será feito" erro={erros.escopo} dica="Vai no texto da proposta. Muda sozinho ao trocar o serviço, enquanto você não editar.">
+          <AreaTexto name="escopo" value={escopo} onChange={(e) => setEscopo(e.target.value)} rows={5} required />
+        </Campo>
+        <div className="rounded-lg border border-line bg-canvas/60 px-4 py-3 text-sm">
+          <p className="font-medium text-ink">Forma de pagamento</p>
+          <ul className="mt-1 space-y-0.5 text-muted">
+            {parcelasDaProposta(servico, total ?? 0).map((parcela) => (
+              <li key={parcela.descricao} className="flex justify-between gap-4">
+                <span>
+                  {parcela.descricao} <span className="text-subtle">· libera quando: {EVENTOS[parcela.gatilho].nome}</span>
+                </span>
+                <span className="tabular-nums text-ink">{total ? brl(parcela.valor) : '—'}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-subtle">As parcelas viram o contrato do processo. Dá para ajustar depois, em Financeiro &gt; Contratos.</p>
+        </div>
       </div>
       <MensagemFormulario estado={estado} />
       <BotaoEnviar>Criar proposta</BotaoEnviar>

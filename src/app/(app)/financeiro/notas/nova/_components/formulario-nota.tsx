@@ -24,7 +24,7 @@ export function FormularioNota({ clientes, processos, padrao }: { clientes: Opca
   const { parcela } = padrao
 
   return (
-    <form action={acao} className="grid gap-4 sm:grid-cols-2">
+    <form action={acao} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {parcela ? (
         <>
           <input type="hidden" name="parcelaId" value={parcela.id} />
@@ -73,12 +73,12 @@ export function FormularioNota({ clientes, processos, padrao }: { clientes: Opca
       <Campo rotulo="Previsão de pagamento" erro={erros.previsao}>
         <Entrada name="previsao" type="date" defaultValue={valores.previsao ?? padrao.previsao} required />
       </Campo>
-      <label className="flex items-center gap-2 text-sm text-ink sm:col-span-2">
+      <label className="col-span-full flex items-center gap-2 text-sm text-ink">
         <input type="checkbox" name="comRetencao" defaultChecked={valores.comRetencao === 'on'} className="size-4 accent-brand-700" />
         O cliente retém 5,5% na fonte
       </label>
 
-      <div className="space-y-3 sm:col-span-2">
+      <div className="col-span-full space-y-3">
         {erros.parcelaId && <p className="text-sm text-danger">{erros.parcelaId}</p>}
         <MensagemFormulario estado={estado} />
         <BotaoEnviar>Registrar nota</BotaoEnviar>

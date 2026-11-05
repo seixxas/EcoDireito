@@ -2,124 +2,245 @@
 
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
-import type { LinhaDre, Regime } from '@/domain/financeiro/dre'
+import { Fragment, useState, type ReactNode } from 'react'
+import { rotuloDaLinha, type LinhaDre } from '@/domain/financeiro/dre'
 import { cn } from '@/lib/cn'
-import { somar } from '@/lib/dinheiro'
-import { brlInteiro, formatarMes, formatarPercentual } from '@/lib/formatar'
+import { formatarMes, formatarPercentual, numeroInteiro } from '@/lib/formatar'
+import { TabelaRolavel } from './tabela-rolavel'
 
-/** Grupos longos começam fechados, para a DRE caber na tela: só o total de cada um aparece. */
-const FECHADOS_NO_INICIO = ['secao-custo', 'secao-despesa', 'secao-fora']
-
-/** Mês de `?mes=` para o histórico inteiro (o mesmo de `TODOS_OS_MESES`). */
-const TODOS = 'todos'
+export type SelecaoDre = { linha: string; mes?: string }
 
 /**
- * De onde vem o valor de uma conta num mês (ou no total): os lançamentos daquela conta.
- * Na competência, a receita vem das notas emitidas no mês, então o link vai para o Faturamento.
+ * Grade no estilo da planilha: cada mês é um bloco, com linha forte nas bordas, e um espaço entre um bloco e outro.
+ * Bordas por lado, sem border-collapse, para as células travadas levarem as linhas ao rolar.
  */
-function origem(conta: string, regime: Regime, mes = TODOS) {
-  if (regime === 'competencia' && conta === 'receita_servicos') return `/financeiro?aba=todas&mes=${mes}`
-  return `/financeiro/lancamentos?mes=${mes}&conta=${conta}${regime === 'competencia' ? '&regime=competencia' : ''}`
+const LINHA = 'border-b border-b-line'
+const BORDA_DO_MES = 'border-x border-x-grade'
+const ESPACO = 'w-3.5 min-w-3.5 bg-surface p-0'
+
+/** Bloco do período: travado à direita em tela larga. O realizado fica uma coluna para dentro; o espaço, duas. */
+const COLUNAS_DO_PERIODO = ['Realizado', '% rec. líq.']
+const FIXA = 'z-10 lg:sticky'
+const COLUNA_FIXA = 'w-24 min-w-24'
+const ESPACO_FIXO = cn(FIXA, 'right-48', ESPACO)
+const REALIZADO = cn(FIXA, 'right-24', COLUNA_FIXA, 'border-l border-r border-l-grade border-r-line')
+const PERCENTUAL = cn(FIXA, 'right-0', COLUNA_FIXA, 'border-r border-r-grade')
+
+/** A coluna das contas leva consigo o espaço seguinte, para os meses não encostarem nela ao rolar. */
+const ROTULO_FIXO = 'sticky left-0 z-10 shadow-[0.875rem_0_0_var(--color-surface)]'
+
+const SELECIONADA = 'bg-rail outline-2 -outline-offset-2 outline-ink'
+
+/** Resultados que fecham a conta: negrito mais forte, como a linha de total. */
+const FORTES = new Set(['subtotal-despesa', 'subtotal-outras'])
+
+function Valor({ href, escolhido, cor, titulo, children }: { href?: string; escolhido: boolean; cor?: string; titulo: string; children: ReactNode }) {
+  if (!href) return <span className={cn('block px-1 py-1.5', cor)}>{children}</span>
+  return (
+    <Link
+      href={href}
+      scroll={false}
+      aria-current={escolhido || undefined}
+      title={titulo}
+      className={cn('block rounded px-1 py-1.5', cor, escolhido ? SELECIONADA : 'hover:bg-rail')}
+    >
+      {children}
+    </Link>
+  )
 }
 
-/** Cada conta pertence à seção acima dela; um subtotal fecha a seção. */
-function comSecao(linhas: LinhaDre[]) {
-  let secao: string | undefined
-  return linhas.map((linha) => {
-    if (linha.tipo === 'secao') secao = linha.id
-    if (linha.tipo === 'subtotal') secao = undefined
-    return { linha, secao: linha.tipo === 'conta' ? secao : undefined }
-  })
-}
-
-export function TabelaDre({ meses, linhas, receitaLiquida, regime }: { meses: string[]; linhas: LinhaDre[]; receitaLiquida: number; regime: Regime }) {
-  const [fechadas, setFechadas] = useState(() => new Set(FECHADOS_NO_INICIO))
-  const itens = comSecao(linhas)
-  const contasDa = (secao: string) => itens.filter((item) => item.secao === secao).map((item) => item.linha)
-  const alternar = (secao: string) =>
-    setFechadas((atuais) => {
-      const novas = new Set(atuais)
-      if (!novas.delete(secao)) novas.add(secao)
-      return novas
-    })
-
-  /** Com `conta`, cada valor diferente de zero abre os lançamentos que o formam. */
-  const valor = (centavos: number, conta?: string, mes?: string) =>
-    conta && centavos !== 0 ? (
-      <Link
-        href={origem(conta, regime, mes)}
-        className="underline decoration-line decoration-dotted underline-offset-4 hover:text-brand-700 hover:decoration-brand-700"
-      >
-        {brlInteiro(centavos)}
-      </Link>
-    ) : (
-      brlInteiro(centavos)
-    )
-
-  const valoresDaLinha = (valores: number[], total: number, destaque: boolean, conta?: string) => (
+/** Células vazias da linha de seção, para as bordas dos blocos seguirem contínuas. */
+function GradeVazia({ meses }: { meses: string[] }) {
+  return (
     <>
-      {valores.map((centavos, i) => (
-        <td key={meses[i]} className={cn('num', centavos < 0 && destaque && 'text-danger', centavos === 0 && 'text-subtle')}>
-          {valor(centavos, conta, meses[i])}
-        </td>
+      {meses.map((mes) => (
+        <Fragment key={mes}>
+          <td className={ESPACO} />
+          <td className={cn(BORDA_DO_MES, LINHA)} />
+        </Fragment>
       ))}
-      <td className={cn('num font-semibold', total < 0 && destaque && 'text-danger')}>{valor(total, conta)}</td>
-      <td className="num text-muted">{receitaLiquida ? formatarPercentual(total / receitaLiquida) : '—'}</td>
+      <td className={ESPACO_FIXO} />
+      <td className={cn(REALIZADO, 'bg-surface', LINHA)} />
+      <td className={cn(PERCENTUAL, 'bg-surface', LINHA)} />
     </>
   )
+}
+
+function LinhaDaGrade(props: {
+  linha: LinhaDre
+  meses: string[]
+  receitaLiquida: number
+  aberto: boolean
+  aoAlternar: () => void
+  /** Link do valor de um mês, ou do período sem `mes`; vazio no que não abre lançamentos. */
+  href: (mes?: string) => string | undefined
+  escolhido: (mes?: string) => boolean
+}) {
+  const { linha, meses, receitaLiquida, aberto, aoAlternar, href, escolhido } = props
+  const total = linha.tipo === 'total'
+  const subtotal = linha.tipo === 'subtotal'
+  const bloco = linha.tipo === 'bloco'
+  const fundo = total ? 'bg-nav text-nav-ink' : subtotal ? 'bg-canvas' : 'bg-surface'
+  const peso = total || FORTES.has(linha.id) ? 'font-bold' : subtotal || bloco || !linha.bloco ? 'font-semibold' : 'font-normal'
+  const apagado = total ? 'text-nav-muted' : 'text-muted'
+  // Só subtotal e total ficam vermelhos: despesa é negativa por natureza.
+  const corDoValor = (valor: number) => ((subtotal || total) && Math.round(valor / 100) < 0 ? (total ? 'text-nav-danger' : 'text-danger') : '')
+  const rotulo = rotuloDaLinha(linha)
 
   return (
-    <table className="tabela">
-      <thead>
-        <tr>
-          <th className="sticky left-0 bg-surface">Conta</th>
-          {meses.map((mes) => (
-            <th key={mes} className="num">
-              {formatarMes(mes)}
-            </th>
-          ))}
-          <th className="num">Total</th>
-          <th className="num">% receita líq.</th>
-        </tr>
-      </thead>
-      <tbody>
-        {itens.map(({ linha, secao }) => {
-          if (secao && fechadas.has(secao)) return null
-          if (linha.tipo === 'secao') {
-            const contas = contasDa(linha.id)
-            const aberta = !fechadas.has(linha.id)
-            const valores = meses.map((_, i) => somar(contas.map((c) => c.valores[i])))
-            return (
-              <tr key={linha.id} className="bg-canvas">
-                <td className="sticky left-0 min-w-56 whitespace-nowrap bg-canvas">
+    <tr className={cn('text-right', fundo, peso)}>
+      <th
+        scope="row"
+        className={cn('max-w-48 text-left lg:max-w-none lg:whitespace-nowrap', ROTULO_FIXO, fundo, peso, LINHA, linha.bloco ? 'pl-10' : 'pl-4', 'pr-4', bloco ? 'py-0' : 'py-2')}
+      >
+        {bloco ? (
+          <button type="button" onClick={aoAlternar} aria-expanded={aberto} className="flex min-h-10 w-full items-center gap-1.5 text-left hover:text-brand-700">
+            <ChevronRight className={cn('size-4 shrink-0 text-muted transition-transform', aberto && 'rotate-90')} />
+            {rotulo}
+          </button>
+        ) : (
+          rotulo
+        )}
+      </th>
+      {meses.map((mes, i) => {
+        const valor = linha.valores[i]
+        return (
+          <Fragment key={mes}>
+            <td className={ESPACO} />
+            <td className={cn('px-1 py-0.5', BORDA_DO_MES, LINHA)}>
+              <Valor href={valor ? href(mes) : undefined} escolhido={escolhido(mes)} cor={corDoValor(valor)} titulo={`Ver o que forma ${formatarMes(mes)}`}>
+                {numeroInteiro(valor)}
+              </Valor>
+            </td>
+          </Fragment>
+        )
+      })}
+      <td className={ESPACO_FIXO} />
+      <td className={cn(REALIZADO, fundo, 'px-1 py-0.5', LINHA)}>
+        <Valor href={linha.total ? href() : undefined} escolhido={escolhido()} cor={corDoValor(linha.total)} titulo="Ver o que forma o período">
+          {numeroInteiro(linha.total)}
+        </Valor>
+      </td>
+      <td className={cn(PERCENTUAL, fundo, 'px-2 py-2', apagado, LINHA)}>{receitaLiquida ? formatarPercentual(linha.total / receitaLiquida) : '—'}</td>
+    </tr>
+  )
+}
+
+export function TabelaDre({
+  meses,
+  linhas,
+  receitaLiquida,
+  rotuloDoPeriodo,
+  consulta,
+  selecao,
+}: {
+  meses: string[]
+  linhas: LinhaDre[]
+  receitaLiquida: number
+  rotuloDoPeriodo: string
+  consulta: string
+  selecao?: SelecaoDre
+}) {
+  // A grade abre só com os blocos e os resultados; as contas abrem com um clique.
+  const [abertos, setAbertos] = useState<Set<string>>(new Set())
+  const [secoesFechadas, setSecoesFechadas] = useState<Set<string>>(new Set())
+  const blocos = linhas.filter((linha) => linha.tipo === 'bloco').map((linha) => linha.id)
+  const todosAbertos = blocos.length > 0 && blocos.every((id) => abertos.has(id))
+  const alternar = (ids: Set<string>, id: string) => {
+    const novos = new Set(ids)
+    if (!novos.delete(id)) novos.add(id)
+    return novos
+  }
+
+  const hrefDe = (linha: LinhaDre) => (mes?: string) => {
+    if (linha.tipo !== 'conta' && linha.tipo !== 'bloco') return undefined
+    const params = new URLSearchParams(consulta)
+    // Clicar de novo no valor escolhido fecha o quadro de lançamentos.
+    if (selecao?.linha === linha.id && selecao.mes === mes) return params.size ? `/financeiro/dre?${params}` : '/financeiro/dre'
+    params.set('linha', linha.id)
+    if (mes) params.set('mes', mes)
+    return `/financeiro/dre?${params}`
+  }
+
+  return (
+    <TabelaRolavel>
+      <table className="w-full min-w-max border-separate border-spacing-0 text-xs tabular-nums">
+        <thead>
+          <tr className="whitespace-nowrap text-muted">
+            <th scope="col" rowSpan={2} className={cn(ROTULO_FIXO, 'bg-surface px-4 py-2.5 text-left align-bottom font-medium', LINHA)}>
+              <span className="flex items-center gap-2.5">
+                Linha da DRE
+                {blocos.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => alternar(linha.id)}
-                    aria-expanded={aberta}
-                    title={`${contas.length} ${contas.length === 1 ? 'conta' : 'contas'}`}
-                    className="flex items-center gap-1.5 font-medium text-ink hover:text-brand-700"
+                    onClick={() => setAbertos(todosAbertos ? new Set() : new Set(blocos))}
+                    className="rounded-md border border-line bg-surface px-2 py-0.5 font-medium text-ink transition-colors hover:border-brand-300 hover:bg-brand-50"
                   >
-                    <ChevronRight className={cn('size-4 shrink-0 text-muted transition-transform', aberta && 'rotate-90')} />
-                    {linha.nome}
+                    {todosAbertos ? 'Fechar tudo' : 'Abrir tudo'}
                   </button>
-                </td>
-                {valoresDaLinha(valores, somar(contas.map((c) => c.total)), false)}
-              </tr>
+                )}
+              </span>
+            </th>
+            {meses.map((mes) => (
+              <Fragment key={mes}>
+                <td rowSpan={2} className={ESPACO} />
+                <th scope="col" rowSpan={2} className={cn('min-w-20 px-2 py-2.5 text-center align-bottom font-medium', BORDA_DO_MES, LINHA)}>
+                  {formatarMes(mes)}
+                </th>
+              </Fragment>
+            ))}
+            <td data-espaco-fixo rowSpan={2} className={ESPACO_FIXO} />
+            <th scope="colgroup" colSpan={COLUNAS_DO_PERIODO.length} className={cn(FIXA, 'right-0 bg-surface px-2 pb-1.5 pt-3 text-center font-medium text-ink')}>
+              Período · {rotuloDoPeriodo}
+            </th>
+          </tr>
+          <tr className="whitespace-nowrap text-muted">
+            <th scope="col" className={cn(REALIZADO, 'bg-surface px-2 pb-2 pt-1.5 text-center font-medium text-ink', LINHA)}>
+              {COLUNAS_DO_PERIODO[0]}
+            </th>
+            <th scope="col" className={cn(PERCENTUAL, 'bg-surface px-2 pb-2 pt-1.5 text-center font-medium', LINHA)}>
+              {COLUNAS_DO_PERIODO[1]}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {linhas.map((linha) => {
+            if (linha.tipo === 'secao') {
+              const fechada = secoesFechadas.has(linha.id)
+              return (
+                <tr key={linha.id}>
+                  <th scope="colgroup" className={cn(ROTULO_FIXO, 'max-w-48 bg-surface px-4 pb-2 pt-3.5 text-left lg:max-w-none', LINHA)}>
+                    <button
+                      type="button"
+                      aria-expanded={!fechada}
+                      onClick={() => setSecoesFechadas((atuais) => alternar(atuais, linha.id))}
+                      className="flex items-start gap-1.5 text-left font-medium text-muted hover:text-brand-700"
+                    >
+                      <ChevronRight className={cn('size-4 shrink-0 transition-transform', !fechada && 'rotate-90')} />
+                      {linha.nome}
+                    </button>
+                  </th>
+                  <GradeVazia meses={meses} />
+                </tr>
+              )
+            }
+            if (linha.secao && secoesFechadas.has(linha.secao)) return null
+            if (linha.bloco && !abertos.has(linha.bloco)) return null
+            return (
+              <LinhaDaGrade
+                key={linha.id}
+                linha={linha}
+                meses={meses}
+                receitaLiquida={receitaLiquida}
+                aberto={abertos.has(linha.id)}
+                aoAlternar={() => setAbertos((atuais) => alternar(atuais, linha.id))}
+                href={hrefDe(linha)}
+                escolhido={(mes) => selecao?.linha === linha.id && selecao.mes === mes}
+              />
             )
-          }
-          const subtotal = linha.tipo === 'subtotal'
-          return (
-            <tr key={linha.id} className={cn(subtotal && 'bg-brand-50/60 font-semibold')}>
-              <td className={cn('sticky left-0 min-w-56 whitespace-nowrap', subtotal ? 'bg-brand-50 text-brand-900' : 'bg-surface')}>
-                {/* O recuo fica no span: o padding da primeira coluna vem do CSS da .tabela e ganha de classe. */}
-                <span className={cn(secao && 'ml-6 inline-block text-muted')}>{linha.nome}</span>
-              </td>
-              {valoresDaLinha(linha.valores, linha.total, subtotal, linha.tipo === 'conta' ? linha.id : undefined)}
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
+          })}
+        </tbody>
+      </table>
+    </TabelaRolavel>
   )
 }

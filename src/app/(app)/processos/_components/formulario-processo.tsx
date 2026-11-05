@@ -21,23 +21,23 @@ export function FormularioProcesso({ clientes, valores, voltar, ato }: Props) {
   const erros = estado.erros ?? {}
   const valor = (nome: keyof Valores) => estado.valores?.[nome] ?? valores[nome]
   return (
-    <form action={acao} className="max-w-3xl space-y-4">
+    <form action={acao} className="space-y-4">
       <input type="hidden" name="id" value={valores.id ?? ''} />
       <input type="hidden" name="voltar" value={voltar ?? ''} />
       <input type="hidden" name="ato" value={ato?.id ?? ''} />
-      <Campo rotulo="Cliente" erro={erros.clienteId}>
-        <Selecao name="clienteId" defaultValue={valor('clienteId') ?? ''} required>
-          <option value="" disabled>
-            Escolha o cliente
-          </option>
-          {clientes.map((cliente) => (
-            <option key={cliente.id} value={cliente.id}>
-              {cliente.nome}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Campo rotulo="Cliente" erro={erros.clienteId} className="sm:col-span-2">
+          <Selecao name="clienteId" defaultValue={valor('clienteId') ?? ''} required>
+            <option value="" disabled>
+              Escolha o cliente
             </option>
-          ))}
-        </Selecao>
-      </Campo>
-      <div className="grid gap-4 sm:grid-cols-2">
+            {clientes.map((cliente) => (
+              <option key={cliente.id} value={cliente.id}>
+                {cliente.nome}
+              </option>
+            ))}
+          </Selecao>
+        </Campo>
         <Campo rotulo="Empreendimento" erro={erros.empreendimento}>
           <Entrada name="empreendimento" defaultValue={valor('empreendimento')} required />
         </Campo>

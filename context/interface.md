@@ -32,7 +32,8 @@ Quem usa são as sócias e a equipe da Eco Direito, todo dia, para saber **o que
 | `ok`, `warn`, `danger`, `info` (+ `-soft`) | situação |
 | `accent` | atenção (âmbar) |
 | `on-brand` | texto sobre fundo `brand-700` (botão principal) |
-| `nav`, `nav-ink`, `nav-muted` | menu lateral verde (igual nos dois modos) |
+| `nav`, `nav-ink`, `nav-muted`, `nav-danger` | menu lateral verde (igual nos dois modos); também a linha de total da DRE |
+| `grade` | linha forte da grade da DRE (borda dos blocos de cada mês) |
 
 Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`globals.css`); o botão `BotaoTema` (lua/sol) fica no pé do menu, no portal e no login e guarda a escolha no navegador. Use só tokens: nada de `text-white`, `bg-white` ou cor em hex fora do menu. Na escala da marca, `brand-700` é o verde de texto e de botão nos dois modos. Variante `dark:` disponível para exceções.
 
@@ -41,7 +42,7 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 - Menu lateral verde escuro (`nav`), estreito, com 4 itens na ordem do negócio: Hoje, Propostas, Processos e Financeiro. Em cima, a busca geral (`BuscaGeral`, Ctrl+K, resultado em `/busca`) e o botão "Novo" (`BotaoNovo`, só o que o perfil pode criar). Embaixo dos itens, os atalhos fixados (`BotaoFixar` no processo, `ListaFixados` no menu), guardados no navegador de cada pessoa. Usuários, tema e "Sair" no pé.
 - As telas de cada item ficam em abas no topo da página, acima do título, sempre com o componente `Abas`: Hoje tem Para fazer · Diário Oficial · Prazos (`AbasDoDia`, com a contagem do que espera alguém); Propostas tem Propostas · Prospecção (`AbasDoComercial`); Financeiro tem as abas no layout da área (`AbasDoFinanceiro`). As URLs antigas continuam valendo.
 - Na lista Para fazer, o que se resolve ali tem botão na linha (Lançar no processo, Ignorar); o resto abre o lugar exato (o prazo abre a etapa dele, em `?aba=etapas&fase=`). Linha com botão não é link: o título é que leva à tela.
-- Área de conteúdo com `max-w-6xl`. Tabela larga pode usar a largura toda.
+- A área de conteúdo usa a largura toda (até 120rem, para monitor muito largo). A partir de 1600 px, a fonte da raiz sobe para 106,25% e tudo cresce junto. Formulário usa a largura em colunas (`xl:grid-cols-4`), não campo esticado. A proposta é documento: em tela larga, a situação e as ações ficam ao lado dele.
 - `PageHeader`: título + frase-resumo (`resumo`) + ações à direita. A `descricao` longa sai; se for essencial, use uma frase curta.
 
 ## Componentes (`src/components/ui`)
@@ -61,7 +62,7 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 | `Expansivel({ resumo, children })` | Conteúdo recolhido atrás de um botãozinho (texto do ato, cálculo, movimentos) |
 | `Vazio({ children })` | Lista vazia |
 | `Card` | Formulário ou bloco que precisa de caixa |
-| Tabela | `<table className="tabela">`; coluna de valor com `num` |
+| Tabela | `<table className="tabela">`; coluna de valor com `num`. A grade da DRE é a exceção: tem as próprias bordas, para as colunas travadas levarem as linhas ao rolar |
 | Form | `Campo`, `Entrada`, `Selecao`, `AreaTexto`, `BotaoEnviar`, `MensagemFormulario`, `classeBotao` |
 
 `Stat` continua existindo (agora sem caixa), mas prefira `Resumo`.
@@ -79,7 +80,7 @@ Texto de resumo: `contar(n, 'prazo', 'prazos')`, `juntar(['a', 'b', 'c'])` → "
 | Processos / processo | Lista compacta. No processo: barra das 8 fases clicável, dados em uma linha e abas Etapas (checklist da fase) · Prazos · Linha do tempo · Cobrança |
 | Diário Oficial | Linhas compactas (série, cliente/processo, como achou, prazo sugerido, ações); texto do ato em `Expansivel` (B) |
 | Faturamento | Feito. Frase, faixa de abas do ciclo, busca e a tabela da aba, com botões de texto na linha. Clicar na linha abre o painel à direita (`?nota=`), sem sair da lista: `LinhaDaNota` + `PainelLateral`, em `financeiro/_components`. Detalhes em `financeiro.md` |
-| Financeiro | Mês atual por padrão com navegação de mês; `Resumo` no topo; gráfico em página própria ou atrás de aba; DRE com grupos recolhíveis (C) |
+| Financeiro | Mês atual por padrão com navegação de mês; `Resumo` no topo; gráfico em página própria ou atrás de aba; DRE em grade de planilha, com blocos que abrem e lançamentos abaixo (`financeiro.md`) |
 | Comercial | Funil em 4 colunas de cartões (o único lugar com cartões: é um quadro de etapas). A proposta abre na aba Proposta do processo, com o documento que imprime limpo (`print:hidden` no resto) |
 | Portal, login, usuários | Feito. Portal: fase atual e próximo prazo numa caixa, etapas numa linha do tempo vertical. Usuários: lista com o que cada perfil pode, formulário recolhido. Login: fundo papel, sem sombra (A) |
 

@@ -73,7 +73,7 @@ export default async function PaginaUsuarios({ searchParams }: { searchParams: P
       {usuarios.length === 0 && <Vazio>Sem banco configurado: os usuários aparecem aqui quando o Neon estiver ligado.</Vazio>}
 
       <Expansivel resumo="Dar acesso a outra pessoa" className="mt-5">
-        <Card className="max-w-3xl">
+        <Card>
           <FormularioUsuario clientes={clientes} />
         </Card>
       </Expansivel>

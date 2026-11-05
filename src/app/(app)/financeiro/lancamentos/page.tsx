@@ -8,8 +8,6 @@ import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
 import { listarLancamentos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
-import type { Regime } from '@/domain/financeiro/dre'
-import { mesDoLancamento } from '@/domain/financeiro/lancamentos'
 import { CONTAS, nomeDaConta } from '@/domain/financeiro/plano-de-contas'
 import { combina } from '@/lib/buscar'
 import { cn } from '@/lib/cn'
@@ -26,27 +24,25 @@ import { FormularioLancamento } from './_components/formulario-lancamento'
 
 export const metadata: Metadata = { title: 'Lançamentos' }
 
-/** `regime=competencia` filtra o mês pela competência (é o link da DRE por competência); `processo`, o link da lucratividade. */
-type Filtros = { mes?: string; q?: string; conta?: string; regime?: string; processo?: string; pagina?: string; novo?: string }
+/** `processo` é o link da lucratividade. */
+type Filtros = { mes?: string; q?: string; conta?: string; processo?: string; pagina?: string; novo?: string }
 
 export default async function PaginaLancamentos({ searchParams }: { searchParams: Promise<Filtros> }) {
   const [filtros, usuario, { hoje: dia, meses, lancamentos, processos }] = await Promise.all([searchParams, exigirArea('financeiro'), listarLancamentos()])
   const editar = pode(usuario.papel, 'financeiro', 'editar')
   const atual = mesDe(dia)
   const mes = filtros.mes === TODOS_OS_MESES || meses.includes(filtros.mes ?? '') ? filtros.mes! : atual
-  const regime: Regime = filtros.regime === 'competencia' ? 'competencia' : 'caixa'
   const conta = CONTAS.find((c) => c.id === filtros.conta)?.id
   const q = filtros.q?.trim() || undefined
   const nomeDoProcesso = (id?: string) => processos.find((p) => p.id === id)?.empreendimento
   const processo = processos.find((p) => p.id === filtros.processo)
 
   const link = (novos: Partial<Filtros>) => {
-    const f = { mes, q, conta, regime, processo: processo?.id, ...novos }
+    const f = { mes, q, conta, processo: processo?.id, ...novos }
     const params = new URLSearchParams()
     if (f.mes && f.mes !== atual) params.set('mes', f.mes)
     if (f.processo) params.set('processo', f.processo)
     if (f.conta) params.set('conta', f.conta)
-    if (f.regime === 'competencia') params.set('regime', f.regime)
     if (f.q) params.set('q', f.q)
     if (f.pagina && f.pagina !== '1') params.set('pagina', f.pagina)
     return params.size ? `/financeiro/lancamentos?${params}` : '/financeiro/lancamentos'
@@ -55,8 +51,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
   const filtrados = lancamentos
     .filter(
       (l) =>
-        // "Todos" são os meses do histórico, como na DRE (o DAS de dezembro pago em janeiro fica fora pela competência).
-        (mes === TODOS_OS_MESES ? meses.includes(mesDoLancamento(l, regime)) : mesDoLancamento(l, regime) === mes) &&
+        (mes === TODOS_OS_MESES ? meses.includes(mesDe(l.data)) : mesDe(l.data) === mes) &&
         (!conta || l.contaId === conta) &&
         (!processo || l.processoId === processo.id) &&
         combina(q, l.descricao, l.observacao, nomeDaConta(l.contaId), nomeDoProcesso(l.processoId), brl(l.valor)),
@@ -66,8 +61,8 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
   const entradas = somar(filtrados.filter((l) => l.valor > 0).map((l) => l.valor))
   const saidas = somar(filtrados.filter((l) => l.valor < 0).map((l) => l.valor))
 
-  const periodo = mes === TODOS_OS_MESES ? 'em todos os meses' : regime === 'competencia' ? `com competência ${formatarMes(mes)}` : `em ${formatarMes(mes)}`
-  const filtrado = Boolean(q || conta || processo || regime === 'competencia')
+  const periodo = mes === TODOS_OS_MESES ? 'em todos os meses' : `em ${formatarMes(mes)}`
+  const filtrado = Boolean(q || conta || processo)
   // Filtrado por uma conta de despesa, "entraram R$ 0,00" só atrapalha.
   const movimento = juntar([entradas ? `entraram ${brl(entradas)}` : '', saidas ? `saíram ${brl(-saidas)}` : ''].filter(Boolean))
 
@@ -91,11 +86,11 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
         <Busca
           valor={q}
           placeholder="Buscar na descrição, observação ou processo"
-          manter={{ mes: mes === atual ? undefined : mes, conta, regime: regime === 'competencia' ? regime : undefined, processo: processo?.id }}
+          manter={{ mes: mes === atual ? undefined : mes, conta, processo: processo?.id }}
           limpar={link({ q: undefined })}
           className="min-w-60"
         />
-        <FiltroConta valor={conta} manter={{ mes: mes === atual ? undefined : mes, regime: regime === 'competencia' ? regime : undefined, processo: processo?.id, q }} />
+        <FiltroConta valor={conta} manter={{ mes: mes === atual ? undefined : mes, processo: processo?.id, q }} />
         {processo && (
           <Link
             href={link({ processo: undefined })}
@@ -103,15 +98,6 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
             className="inline-flex h-9 max-w-full items-center gap-1 rounded-md border border-line bg-surface px-2.5 text-sm text-ink hover:bg-brand-50"
           >
             <span className="truncate">{processo.empreendimento}</span> <X className="size-3.5 shrink-0 text-muted" />
-          </Link>
-        )}
-        {regime === 'competencia' && (
-          <Link
-            href={link({ regime: undefined })}
-            title="Voltar a filtrar pela data do dinheiro"
-            className="inline-flex h-9 items-center gap-1 rounded-md border border-line bg-surface px-2.5 text-sm text-ink hover:bg-brand-50"
-          >
-            Pela competência <X className="size-3.5 text-muted" />
           </Link>
         )}
       </div>

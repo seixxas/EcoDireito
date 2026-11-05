@@ -218,7 +218,7 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
         />
       </div>
       {aba === 'nova' && (
-        <p className="mb-6 max-w-3xl text-sm text-muted">
+        <p className="mb-6 text-sm text-muted">
           O robô lê o Diário Oficial e traz os atos que parecem ser dos nossos clientes. Para cada um, decida: lançar no processo (marca a etapa e conta o
           prazo) ou ignorar.
         </p>
