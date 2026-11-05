@@ -1,8 +1,8 @@
 'use server'
 
-import { refresh } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { atualizarTelas } from '@/data/telas'
 import { alterarProposta, gravarProposta } from '@/data/processos'
 import { exigirArea } from '@/data/sessao'
 import { campo, lerFormulario, type EstadoFormulario } from '@/lib/formulario'
@@ -26,6 +26,7 @@ export async function criarProposta(_: EstadoFormulario, formData: FormData): Pr
   const lido = lerFormulario(esquemaProposta, formData)
   if ('estado' in lido) return lido.estado
   const id = await gravarProposta(lido.dados)
+  atualizarTelas()
   redirect(`/processos/${id}?aba=proposta`)
 }
 
@@ -37,6 +38,6 @@ export async function salvarTextoDaProposta(_: EstadoFormulario, formData: FormD
   if ('estado' in lido) return lido.estado
   const { processoId, ...dados } = lido.dados
   await alterarProposta(processoId, dados)
-  refresh()
+  atualizarTelas()
   return { ok: 'Proposta salva.' }
 }

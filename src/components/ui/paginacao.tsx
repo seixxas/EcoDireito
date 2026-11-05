@@ -1,8 +1,8 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 import type { Pagina } from '@/lib/paginar'
+import { LinkRapido } from './link-rapido'
 
 /** Páginas a mostrar: a primeira, a última e as vizinhas da atual; `null` vira "…". */
 function numeros(pagina: number, total: number) {
@@ -19,9 +19,9 @@ const BOTAO = 'inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded
 function Passo({ href, children }: { href?: string; children: ReactNode }) {
   if (!href) return <span className={cn(BOTAO, 'border-line text-subtle')}>{children}</span>
   return (
-    <Link href={href} scroll={false} className={cn(BOTAO, 'border-line bg-surface text-ink hover:border-brand-300 hover:bg-brand-50')}>
+    <LinkRapido href={href} scroll={false} className={cn(BOTAO, 'border-line bg-surface text-ink hover:border-brand-300 hover:bg-brand-50')}>
       {children}
-    </Link>
+    </LinkRapido>
   )
 }
 

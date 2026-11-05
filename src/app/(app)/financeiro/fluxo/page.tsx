@@ -1,6 +1,6 @@
 import { ArrowLeft, ChevronLeft, ChevronRight, TriangleAlert, type LucideIcon } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { GraficoFluxo } from '@/components/charts/grafico-fluxo'
 import { Abas } from '@/components/ui/abas'
 import { Card } from '@/components/ui/card'
@@ -93,9 +93,9 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
                 {semanas.map((semana) => (
                   <tr key={semana.inicio}>
                     <td className="whitespace-nowrap">
-                      <Link href={linkDaSemana(semana)} className="link">
+                      <LinkRapido href={linkDaSemana(semana)} className="link">
                         {formatarDataCurta(semana.inicio)} a {formatarDataCurta(semana.fim)}
-                      </Link>
+                      </LinkRapido>
                     </td>
                     <td className="num text-ok">{brl(semana.entradas)}</td>
                     <td className="num">{brl(semana.saidas)}</td>
@@ -133,9 +133,9 @@ function ZoomDaSemana({ semana, anterior, proxima, hoje }: { semana: SemanaFluxo
   const saldoInicial = semana.saldoFinal - semana.entradas - semana.saidas
   const seta = (alvo: SemanaFluxo | undefined, rotulo: string, Icone: LucideIcon) =>
     alvo ? (
-      <Link href={linkDaSemana(alvo)} scroll={false} aria-label={rotulo} title={rotulo} className="rounded-md p-1.5 text-muted hover:bg-surface hover:text-ink">
+      <LinkRapido href={linkDaSemana(alvo)} scroll={false} aria-label={rotulo} title={rotulo} className="rounded-md p-1.5 text-muted hover:bg-surface hover:text-ink">
         <Icone className="size-4" />
-      </Link>
+      </LinkRapido>
     ) : (
       <span className="p-1.5 text-line">
         <Icone className="size-4" />
@@ -145,9 +145,9 @@ function ZoomDaSemana({ semana, anterior, proxima, hoje }: { semana: SemanaFluxo
   return (
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link href="/financeiro/fluxo" scroll={false} className="inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
+        <LinkRapido href="/financeiro/fluxo" scroll={false} className="inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
           <ArrowLeft className="size-4" /> As 8 semanas
-        </Link>
+        </LinkRapido>
         <nav aria-label="Semana" className="inline-flex items-center">
           {seta(anterior, 'Semana anterior', ChevronLeft)}
           <span className="px-1 text-sm font-medium tabular-nums text-ink">
@@ -166,9 +166,9 @@ function ZoomDaSemana({ semana, anterior, proxima, hoje }: { semana: SemanaFluxo
       {semana.inicio < hoje && (
         <p className="mt-3 text-xs text-subtle">
           A projeção começa hoje; o que já passou nesta semana está em{' '}
-          <Link href="/financeiro/lancamentos" className="link">
+          <LinkRapido href="/financeiro/lancamentos" className="link">
             Lançamentos
-          </Link>
+          </LinkRapido>
           .
         </p>
       )}

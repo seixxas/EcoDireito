@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { SituacaoDaNota } from '@/components/financeiro/situacao-nota'
 import { Abas } from '@/components/ui/abas'
 import { Busca } from '@/components/ui/busca'
@@ -117,9 +117,9 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
         resumo={fraseDoCiclo(quantidades, q)}
         acoes={
           editar && (
-            <Link href="/financeiro/notas/nova" className={classeBotao()}>
+            <LinkRapido href="/financeiro/notas/nova" className={classeBotao()}>
               <Plus className="size-4" /> Registrar nota
-            </Link>
+            </LinkRapido>
           )
         }
       />
@@ -150,9 +150,9 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
           className="min-w-60"
         />
         {abaUsaMes(aba) && <NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m })} todos />}
-        <Link href="/financeiro/faturado-recebido" className="ml-auto text-sm text-muted underline decoration-line underline-offset-2 hover:text-ink">
+        <LinkRapido href="/financeiro/faturado-recebido" className="ml-auto text-sm text-muted underline decoration-line underline-offset-2 hover:text-ink">
           Faturado × recebido
-        </Link>
+        </LinkRapido>
       </div>
 
       {aba === 'atrasadas' && (
@@ -195,9 +195,9 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
             {q && abaUsaMes(aba) && !todosOsMeses && (
               <>
                 {' '}
-                <Link href={link({ mes: TODOS_OS_MESES })} className="link">
+                <LinkRapido href={link({ mes: TODOS_OS_MESES })} className="link">
                   Buscar em todos os meses
-                </Link>
+                </LinkRapido>
               </>
             )}
           </Vazio>

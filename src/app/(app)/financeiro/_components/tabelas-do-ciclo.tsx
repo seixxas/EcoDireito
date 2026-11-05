@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { SituacaoDaNota } from '@/components/financeiro/situacao-nota'
 import { classeBotao } from '@/components/ui/form'
 import type { ItemNota } from '@/data/financeiro'
@@ -18,12 +18,12 @@ type Tabela = { itens: ItemNota[]; dia: DataISO; notaAberta?: string; linkDaNota
 function AcoesDaNota({ nota, linkDaNota }: { nota: NotaFiscal; linkDaNota: LinkDaNota }) {
   return (
     <div className="flex gap-2">
-      <Link href={linkDaNota(nota.id, 'receber')} scroll={false} aria-label={`Receber a NF ${nota.numero}`} className={classeBotao('secundario')}>
+      <LinkRapido href={linkDaNota(nota.id, 'receber')} scroll={false} aria-label={`Receber a NF ${nota.numero}`} className={classeBotao('secundario')}>
         Receber
-      </Link>
-      <Link href={linkDaNota(nota.id, 'cobrar')} scroll={false} aria-label={`Cobrar a NF ${nota.numero}`} className={classeBotao('secundario')}>
+      </LinkRapido>
+      <LinkRapido href={linkDaNota(nota.id, 'cobrar')} scroll={false} aria-label={`Cobrar a NF ${nota.numero}`} className={classeBotao('secundario')}>
         Cobrar
-      </Link>
+      </LinkRapido>
     </div>
   )
 }
@@ -134,9 +134,9 @@ export function TabelaTodas({ itens, dia, notaAberta, linkDaNota }: Tabela) {
         {itens.map(({ nota, cliente }) => (
           <LinhaDaNota key={nota.id} href={linkDaNota(nota.id)} aberta={nota.id === notaAberta} className={nota.cancelada ? 'text-subtle line-through decoration-subtle/50' : undefined}>
             <td className="hidden tabular-nums sm:table-cell">
-              <Link href={linkDaNota(nota.id)} scroll={false} className="link">
+              <LinkRapido href={linkDaNota(nota.id)} scroll={false} className="link">
                 {nota.numero}
-              </Link>
+              </LinkRapido>
             </td>
             <td className="hidden whitespace-nowrap xl:table-cell">{formatarDataCurta(nota.emissao)}</td>
             <td className="sm:min-w-72">
@@ -182,16 +182,16 @@ export function TabelaAFaturar({ itens, editar }: { itens: Awaited<ReturnType<ty
       <tbody>
         {itens.map(({ parcela, processo, cliente, liberadaEm }) => {
           const registrar = (
-            <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('secundario')}>
+            <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('secundario')}>
               Registrar nota
-            </Link>
+            </LinkRapido>
           )
           return (
             <tr key={parcela.id}>
               <td className="sm:min-w-48">
-                <Link href={`/processos/${processo.id}`} className="link">
+                <LinkRapido href={`/processos/${processo.id}`} className="link">
                   {processo.empreendimento}
-                </Link>
+                </LinkRapido>
                 {/* Em tela estreita, parcela, cliente, data e botão vêm para esta coluna. */}
                 <p className="text-xs text-subtle xl:hidden">
                   {parcela.descricao} · {cliente.nome}

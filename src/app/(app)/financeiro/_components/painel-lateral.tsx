@@ -1,7 +1,7 @@
 'use client'
 
 import { X } from 'lucide-react'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { classeBotao } from '@/components/ui/form'
@@ -34,9 +34,9 @@ export function PainelLateral({ titulo, subtitulo, fechar, children }: { titulo:
           <h2 className="font-display text-xl font-semibold tracking-tight text-ink">{titulo}</h2>
           <div className="mt-0.5 text-sm text-muted">{subtitulo}</div>
         </div>
-        <Link href={fechar} scroll={false} className={classeBotao('secundario')}>
+        <LinkRapido href={fechar} scroll={false} className={classeBotao('secundario')}>
           <X className="size-4" /> Fechar
-        </Link>
+        </LinkRapido>
       </header>
       <div className="p-4">{children}</div>
     </aside>

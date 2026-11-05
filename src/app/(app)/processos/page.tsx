@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { SituacaoPrazo } from '@/components/prazos/situacao-prazo'
 import { FaseProgresso } from '@/components/processos/fase-progresso'
 import { Busca } from '@/components/ui/busca'
@@ -52,13 +52,13 @@ export default async function PaginaProcessos({ searchParams }: { searchParams: 
         resumo={`${contar(itens.length, 'processo', 'processos')}${comVencido ? `, ${comVencido} com prazo vencido` : ''}. Os que vencem primeiro vêm antes.`}
         acoes={
           <>
-            <Link href="/processos/clientes" className={classeBotao('secundario')}>
+            <LinkRapido href="/processos/clientes" className={classeBotao('secundario')}>
               Clientes
-            </Link>
+            </LinkRapido>
             {pode(usuario.papel, 'prazos', 'editar') && (
-              <Link href="/processos/novo" className={classeBotao()}>
+              <LinkRapido href="/processos/novo" className={classeBotao()}>
                 Novo processo
-              </Link>
+              </LinkRapido>
             )}
           </>
         }

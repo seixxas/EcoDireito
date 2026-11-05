@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { Busca } from '@/components/ui/busca'
 import { Card } from '@/components/ui/card'
 import { Vazio } from '@/components/ui/expansivel'
@@ -99,9 +99,9 @@ export default async function PaginaLucratividade({ searchParams }: { searchPara
             {paginado.itens.map((p) => (
               <tr key={p.processo.id}>
                 <td className="sm:min-w-56">
-                  <Link href={`/financeiro/lucratividade/${p.processo.id}`} className="link">
+                  <LinkRapido href={`/financeiro/lucratividade/${p.processo.id}`} className="link">
                     {p.processo.empreendimento}
-                  </Link>
+                  </LinkRapido>
                   <p className="text-xs text-subtle">{p.cliente.nome}</p>
                 </td>
                 <td className="num hidden text-muted xl:table-cell">{brl(p.contratado)}</td>

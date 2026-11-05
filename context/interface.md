@@ -57,6 +57,7 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 | `Busca({ valor, placeholder, manter, limpar })` | Caixa de busca na URL (`?q=`), acima da lista; filtre com `combina(q, ...textos)` (`src/lib/buscar.ts`: ignora acento e maiúscula; cada palavra buscada tem de ser o começo de uma palavra do texto, então "lumen" não acha "emolumentos"; para achar CNPJ sem pontuação, passe também `documento.replace(/\D/g, '')`). Buscar volta para a página 1 |
 | `Situacao({ tom, children })` | Status: ponto + texto |
 | `Badge({ tom })` | Etiqueta neutra (tipo, origem) |
+| `LinkRapido` | Igual ao `Link`, mas prepara a tela com o mouse em cima, foco ou toque. É o link padrão da área interna |
 | `Abas({ abas, ativa })` | Abas por URL (`?aba=`), sublinhadas. Com `detalhe` (valor em reais) e `alerta`, viram uma faixa em grade, sem rolagem, e substituem o `Resumo` (Faturamento) |
 | `SegmentedLinks` | Filtros por URL, controle com borda e ativo preenchido |
 | `Expansivel({ resumo, children })` | Conteúdo recolhido atrás de um botãozinho (texto do ato, cálculo, movimentos) |
@@ -64,8 +65,6 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 | `Card` | Formulário ou bloco que precisa de caixa |
 | Tabela | `<table className="tabela">`; coluna de valor com `num`. A grade da DRE é a exceção: tem as próprias bordas, para as colunas travadas levarem as linhas ao rolar |
 | Form | `Campo`, `Entrada`, `Selecao`, `AreaTexto`, `BotaoEnviar`, `MensagemFormulario`, `classeBotao` |
-
-`Stat` continua existindo (agora sem caixa), mas prefira `Resumo`.
 
 `cn` só junta classes, não resolve conflito: não passe margem (`mt-*`) para quem já tem margem própria, como `Secao` (`mt-8`, sem margem quando é a primeira). Para mudar o espaço, embrulhe numa `div`.
 

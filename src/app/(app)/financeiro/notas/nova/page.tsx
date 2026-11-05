@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
 import { dadosParaNovaNota } from '@/data/financeiro'
@@ -19,9 +19,9 @@ export default async function PaginaNovaNota({ searchParams }: { searchParams: P
 
   return (
     <>
-      <Link href="/financeiro" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
+      <LinkRapido href="/financeiro" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
         <ArrowLeft className="size-4" /> Faturamento
-      </Link>
+      </LinkRapido>
       <PageHeader titulo="Registrar nota fiscal" resumo="A nota já emitida no site da Prefeitura. ISS (5%) e retenção (5,5%) saem do valor." />
 
       {deParcela && (

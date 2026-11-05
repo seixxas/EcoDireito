@@ -1,7 +1,7 @@
 'use client'
 
 import { Plus } from 'lucide-react'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { useRef } from 'react'
 import { pode, type Area, type Papel } from '@/lib/permissoes'
 
@@ -33,7 +33,7 @@ export function BotaoNovo({ papel }: { papel: Papel }) {
       <ul className="absolute left-0 z-20 mt-1 min-w-full rounded-lg border border-line bg-surface p-1 shadow-sm">
         {opcoes.map(({ href, rotulo }) => (
           <li key={href}>
-            <Link
+            <LinkRapido
               href={href}
               onClick={() => {
                 if (menu.current) menu.current.open = false
@@ -41,7 +41,7 @@ export function BotaoNovo({ papel }: { papel: Papel }) {
               className="block whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm text-ink hover:bg-brand-50"
             >
               {rotulo}
-            </Link>
+            </LinkRapido>
           </li>
         ))}
       </ul>

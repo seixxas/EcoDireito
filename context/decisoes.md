@@ -4,6 +4,9 @@ Registro curto, do mais novo para o mais antigo. Mudou uma decisão? Acrescente 
 
 | Data | Decisão | Por quê |
 |---|---|---|
+| 2026-11-05 | Funções da Vercel em `gru1`, junto do Neon | Rodavam em Washington e o banco fica em São Paulo: 13 consultas por clique atravessando o continente, cerca de 1 segundo por clique |
+| 2026-11-05 | Telas guardadas só no navegador (`use cache: private`, 60 s) e preparadas com o mouse em cima (`LinkRapido`) | Cache de dados no servidor (`use cache: remote`) foi descartado: exigiria invalidar 26 pontos de gravação, as validações das ações leriam dado velho, o `db:seed` não invalidaria nada e haveria uma cópia do financeiro no cache da Vercel. Com o servidor perto do banco, quase não renderia. O preço aceito: o que outra pessoa gravou aparece em até 60 segundos, ou com F5 |
+| 2026-11-05 | `cookieCache` do Better Auth continua desligado | Com ele, usuário removido seguiria lendo e gravando por alguns minutos, para ganhar pouco depois da mudança de região |
 | 2026-11-04 | DRE sem meta por enquanto, nem de exemplo: só o realizado e o % da receita líquida | Decisão do dono do produto. Substitui a meta de exemplo. Quando a Eco Direito definir metas, entram com tabela nova e tela de edição |
 | 2026-11-04 | DRE copia a grade da planilha do Ecoamper, com as contas da Eco Direito | Pedido do dono do produto. A forma vem de lá; contas, nomes e os dois regimes continuam os que a Eco Direito usa |
 | 2026-11-04 | Meta de exemplo calculada dos lançamentos, sem tabela nova | A Eco Direito não tem meta cadastrada e tabela nova pede aprovação. A tela avisa que é exemplo |

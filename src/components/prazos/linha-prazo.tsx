@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { Expansivel } from '@/components/ui/expansivel'
 import { Linha } from '@/components/ui/lista'
 import { TIPOS_PRAZO, type Prazo } from '@/domain/prazos'
@@ -18,9 +18,9 @@ export function LinhaPrazo({ prazo, hoje, processo, cliente }: { prazo: Prazo; h
         <p className="font-medium text-ink">{prazo.regra.titulo}</p>
         <div className="flex flex-wrap items-baseline gap-x-3 text-xs text-muted">
           {processo && (
-            <Link href={`/processos/${processo.id}`} className="link">
+            <LinkRapido href={`/processos/${processo.id}`} className="link">
               {processo.empreendimento}
-            </Link>
+            </LinkRapido>
           )}
           {cliente && <span>{cliente.nome}</span>}
           {processo?.responsavel && <span>{processo.responsavel}</span>}

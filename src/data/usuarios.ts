@@ -4,8 +4,11 @@ import { asc, eq } from 'drizzle-orm'
 import { db, exigirBanco, schema, temBanco } from '@/db'
 import { ehPapel, type Papel } from '@/lib/permissoes'
 import { exigirArea } from './sessao'
+import { guardarNaTela } from './telas'
 
 export async function listarUsuarios() {
+  'use cache: private'
+  guardarNaTela()
   await exigirArea('usuarios')
   if (!temBanco) return []
   const linhas = await db

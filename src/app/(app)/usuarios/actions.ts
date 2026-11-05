@@ -1,7 +1,7 @@
 'use server'
 
-import { refresh } from 'next/cache'
 import { z } from 'zod'
+import { atualizarTelas } from '@/data/telas'
 import { exigirArea } from '@/data/sessao'
 import { criarUsuario, removerUsuario } from '@/data/usuarios'
 import { campo, lerFormulario, valoresDoFormulario, type EstadoFormulario } from '@/lib/formulario'
@@ -24,7 +24,7 @@ export async function adicionarUsuario(_: EstadoFormulario, formData: FormData):
   const { clienteId, ...dados } = lido.dados
   const resultado = await criarUsuario({ ...dados, clienteId: dados.papel === 'cliente' ? clienteId : undefined })
   if (resultado.erro) return { erro: resultado.erro, valores: valoresDoFormulario(formData) }
-  refresh()
+  atualizarTelas()
   return { ok: `${dados.nome} já pode entrar com ${dados.email}.` }
 }
 
@@ -32,5 +32,5 @@ export async function excluirUsuario(formData: FormData) {
   const usuario = await exigirArea('usuarios', 'editar')
   const id = String(formData.get('id'))
   if (id !== usuario.id) await removerUsuario(id)
-  refresh()
+  atualizarTelas()
 }

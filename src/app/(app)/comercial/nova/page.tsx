@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { Card } from '@/components/ui/card'
 import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
@@ -22,9 +22,9 @@ export default async function PaginaNovaProposta({ searchParams }: { searchParam
         titulo="Nova proposta"
         resumo="Cria o processo na fase Proposta. Depois é marcar quando foi enviada e quando o cliente aprovou."
         acoes={
-          <Link href={`/processos/clientes/novo?voltar=${encodeURIComponent('/comercial/nova')}`} className={classeBotao('secundario')}>
+          <LinkRapido href={`/processos/clientes/novo?voltar=${encodeURIComponent('/comercial/nova')}`} className={classeBotao('secundario')}>
             Cliente novo
-          </Link>
+          </LinkRapido>
         }
       />
       <Card>

@@ -1,6 +1,5 @@
 'use server'
 
-import { refresh } from 'next/cache'
 import { z } from 'zod'
 import {
   aplicarSugestoes,
@@ -12,6 +11,7 @@ import {
   lancarLinhaExtrato,
   receberPelaLinhaExtrato,
 } from '@/data/financeiro'
+import { atualizarTelas } from '@/data/telas'
 import { exigirArea } from '@/data/sessao'
 import { chaveDaSugestao } from '@/domain/financeiro/classificacao'
 import { decodificar, lerExtrato } from '@/domain/financeiro/extrato'
@@ -30,7 +30,7 @@ export async function importarExtrato(_: EstadoFormulario, formData: FormData): 
   if ('erro' in leitura) return { erro: leitura.erro }
   const novas = await gravarLinhasExtrato(leitura.linhas, arquivo.name)
   const repetidas = leitura.linhas.length - novas
-  refresh()
+  atualizarTelas()
   return { ok: `${novas} ${novas === 1 ? 'linha nova' : 'linhas novas'} na fila.${repetidas ? ` ${repetidas} já tinham sido importadas.` : ''}` }
 }
 
@@ -46,7 +46,7 @@ export async function confirmarSugestao(formData: FormData) {
   if (item?.sugestao && chaveDaSugestao(item.sugestao) === formData.get('sugestao')) {
     await aplicarSugestoes([{ linha: item.linha, sugestao: item.sugestao }], fila.clientes)
   }
-  refresh()
+  atualizarTelas()
 }
 
 /**
@@ -61,7 +61,7 @@ export async function confirmarTodas(formData: FormData) {
     fila.pendentes.flatMap(({ linha, sugestao }) => (sugestao && naTela.has(`${linha.id} ${chaveDaSugestao(sugestao)}`) ? [{ linha, sugestao }] : [])),
     fila.clientes,
   )
-  refresh()
+  atualizarTelas()
 }
 
 const esquemaClassificacao = z.object({
@@ -99,7 +99,7 @@ export async function classificarLinha(_: EstadoFormulario, formData: FormData):
     if (!(await lancarLinhaExtrato(item.linha, { contaId, processoId }))) return JA_LANCADA
     if (lembrar && termo) await gravarRegra({ contem: termo, contaId, processoId })
   }
-  refresh()
+  atualizarTelas()
   return { ok: 'Lançado.' }
 }
 
@@ -108,13 +108,13 @@ const JA_LANCADA: EstadoFormulario = { erro: 'Esta linha acabou de ser lançada 
 export async function ignorarLinha(formData: FormData) {
   await exigirArea('financeiro', 'editar')
   await ignorarLinhaExtrato(String(formData.get('linhaId')), true)
-  refresh()
+  atualizarTelas()
 }
 
 export async function devolverLinha(formData: FormData) {
   await exigirArea('financeiro', 'editar')
   await ignorarLinhaExtrato(String(formData.get('linhaId')), false)
-  refresh()
+  atualizarTelas()
 }
 
 const esquemaRegra = z.object({
@@ -128,12 +128,12 @@ export async function criarRegra(_: EstadoFormulario, formData: FormData): Promi
   const lido = lerFormulario(esquemaRegra, formData)
   if ('estado' in lido) return lido.estado
   await gravarRegra(lido.dados)
-  refresh()
+  atualizarTelas()
   return { ok: 'Regra salva. As linhas da fila que batem com ela já aparecem com a sugestão.' }
 }
 
 export async function excluirRegra(formData: FormData) {
   await exigirArea('financeiro', 'editar')
   await apagarRegra(String(formData.get('id')))
-  refresh()
+  atualizarTelas()
 }

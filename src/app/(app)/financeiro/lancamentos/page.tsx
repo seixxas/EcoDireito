@@ -1,6 +1,6 @@
 import { X } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { Busca } from '@/components/ui/busca'
 import { Card } from '@/components/ui/card'
 import { Expansivel } from '@/components/ui/expansivel'
@@ -90,15 +90,15 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
           limpar={link({ q: undefined })}
           className="min-w-60"
         />
-        <FiltroConta valor={conta} manter={{ mes: mes === atual ? undefined : mes, processo: processo?.id, q }} />
+        <FiltroConta acao="/financeiro/lancamentos" valor={conta} manter={{ mes: mes === atual ? undefined : mes, processo: processo?.id, q }} />
         {processo && (
-          <Link
+          <LinkRapido
             href={link({ processo: undefined })}
             title="Tirar o filtro de processo"
             className="inline-flex h-9 max-w-full items-center gap-1 rounded-md border border-line bg-surface px-2.5 text-sm text-ink hover:bg-brand-50"
           >
             <span className="truncate">{processo.empreendimento}</span> <X className="size-3.5 shrink-0 text-muted" />
-          </Link>
+          </LinkRapido>
         )}
       </div>
 
@@ -131,14 +131,14 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                     {formatarDataCurta(lancamento.data)} · {nomeDaConta(lancamento.contaId)}
                   </span>
                   {lancamento.notaId && (
-                    <Link href={`/financeiro/notas/${lancamento.notaId}`} className="link block w-fit text-xs">
+                    <LinkRapido href={`/financeiro/notas/${lancamento.notaId}`} className="link block w-fit text-xs">
                       ver nota
-                    </Link>
+                    </LinkRapido>
                   )}
                   {!lancamento.notaId && lancamento.processoId && (
-                    <Link href={`/processos/${lancamento.processoId}`} className="link block w-fit text-xs">
+                    <LinkRapido href={`/processos/${lancamento.processoId}`} className="link block w-fit text-xs">
                       {nomeDoProcesso(lancamento.processoId)}
-                    </Link>
+                    </LinkRapido>
                   )}
                 </td>
                 <td className="hidden text-muted sm:table-cell">{nomeDaConta(lancamento.contaId)}</td>

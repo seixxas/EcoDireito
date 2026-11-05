@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { Card } from '@/components/ui/card'
@@ -41,9 +41,9 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
 
   return (
     <>
-      <Link href={voltar} className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
+      <LinkRapido href={voltar} className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
         <ArrowLeft className="size-4" /> Lançamentos de {formatarMes(mes)}
-      </Link>
+      </LinkRapido>
       <PageHeader titulo={lancamento.descricao} resumo={`${brl(lancamento.valor)} em ${formatarData(lancamento.data)} · ${nomeDaConta(lancamento.contaId)}`} />
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -67,18 +67,18 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
               </Dado>
               <Dado rotulo="Processo">
                 {processo ? (
-                  <Link href={`/processos/${processo.id}`} className="link">
+                  <LinkRapido href={`/processos/${processo.id}`} className="link">
                     {processo.empreendimento}
-                  </Link>
+                  </LinkRapido>
                 ) : (
                   '—'
                 )}
               </Dado>
               <Dado rotulo="Nota fiscal">
                 {nota ? (
-                  <Link href={`/financeiro/notas/${nota.id}`} className="link">
+                  <LinkRapido href={`/financeiro/notas/${nota.id}`} className="link">
                     NF {nota.numero}
-                  </Link>
+                  </LinkRapido>
                 ) : (
                   '—'
                 )}

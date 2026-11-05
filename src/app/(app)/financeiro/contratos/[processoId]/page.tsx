@@ -1,6 +1,6 @@
 import { ArrowLeft, Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { notFound } from 'next/navigation'
 import type { Tom } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -32,16 +32,16 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
 
   return (
     <>
-      <Link href="/financeiro/contratos" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
+      <LinkRapido href="/financeiro/contratos" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
         <ArrowLeft className="size-4" /> Contratos
-      </Link>
+      </LinkRapido>
       <PageHeader
         titulo={processo.empreendimento}
         resumo={`${cliente.nome} · contrato de ${brl(somar(parcelas.map((p) => p.parcela.valor)))}`}
         acoes={
-          <Link href={`/processos/${processo.id}`} className={classeBotao('secundario')}>
+          <LinkRapido href={`/processos/${processo.id}`} className={classeBotao('secundario')}>
             Ver processo
-          </Link>
+          </LinkRapido>
         }
       />
 
@@ -53,14 +53,14 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
               <div className="flex items-center gap-3 lg:w-64 lg:justify-end lg:pt-8">
                 <Situacao tom={SITUACAO[situacao].tom}>{SITUACAO[situacao].rotulo}</Situacao>
                 {situacao === 'liberada' && (
-                  <Link href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="link text-sm font-medium" title={`Liberada em ${formatarData(liberadaEm!)}`}>
+                  <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="link text-sm font-medium" title={`Liberada em ${formatarData(liberadaEm!)}`}>
                     Registrar nota
-                  </Link>
+                  </LinkRapido>
                 )}
                 {nota ? (
-                  <Link href={`/financeiro/notas/${nota.id}`} className="link text-sm">
+                  <LinkRapido href={`/financeiro/notas/${nota.id}`} className="link text-sm">
                     NF {nota.numero}
-                  </Link>
+                  </LinkRapido>
                 ) : (
                   <form action={excluirParcela}>
                     <input type="hidden" name="id" value={parcela.id} />
