@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { somar } from '@/lib/dinheiro'
-import { csvDaDre, difDaMeta, itensDaLinha, metasDeExemplo, montarDre, periodosDaDre, rotuloDaLinha, type LinhaDre } from './dre'
+import { csvDaDre, itensDaLinha, montarDre, periodosDaDre, rotuloDaLinha, type LinhaDre } from './dre'
 import type { Lancamento } from './lancamentos'
 import type { NotaFiscal } from './notas'
 
@@ -40,7 +40,7 @@ const lancamentos = [
 const achar = (linhas: LinhaDre[], id: string) => linhas.find((linha) => linha.id === id)!
 
 describe('grade da DRE', () => {
-  const dre = montarDre({ lancamentos, notas: [], meses, regime: 'caixa', metas: { receita_servicos: 90_000, art: -4_000, aluguel: -20_000 } })
+  const dre = montarDre({ lancamentos, notas: [], meses, regime: 'caixa' })
 
   it('soma as contas vizinhas num bloco, com as contas dentro dele', () => {
     expect(achar(dre, 'bloco-custo')).toMatchObject({ tipo: 'bloco', sinal: '(−)', valores: [-5_000, -30_000], total: -35_000 })
@@ -54,52 +54,21 @@ describe('grade da DRE', () => {
     expect(achar(dre, 'simples').bloco).toBeUndefined()
   })
 
-  it('cada subtotal é a soma do que veio acima, nos valores e na meta', () => {
+  it('cada subtotal é a soma do que veio acima', () => {
     expect(achar(dre, 'subtotal-custo').valores).toEqual([80_000, -30_000])
-    expect(achar(dre, 'subtotal-custo').metas).toEqual([86_000, 86_000])
     expect(rotuloDaLinha(achar(dre, 'subtotal-outras'))).toBe('= Resultado líquido')
     expect(achar(dre, 'subtotal-outras').total).toBe(30_000)
   })
 
-  it('o que não compõe o resultado fica numa seção, sem meta, e fecha na variação de caixa', () => {
+  it('o que não compõe o resultado fica numa seção e fecha na variação de caixa', () => {
     expect(achar(dre, 'secao-fora').tipo).toBe('secao')
-    expect(achar(dre, 'bloco-fora')).toMatchObject({ secao: 'secao-fora', metas: null })
-    expect(achar(dre, 'distribuicao_lucros')).toMatchObject({ secao: 'secao-fora', bloco: 'bloco-fora', metas: null })
-    expect(achar(dre, 'subtotal-fora')).toMatchObject({ tipo: 'total', metas: null, total: 20_000 })
+    expect(achar(dre, 'bloco-fora').secao).toBe('secao-fora')
+    expect(achar(dre, 'distribuicao_lucros')).toMatchObject({ secao: 'secao-fora', bloco: 'bloco-fora' })
+    expect(achar(dre, 'subtotal-fora')).toMatchObject({ tipo: 'total', total: 20_000 })
   })
 
-  it('conta com meta e sem valor no período continua na grade', () => {
-    const soAluguel = montarDre({ lancamentos: [], notas: [], meses, regime: 'caixa', metas: { aluguel: -20_000 } })
-    expect(achar(soAluguel, 'aluguel')).toMatchObject({ valores: [0, 0], metas: [-20_000, -20_000] })
-    expect(achar(soAluguel, 'subtotal-despesa').metas).toEqual([-20_000, -20_000])
-  })
-})
-
-describe('diferença para a meta', () => {
-  it('positiva melhora o resultado, inclusive em custo', () => {
-    expect(difDaMeta(110_000, 100_000)).toBeCloseTo(0.1)
-    expect(difDaMeta(-8_000, -10_000)).toBeCloseTo(0.2)
-    expect(difDaMeta(-12_000, -10_000)).toBeCloseTo(-0.2)
-  })
-
-  it('não existe sem meta', () => {
-    expect(difDaMeta(100, 0)).toBeNull()
-    expect(difDaMeta(100, undefined)).toBeNull()
-  })
-})
-
-describe('meta de exemplo', () => {
-  it('é a média mensal em centenas de reais, com receita acima e gastos abaixo', () => {
-    const metas = metasDeExemplo(lancamentos, meses)
-    expect(metas.receita_servicos).toBe(60_000)
-    // ART: média de R$ 25 por mês, que nem chega a uma centena.
-    expect(metas.art).toBeUndefined()
-    expect(metas.aluguel).toBe(-10_000)
-  })
-
-  it('não cria meta para o que está fora do resultado nem sem meses', () => {
-    expect(metasDeExemplo(lancamentos, meses).distribuicao_lucros).toBeUndefined()
-    expect(metasDeExemplo(lancamentos, [])).toEqual({})
+  it('conta sem valor no período não aparece', () => {
+    expect(dre.some((linha) => linha.id === 'energia')).toBe(false)
   })
 })
 
@@ -148,15 +117,13 @@ describe('o que forma um valor da grade', () => {
 })
 
 describe('exportar para o Excel', () => {
-  const dre = montarDre({ lancamentos, notas: [], meses, regime: 'caixa', metas: { receita_servicos: 90_000 } })
+  const dre = montarDre({ lancamentos, notas: [], meses, regime: 'caixa' })
   const csv = csvDaDre(dre, meses)
   const linhas = csv.split('\r\n')
 
   it('usa ponto e vírgula, vírgula decimal e as colunas da tela', () => {
-    expect(linhas[0]).toBe(
-      '"Linha da DRE";"Meta jan/26";"Realizado jan/26";"Dif. % jan/26";"Meta fev/26";"Realizado fev/26";"Dif. % fev/26";"Meta Período";"Realizado Período";"Dif. % Período"',
-    )
-    expect(linhas[1]).toBe('"Receita bruta de serviços";"900,00";"1000,00";"11,1";"900,00";"0,00";"-100,0";"1800,00";"1000,00";"-44,4"')
+    expect(linhas[0]).toBe('"Linha da DRE";"jan/26";"fev/26";"Total";"% receita líq."')
+    expect(linhas[1]).toBe('"Receita bruta de serviços";"1000,00";"0,00";"1000,00";"117,6"')
   })
 
   it('não deixa o Excel ler o rótulo como fórmula', () => {
@@ -164,8 +131,13 @@ describe('exportar para o Excel', () => {
     expect(csv).toContain(`"(−) Simples Nacional"`)
   })
 
-  it('leva as contas dos blocos, mesmo recolhidas na tela, e deixa em branco o que não tem meta', () => {
+  it('leva as contas dos blocos, mesmo recolhidas na tela, e fecha na variação de caixa', () => {
     expect(csv).toContain('"   ART"')
-    expect(linhas.at(-1)).toMatch(/^"'= Variação de caixa";"";"700,00";""/)
+    expect(linhas.at(-1)).toBe(`"'= Variação de caixa";"700,00";"-500,00";"200,00";"23,5"`)
+  })
+
+  it('sem receita líquida, deixa o percentual em branco', () => {
+    const semReceita = montarDre({ lancamentos: [lancamento('aluguel', '2026-02-06', 'aluguel', -20_000)], notas: [], meses, regime: 'caixa' })
+    expect(csvDaDre(semReceita, meses)).toContain('"(−) Despesas operacionais";"0,00";"-200,00";"-200,00";""')
   })
 })

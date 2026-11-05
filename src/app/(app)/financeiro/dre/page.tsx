@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { Badge } from '@/components/ui/badge'
 import { Expansivel } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
@@ -29,7 +28,7 @@ const REGIMES: Record<Regime, { rotulo: string; explicacao: string }> = {
 
 const COMO_LER: [string, string][] = [
   ['Lançamentos', 'Clique em qualquer valor para ver, abaixo da tabela, o que o forma. Subtotal não abre: ele é a soma das linhas de cima.'],
-  ['Dif. %', 'Compara o realizado com a meta. Positiva melhora o resultado; negativa reduz, inclusive nas linhas de custo.'],
+  ['% rec. líq.', 'Quanto a linha representa da receita líquida do período.'],
   ['Período', 'Fica travado à direita quando a tabela rola. O mês atual ainda recebe lançamentos: para não misturar, escolha "Até o último mês fechado".'],
   ['Movimentação de caixa', 'Não entra no resultado: distribuição de lucros, mútuo, aplicações e imobilizado.'],
 ]
@@ -101,13 +100,13 @@ function QuadroDeLancamentos(props: { linha: LinhaDre; periodo: string; itens: I
 export default async function PaginaDre({ searchParams }: { searchParams: Promise<Filtros> }) {
   const filtros = await searchParams
   const regime: Regime = filtros.regime === 'competencia' ? 'competencia' : 'caixa'
-  const { hoje, meses: todosOsMeses, notas, lancamentos, metas } = await dadosDaDre()
+  const { hoje, meses: todosOsMeses, notas, lancamentos } = await dadosDaDre()
   const periodos = periodosDaDre(todosOsMeses, mesDe(hoje))
   const periodo = periodos.find((p) => p.id === filtros.periodo) ?? periodos[0]
   const { meses } = periodo
   const rotuloDoPeriodo = meses.length > 1 ? `${formatarMes(meses[0])} a ${formatarMes(meses.at(-1)!)}` : formatarMes(meses[0])
 
-  const linhas = montarDre({ lancamentos, notas, meses, regime, metas })
+  const linhas = montarDre({ lancamentos, notas, meses, regime })
   const receitaLiquida = linhas.find((l) => l.id === 'subtotal-imposto')?.total ?? 0
   const resultado = linhas.find((l) => l.id === 'subtotal-outras')?.total ?? 0
 
@@ -162,17 +161,17 @@ export default async function PaginaDre({ searchParams }: { searchParams: Promis
             }))}
           />
         </Filtro>
+        <p className="ml-auto text-xs text-muted">Valores em reais</p>
       </div>
 
-      <p className="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-muted">
-        <Badge tom="warn">Meta de exemplo</Badge>
-        <span>
-          A Eco Direito ainda não tem meta cadastrada. Aqui, a meta é a média mensal de cada conta, com receita 10% acima e gastos 5% abaixo, só para mostrar a comparação. Valores
-          em reais.
-        </span>
-      </p>
-
-      <TabelaDre meses={meses} linhas={linhas} rotuloDoPeriodo={rotuloDoPeriodo} consulta={consulta} selecao={escolhida && { linha: escolhida.id, mes }} />
+      <TabelaDre
+        meses={meses}
+        linhas={linhas}
+        receitaLiquida={receitaLiquida}
+        rotuloDoPeriodo={rotuloDoPeriodo}
+        consulta={consulta}
+        selecao={escolhida && { linha: escolhida.id, mes }}
+      />
 
       {escolhida && (
         <RolarParaVista chave={`${escolhida.id}-${mes ?? periodo.id}-${filtros.pagina ?? 1}`}>

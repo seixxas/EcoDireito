@@ -32,14 +32,6 @@ export function numeroInteiro(valor: Centavos) {
   return `${reais < 0 ? '−' : ''}${inteiro.format(Math.abs(reais))}`
 }
 
-const umaCasa = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
-
-/** +12,3% ou −4,0%: diferença para a meta. */
-export function percentualComSinal(fracao: number) {
-  const pontos = Math.round(fracao * 1000) / 10
-  return `${pontos > 0 ? '+' : pontos < 0 ? '−' : ''}${umaCasa.format(Math.abs(pontos))}%`
-}
-
 /** R$ 1,2 mi — para gráficos e KPIs. */
 export function brlCompacto(valor: Centavos) {
   return moedaCompacta.format(valor / 100)

@@ -7,9 +7,6 @@ import { CONTAS, type ContaId, type GrupoDre } from './plano-de-contas'
 
 export type Regime = 'caixa' | 'competencia'
 
-/** Meta de um mês por conta. */
-export type MetasDaDre = Partial<Record<ContaId, Centavos>>
-
 export type LinhaDre = {
   id: string
   nome: string
@@ -22,8 +19,6 @@ export type LinhaDre = {
   secao?: string
   /** Um valor por mês, na ordem de `meses`. Vazio em linha de seção. */
   valores: Centavos[]
-  /** Meta de cada mês; `null` no que não compõe o resultado. */
-  metas: Centavos[] | null
   total: Centavos
 }
 
@@ -86,11 +81,9 @@ function itensDoRegime({ lancamentos, notas, regime }: { lancamentos: Lancamento
   return [...doBanco, ...emitidas]
 }
 
-const somarColunas = (colunas: Centavos[][], meses: string[]) => meses.map((_, i) => somar(colunas.map((valores) => valores[i])))
-
 /** Cada subtotal é a soma de tudo que veio acima: despesa já entra negativa. */
-export function montarDre(entrada: { lancamentos: Lancamento[]; notas: NotaFiscal[]; meses: string[]; regime: Regime; metas?: MetasDaDre }): LinhaDre[] {
-  const { meses, metas = {} } = entrada
+export function montarDre(entrada: { lancamentos: Lancamento[]; notas: NotaFiscal[]; meses: string[]; regime: Regime }): LinhaDre[] {
+  const { meses } = entrada
   const indice = new Map(meses.map((mes, i) => [mes, i]))
   const porConta = new Map<ContaId, Centavos[]>()
 
@@ -104,45 +97,31 @@ export function montarDre(entrada: { lancamentos: Lancamento[]; notas: NotaFisca
 
   const linhas: LinhaDre[] = []
   const acumulado = meses.map(() => 0)
-  const metaAcumulada = meses.map(() => 0)
 
   for (const etapa of ESTRUTURA) {
     const secao = etapa.secao && `secao-${etapa.grupo}`
-    const comMeta = etapa.grupo !== 'fora'
-    if (secao) linhas.push({ id: secao, nome: etapa.secao!, tipo: 'secao', valores: [], metas: null, total: 0 })
+    if (secao) linhas.push({ id: secao, nome: etapa.secao!, tipo: 'secao', valores: [], total: 0 })
 
-    // Conta com meta e sem valor no período continua na grade: sem ela, a meta do bloco não fecharia com o subtotal.
-    const contas = CONTAS.filter((conta) => conta.grupo === etapa.grupo && (porConta.has(conta.id) || (comMeta && metas[conta.id]))).map((conta): LinhaDre => {
-      const valores = porConta.get(conta.id) ?? meses.map(() => 0)
-      return { id: conta.id, nome: conta.nome, tipo: 'conta', valores, metas: comMeta ? meses.map(() => metas[conta.id] ?? 0) : null, total: somar(valores), secao }
+    const contas = CONTAS.filter((conta) => conta.grupo === etapa.grupo && porConta.has(conta.id)).map((conta): LinhaDre => {
+      const valores = porConta.get(conta.id)!
+      return { id: conta.id, nome: conta.nome, tipo: 'conta', valores, total: somar(valores), secao }
     })
 
-    for (const conta of contas) {
-      conta.valores.forEach((valor, i) => (acumulado[i] += valor))
-      conta.metas?.forEach((meta, i) => (metaAcumulada[i] += meta))
-    }
+    for (const conta of contas) conta.valores.forEach((valor, i) => (acumulado[i] += valor))
 
     if (etapa.bloco && contas.length) {
       const id = `bloco-${etapa.grupo}`
-      const valores = somarColunas(contas.map((conta) => conta.valores), meses)
-      const metasDoBloco = comMeta ? somarColunas(contas.map((conta) => conta.metas!), meses) : null
-      linhas.push({ id, nome: etapa.bloco, sinal: etapa.sinal, tipo: 'bloco', valores, metas: metasDoBloco, total: somar(valores), secao })
+      const valores = meses.map((_, i) => somar(contas.map((conta) => conta.valores[i])))
+      linhas.push({ id, nome: etapa.bloco, sinal: etapa.sinal, tipo: 'bloco', valores, total: somar(valores), secao })
       linhas.push(...contas.map((conta) => ({ ...conta, bloco: id })))
     } else {
       linhas.push(...contas.map((conta) => ({ ...conta, sinal: etapa.sinal })))
     }
 
     if (etapa.subtotal) {
-      const nome = etapa.grupo === 'fora' && entrada.regime === 'competencia' ? 'Resultado após itens fora da DRE' : etapa.subtotal
-      linhas.push({
-        id: `subtotal-${etapa.grupo}`,
-        nome,
-        sinal: '=',
-        tipo: comMeta ? 'subtotal' : 'total',
-        valores: [...acumulado],
-        metas: comMeta ? [...metaAcumulada] : null,
-        total: somar(acumulado),
-      })
+      const fechaOCaixa = etapa.grupo === 'fora'
+      const nome = fechaOCaixa && entrada.regime === 'competencia' ? 'Resultado após itens fora da DRE' : etapa.subtotal
+      linhas.push({ id: `subtotal-${etapa.grupo}`, nome, sinal: '=', tipo: fechaOCaixa ? 'total' : 'subtotal', valores: [...acumulado], total: somar(acumulado) })
     }
   }
 
@@ -150,28 +129,6 @@ export function montarDre(entrada: { lancamentos: Lancamento[]; notas: NotaFisca
 }
 
 export const rotuloDaLinha = (linha: Pick<LinhaDre, 'nome' | 'sinal'>) => (linha.sinal ? `${linha.sinal} ${linha.nome}` : linha.nome)
-
-/** Positiva melhora o resultado, inclusive nas linhas de custo, que são negativas. Sem meta, não há o que comparar. */
-export function difDaMeta(realizado: Centavos, meta: Centavos | undefined): number | null {
-  return meta ? (realizado - meta) / Math.abs(meta) : null
-}
-
-/**
- * A Eco Direito ainda não tem meta cadastrada. Até ter, a grade usa esta meta de exemplo: a média mensal da conta nos
- * meses dados, em centenas de reais, com receita e imposto 10% acima e os gastos 5% abaixo. O que está fora do resultado não tem meta.
- */
-export function metasDeExemplo(lancamentos: Lancamento[], meses: string[]): MetasDaDre {
-  const metas: MetasDaDre = {}
-  if (!meses.length) return metas
-  for (const conta of CONTAS) {
-    if (conta.grupo === 'fora') continue
-    const doPeriodo = lancamentos.filter((lancamento) => lancamento.contaId === conta.id && meses.includes(mesDe(lancamento.data)))
-    const ajuste = conta.grupo === 'receita' || conta.grupo === 'imposto' ? 1.1 : 0.95
-    const meta = Math.round(((somar(doPeriodo.map((lancamento) => lancamento.valor)) / meses.length) * ajuste) / 10_000) * 10_000
-    if (meta) metas[conta.id] = meta
-  }
-  return metas
-}
 
 export type PeriodoDre = { id: string; rotulo: string; meses: string[] }
 
@@ -209,22 +166,17 @@ export function itensDaLinha(entrada: { linha: string; lancamentos: Lancamento[]
 /** O Excel lê como fórmula o texto que começa com = + - @ ("= Lucro bruto" viraria #NOME?). */
 const textoParaExcel = (texto: string) => (/^[=+\-@]/.test(texto) ? `'${texto}` : texto)
 const decimal = (centavos: Centavos) => (centavos / 100).toFixed(2).replace('.', ',')
-const percentual = (fracao: number | null) => (fracao === null ? '' : (fracao * 100).toFixed(1).replace('.', ','))
 
 /** CSV com ";" e vírgula decimal, que abre direto no Excel em português. Leva todas as linhas, mesmo as recolhidas na tela. */
 export function csvDaDre(linhas: LinhaDre[], meses: string[]) {
-  const trio = (rotulo: string) => [`Meta ${rotulo}`, `Realizado ${rotulo}`, `Dif. % ${rotulo}`]
-  const cabecalho = ['Linha da DRE', ...meses.flatMap((mes) => trio(formatarMes(mes))), ...trio('Período')]
-  const colunas = (realizado: Centavos, meta?: Centavos) => [meta === undefined ? '' : decimal(meta), decimal(realizado), percentual(difDaMeta(realizado, meta))]
+  const receitaLiquida = linhas.find((linha) => linha.id === 'subtotal-imposto')?.total ?? 0
+  const cabecalho = ['Linha da DRE', ...meses.map((mes) => formatarMes(mes)), 'Total', '% receita líq.']
 
   const corpo = linhas.map((linha) => {
     const rotulo = textoParaExcel(`${linha.bloco ? '   ' : ''}${rotuloDaLinha(linha)}`)
     if (linha.tipo === 'secao') return [rotulo]
-    return [
-      rotulo,
-      ...linha.valores.flatMap((valor, i) => colunas(valor, linha.metas?.[i])),
-      ...colunas(linha.total, linha.metas ? somar(linha.metas) : undefined),
-    ]
+    const percentual = receitaLiquida ? ((linha.total / receitaLiquida) * 100).toFixed(1).replace('.', ',') : ''
+    return [rotulo, ...linha.valores.map(decimal), decimal(linha.total), percentual]
   })
 
   return [cabecalho, ...corpo].map((linha) => linha.map((celula) => `"${celula.replace(/"/g, '""')}"`).join(';')).join('\r\n')

@@ -116,14 +116,13 @@ Receita bruta → (−) Simples Nacional → Receita líquida → (−) Custos (
 - **Caixa**: tudo pela data do dinheiro.
 - **Competência**: receita pela emissão da nota; o resto pela competência do lançamento.
 - Plano de contas em `src/domain/financeiro/plano-de-contas.ts`.
-- **Grade**: cada mês é um bloco de Meta, Realizado e Dif. %. A coluna das contas fica travada à esquerda e o bloco do período, à direita (em tela larga). Rolagem lateral pela barra de cima (`TabelaRolavel`).
+- **Grade**: cada mês é um bloco com o realizado. A coluna das contas fica travada à esquerda e o bloco do período (realizado e % da receita líquida), à direita, em tela larga. Rolagem lateral pela barra de cima (`TabelaRolavel`).
 - **Linhas**: todo valor tem sinal (receita positiva, despesa negativa), então cada subtotal é a soma do que veio acima. Grupo com mais de uma conta vira bloco; o que não compõe o resultado fica na seção "Movimentação de caixa", sem meta, e fecha em Variação de caixa.
-- **Dif. %** = (realizado − meta) / |meta|. Positiva melhora o resultado, inclusive em custo. Meta zero não tem diferença.
-- **Meta**: a Eco Direito ainda não tem meta cadastrada. `metasDeExemplo` (média mensal dos meses fechados, em centenas de reais, com receita e imposto 10% acima e gastos 5% abaixo) só mostra a comparação, com aviso na tela. Meta real pede tabela nova e tela de edição: troque em `dadosDaDre`, o resto não muda.
+- **Meta**: a Eco Direito ainda não definiu metas, então a grade mostra só o realizado, como a planilha do Ecoamper faz sem meta. Meta real pede tabela nova e tela de edição.
 - **Período** (`?periodo=`): completo, até o último mês fechado ou trimestre, mesmo incompleto. Trocar período ou regime fecha o quadro de lançamentos.
 - **Excel**: CSV com `;`, vírgula decimal e BOM (`csvDaDre`), com todas as linhas, mesmo recolhidas, no período e no regime da tela. Rótulo que começa com = + - @ leva apóstrofo, senão o Excel lê como fórmula.
 - A grade e o quadro de lançamentos saem da mesma função (`itensDoRegime`): o que abre sempre soma o valor da célula.
-- Modelo: DRE do Ecoamper, só a planilha. De lá ficaram de fora os filtros de empresa e centro de custo (a Eco Direito não tem), as categorias abaixo de cada conta (aqui a conta é o menor nível), a importação e a coluna extra para meta que termina antes do período. Valores em reais, não em R$ mil: as contas pequenas sumiriam.
+- Modelo: DRE do Ecoamper, só a planilha. De lá ficaram de fora os filtros de empresa e centro de custo (a Eco Direito não tem), as categorias abaixo de cada conta (aqui a conta é o menor nível), a importação e, por enquanto, as colunas de meta. Valores em reais, não em R$ mil: as contas pequenas sumiriam.
 
 ## Fluxo de caixa
 

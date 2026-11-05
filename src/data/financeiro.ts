@@ -4,7 +4,6 @@ import { db, exigirBanco, schema, temBanco } from '@/db'
 import { inicioDaSemana, mesDe, somarDias, somarMeses, type DataISO } from '@/lib/datas'
 import { reais, somar, type Centavos } from '@/lib/dinheiro'
 import { palavrasDe, sugerirParaTodas, type Regra, type Sugestao } from '@/domain/financeiro/classificacao'
-import { metasDeExemplo } from '@/domain/financeiro/dre'
 import type { LinhaExtrato } from '@/domain/financeiro/extrato'
 import { gerarOfx, linhasDeExemplo } from '@/domain/financeiro/extrato-exemplo'
 import { fluxoMensal, movimentosPrevistos, projetarSemanas, type Recorrente } from '@/domain/financeiro/fluxo'
@@ -36,9 +35,7 @@ export async function listarNotas() {
 
 export async function dadosDaDre() {
   const { hoje, financeiro } = await carregar()
-  const { meses, notas, lancamentos } = financeiro
-  const fechados = meses.filter((mes) => mes < mesDe(hoje))
-  return { hoje, meses, notas, lancamentos, metas: metasDeExemplo(lancamentos, fechados) }
+  return { hoje, meses: financeiro.meses, notas: financeiro.notas, lancamentos: financeiro.lancamentos }
 }
 
 /** Média dos 3 últimos meses fechados vira despesa prevista. Mútuo, imobilizado e distribuições extras ficam fora. */

@@ -3,29 +3,28 @@
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { Fragment, useState, type ReactNode } from 'react'
-import { difDaMeta, rotuloDaLinha, type LinhaDre } from '@/domain/financeiro/dre'
+import { rotuloDaLinha, type LinhaDre } from '@/domain/financeiro/dre'
 import { cn } from '@/lib/cn'
-import { somar } from '@/lib/dinheiro'
-import { formatarMes, numeroInteiro, percentualComSinal } from '@/lib/formatar'
+import { formatarMes, formatarPercentual, numeroInteiro } from '@/lib/formatar'
 import { TabelaRolavel } from './tabela-rolavel'
 
 export type SelecaoDre = { linha: string; mes?: string }
 
-const COLUNAS = ['Meta', 'Realizado', 'Dif. %']
-
 /**
- * Grade no estilo da planilha: cada mês é um bloco de três células, com linha forte nas bordas do bloco e suave por dentro,
- * e um espaço entre um bloco e outro. Bordas por lado, sem border-collapse, para as células travadas levarem as linhas ao rolar.
+ * Grade no estilo da planilha: cada mês é um bloco, com linha forte nas bordas, e um espaço entre um bloco e outro.
+ * Bordas por lado, sem border-collapse, para as células travadas levarem as linhas ao rolar.
  */
 const LINHA = 'border-b border-b-line'
-const borda = (k: number) => cn(k === 0 && 'border-l border-l-grade', k === COLUNAS.length - 1 ? 'border-r border-r-grade' : 'border-r border-r-line')
+const BORDA_DO_MES = 'border-x border-x-grade'
 const ESPACO = 'w-3.5 min-w-3.5 bg-surface p-0'
 
-/** Bloco do período: travado à direita em tela larga. `DIREITA[n]` fica n colunas para dentro. */
+/** Bloco do período: travado à direita em tela larga. O realizado fica uma coluna para dentro; o espaço, duas. */
+const COLUNAS_DO_PERIODO = ['Realizado', '% rec. líq.']
 const FIXA = 'z-10 lg:sticky'
 const COLUNA_FIXA = 'w-24 min-w-24'
-const DIREITA = ['right-0', 'right-24', 'right-48', 'right-72']
-const direita = (k: number) => DIREITA[COLUNAS.length - 1 - k]
+const ESPACO_FIXO = cn(FIXA, 'right-48', ESPACO)
+const REALIZADO = cn(FIXA, 'right-24', COLUNA_FIXA, 'border-l border-r border-l-grade border-r-line')
+const PERCENTUAL = cn(FIXA, 'right-0', COLUNA_FIXA, 'border-r border-r-grade')
 
 /** A coluna das contas leva consigo o espaço seguinte, para os meses não encostarem nela ao rolar. */
 const ROTULO_FIXO = 'sticky left-0 z-10 shadow-[0.875rem_0_0_var(--color-surface)]'
@@ -34,11 +33,6 @@ const SELECIONADA = 'bg-rail outline-2 -outline-offset-2 outline-ink'
 
 /** Resultados que fecham a conta: negrito mais forte, como a linha de total. */
 const FORTES = new Set(['subtotal-despesa', 'subtotal-outras'])
-
-function corDaDif(dif: number | null) {
-  if (dif === null || Math.round(dif * 1000) === 0) return 'text-muted'
-  return dif > 0 ? 'text-ok' : 'text-danger'
-}
 
 function Valor({ href, escolhido, cor, titulo, children }: { href?: string; escolhido: boolean; cor?: string; titulo: string; children: ReactNode }) {
   if (!href) return <span className={cn('block px-1 py-1.5', cor)}>{children}</span>
@@ -62,15 +56,12 @@ function GradeVazia({ meses }: { meses: string[] }) {
       {meses.map((mes) => (
         <Fragment key={mes}>
           <td className={ESPACO} />
-          {COLUNAS.map((coluna, k) => (
-            <td key={coluna} className={cn(borda(k), LINHA)} />
-          ))}
+          <td className={cn(BORDA_DO_MES, LINHA)} />
         </Fragment>
       ))}
-      <td className={cn(FIXA, DIREITA[3], ESPACO)} />
-      {COLUNAS.map((coluna, k) => (
-        <td key={coluna} className={cn(FIXA, direita(k), COLUNA_FIXA, 'bg-surface', borda(k), LINHA)} />
-      ))}
+      <td className={ESPACO_FIXO} />
+      <td className={cn(REALIZADO, 'bg-surface', LINHA)} />
+      <td className={cn(PERCENTUAL, 'bg-surface', LINHA)} />
     </>
   )
 }
@@ -78,13 +69,14 @@ function GradeVazia({ meses }: { meses: string[] }) {
 function LinhaDaGrade(props: {
   linha: LinhaDre
   meses: string[]
+  receitaLiquida: number
   aberto: boolean
   aoAlternar: () => void
   /** Link do valor de um mês, ou do período sem `mes`; vazio no que não abre lançamentos. */
   href: (mes?: string) => string | undefined
   escolhido: (mes?: string) => boolean
 }) {
-  const { linha, meses, aberto, aoAlternar, href, escolhido } = props
+  const { linha, meses, receitaLiquida, aberto, aoAlternar, href, escolhido } = props
   const total = linha.tipo === 'total'
   const subtotal = linha.tipo === 'subtotal'
   const bloco = linha.tipo === 'bloco'
@@ -94,8 +86,6 @@ function LinhaDaGrade(props: {
   // Só subtotal e total ficam vermelhos: despesa é negativa por natureza.
   const corDoValor = (valor: number) => ((subtotal || total) && Math.round(valor / 100) < 0 ? (total ? 'text-nav-danger' : 'text-danger') : '')
   const rotulo = rotuloDaLinha(linha)
-  const metaDoPeriodo = linha.metas ? somar(linha.metas) : undefined
-  const difDoPeriodo = difDaMeta(linha.total, metaDoPeriodo)
 
   return (
     <tr className={cn('text-right', fundo, peso)}>
@@ -114,31 +104,24 @@ function LinhaDaGrade(props: {
       </th>
       {meses.map((mes, i) => {
         const valor = linha.valores[i]
-        const meta = linha.metas?.[i]
-        const dif = difDaMeta(valor, meta)
         return (
           <Fragment key={mes}>
             <td className={ESPACO} />
-            <td className={cn('px-2 py-2', apagado, borda(0), LINHA)}>{meta === undefined ? '—' : numeroInteiro(meta)}</td>
-            <td className={cn('px-1 py-0.5', borda(1), LINHA)}>
+            <td className={cn('px-1 py-0.5', BORDA_DO_MES, LINHA)}>
               <Valor href={valor ? href(mes) : undefined} escolhido={escolhido(mes)} cor={corDoValor(valor)} titulo={`Ver o que forma ${formatarMes(mes)}`}>
                 {numeroInteiro(valor)}
               </Valor>
             </td>
-            <td className={cn('px-2 py-2', corDaDif(dif), borda(2), LINHA)}>{dif === null ? '' : percentualComSinal(dif)}</td>
           </Fragment>
         )
       })}
-      <td className={cn(FIXA, DIREITA[3], ESPACO)} />
-      <td className={cn(FIXA, direita(0), COLUNA_FIXA, fundo, 'px-2 py-2', apagado, borda(0), LINHA)}>{metaDoPeriodo === undefined ? '—' : numeroInteiro(metaDoPeriodo)}</td>
-      <td className={cn(FIXA, direita(1), COLUNA_FIXA, fundo, 'px-1 py-0.5', borda(1), LINHA)}>
+      <td className={ESPACO_FIXO} />
+      <td className={cn(REALIZADO, fundo, 'px-1 py-0.5', LINHA)}>
         <Valor href={linha.total ? href() : undefined} escolhido={escolhido()} cor={corDoValor(linha.total)} titulo="Ver o que forma o período">
           {numeroInteiro(linha.total)}
         </Valor>
       </td>
-      <td className={cn(FIXA, direita(2), COLUNA_FIXA, fundo, 'px-2 py-2', corDaDif(difDoPeriodo), borda(2), LINHA)}>
-        {difDoPeriodo === null ? '' : percentualComSinal(difDoPeriodo)}
-      </td>
+      <td className={cn(PERCENTUAL, fundo, 'px-2 py-2', apagado, LINHA)}>{receitaLiquida ? formatarPercentual(linha.total / receitaLiquida) : '—'}</td>
     </tr>
   )
 }
@@ -146,12 +129,14 @@ function LinhaDaGrade(props: {
 export function TabelaDre({
   meses,
   linhas,
+  receitaLiquida,
   rotuloDoPeriodo,
   consulta,
   selecao,
 }: {
   meses: string[]
   linhas: LinhaDre[]
+  receitaLiquida: number
   rotuloDoPeriodo: string
   consulta: string
   selecao?: SelecaoDre
@@ -198,38 +183,24 @@ export function TabelaDre({
             </th>
             {meses.map((mes) => (
               <Fragment key={mes}>
-                <td className={ESPACO} />
-                <th scope="colgroup" colSpan={COLUNAS.length} className="px-2 pb-1.5 pt-3 text-center font-medium">
+                <td rowSpan={2} className={ESPACO} />
+                <th scope="col" rowSpan={2} className={cn('min-w-20 px-2 py-2.5 text-center align-bottom font-medium', BORDA_DO_MES, LINHA)}>
                   {formatarMes(mes)}
                 </th>
               </Fragment>
             ))}
-            <td data-espaco-fixo className={cn(FIXA, DIREITA[3], ESPACO)} />
-            <th scope="colgroup" colSpan={COLUNAS.length} className={cn(FIXA, 'right-0 bg-surface px-2 pb-1.5 pt-3 text-center font-medium text-ink')}>
+            <td data-espaco-fixo rowSpan={2} className={ESPACO_FIXO} />
+            <th scope="colgroup" colSpan={COLUNAS_DO_PERIODO.length} className={cn(FIXA, 'right-0 bg-surface px-2 pb-1.5 pt-3 text-center font-medium text-ink')}>
               Período · {rotuloDoPeriodo}
             </th>
           </tr>
           <tr className="whitespace-nowrap text-muted">
-            {meses.map((mes) => (
-              <Fragment key={mes}>
-                <td className={ESPACO} />
-                {COLUNAS.map((coluna, k) => (
-                  <th key={coluna} scope="col" className={cn('min-w-20 px-2 pb-2 pt-1.5 text-center font-medium', borda(k), LINHA)}>
-                    {coluna}
-                  </th>
-                ))}
-              </Fragment>
-            ))}
-            <td className={cn(FIXA, DIREITA[3], ESPACO)} />
-            {COLUNAS.map((coluna, k) => (
-              <th
-                key={coluna}
-                scope="col"
-                className={cn(FIXA, direita(k), COLUNA_FIXA, 'bg-surface px-2 pb-2 pt-1.5 text-center font-medium', k === 1 && 'text-ink', borda(k), LINHA)}
-              >
-                {coluna}
-              </th>
-            ))}
+            <th scope="col" className={cn(REALIZADO, 'bg-surface px-2 pb-2 pt-1.5 text-center font-medium text-ink', LINHA)}>
+              {COLUNAS_DO_PERIODO[0]}
+            </th>
+            <th scope="col" className={cn(PERCENTUAL, 'bg-surface px-2 pb-2 pt-1.5 text-center font-medium', LINHA)}>
+              {COLUNAS_DO_PERIODO[1]}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -260,6 +231,7 @@ export function TabelaDre({
                 key={linha.id}
                 linha={linha}
                 meses={meses}
+                receitaLiquida={receitaLiquida}
                 aberto={abertos.has(linha.id)}
                 aoAlternar={() => setAbertos((atuais) => alternar(atuais, linha.id))}
                 href={hrefDe(linha)}

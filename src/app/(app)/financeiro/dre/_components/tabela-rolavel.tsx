@@ -52,7 +52,8 @@ export function TabelaRolavel({ children }: { children: ReactNode }) {
     const medirTudo = () => {
       travadas = medirTravadas(el)
       maximo = el.scrollWidth - el.clientWidth
-      setLargura(maximo > 1 ? el.scrollWidth : 0)
+      // A barra de cima não tem a borda da tabela: soma a borda para as duas rolarem a mesma distância.
+      setLargura(maximo > 1 ? el.scrollWidth + el.offsetWidth - el.clientWidth : 0)
       if (topo.current) topo.current.scrollLeft = el.scrollLeft
       sombras()
     }
