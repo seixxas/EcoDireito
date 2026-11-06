@@ -1,7 +1,6 @@
-import { Download } from 'lucide-react'
 import type { Metadata } from 'next'
 import { LinkRapido } from '@/components/ui/link-rapido'
-import type { ReactNode } from 'react'
+import { Card } from '@/components/ui/card'
 import { Expansivel } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
@@ -28,19 +27,14 @@ const REGIMES: Record<Regime, { rotulo: string; explicacao: string }> = {
 
 const COMO_LER: [string, string][] = [
   ['Lançamentos', 'Clique em qualquer valor para ver, abaixo da tabela, o que o forma. Subtotal não abre: ele é a soma das linhas de cima.'],
-  ['% rec. líq.', 'Quanto a linha representa da receita líquida do período.'],
-  ['Período', 'Fica travado à direita quando a tabela rola. O mês atual ainda recebe lançamentos: para não misturar, escolha "Até o último mês fechado".'],
+  ['% da receita líquida', 'Quanto a linha representa da receita líquida do período.'],
+  ['Período', 'Em tela larga, fica parado à direita quando a tabela rola. O mês atual ainda recebe lançamentos: para não misturar, escolha "Até o último mês fechado".'],
   ['Movimentação de caixa', 'Não entra no resultado: distribuição de lucros, mútuo, aplicações e imobilizado.'],
 ]
 
-function Filtro({ rotulo, children }: { rotulo: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs text-muted">{rotulo}</span>
-      {children}
-    </div>
-  )
-}
+/** No celular, cada lançamento vira um cartão, em vez de a tabela rolar para o lado. */
+const TABELA_EMPILHADA =
+  'tabela min-w-0 max-sm:block max-sm:[&_tbody]:mt-3 max-sm:[&_tbody]:block max-sm:[&_thead]:hidden max-sm:[&_tr]:mb-2 max-sm:[&_tr]:flex max-sm:[&_tr]:flex-wrap max-sm:[&_tr]:items-center max-sm:[&_tr]:justify-between max-sm:[&_tr]:rounded-xl max-sm:[&_tr]:bg-surface max-sm:[&_tr]:py-2 max-sm:[&_td]:py-1 max-sm:[&_td:first-child]:w-full'
 
 function linkDoItem(item: ItemDaDre) {
   return item.origem === 'nota' ? `/financeiro/notas/${item.id}` : `/financeiro/lancamentos/${item.id}`
@@ -52,48 +46,51 @@ function QuadroDeLancamentos(props: { linha: LinhaDre; periodo: string; itens: I
   const paginado = paginar(itens, pagina)
   const soma = brl(somar(itens.map((item) => item.valor)))
   return (
-    <section aria-label="Lançamentos de origem" className="mt-4 rounded-lg border border-line bg-surface">
-      <header className="flex flex-wrap items-start justify-between gap-3 px-4 pt-4">
-        <div className="min-w-0">
-          <p className="text-xs text-muted">
+    <Card
+      className="mt-6"
+      flush
+      titulo={
+        <>
+          <span className="block text-sm font-normal text-muted">
             {rotuloDaLinha(linha)} › {periodo}
-          </p>
-          <h2 className="text-base font-semibold text-ink">{itens.length === 1 ? `1 lançamento soma ${soma}` : `${itens.length} lançamentos somam ${soma}`}</h2>
-        </div>
+          </span>
+          {itens.length === 1 ? '1 lançamento soma' : `${itens.length} lançamentos somam`} <span className="whitespace-nowrap">{soma}</span>
+        </>
+      }
+      acao={
         <LinkRapido href={hrefFechar} scroll={false} className={classeBotao('secundario')}>
           Fechar
         </LinkRapido>
-      </header>
-      <div className="mt-2 overflow-x-auto">
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Descrição</th>
-              {linha.tipo === 'bloco' && <th>Conta</th>}
-              <th className="num">Valor</th>
+      }
+    >
+      <table className={TABELA_EMPILHADA}>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            {linha.tipo === 'bloco' && <th>Conta</th>}
+            <th className="num">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginado.itens.map((item) => (
+            <tr key={item.id}>
+              <td className="whitespace-nowrap">{formatarData(item.data)}</td>
+              <td>
+                <LinkRapido href={linkDoItem(item)} className="link inline-flex min-h-12 items-center">
+                  {item.descricao}
+                </LinkRapido>
+              </td>
+              {linha.tipo === 'bloco' && <td className="text-muted">{nomeDaConta(item.contaId)}</td>}
+              <td className="num">{brl(item.valor)}</td>
             </tr>
-          </thead>
-          <tbody>
-            {paginado.itens.map((item) => (
-              <tr key={item.id}>
-                <td className="whitespace-nowrap">{formatarData(item.data)}</td>
-                <td>
-                  <LinkRapido href={linkDoItem(item)} className="link">
-                    {item.descricao}
-                  </LinkRapido>
-                </td>
-                {linha.tipo === 'bloco' && <td className="text-muted">{nomeDaConta(item.contaId)}</td>}
-                <td className="num">{brl(item.valor)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="px-4 pb-3 [&:has(nav)]:pt-3">
+          ))}
+        </tbody>
+      </table>
+      <div className="px-3 pb-2">
         <Paginacao {...paginado} href={hrefPagina} />
       </div>
-    </section>
+    </Card>
   )
 }
 
@@ -138,36 +135,40 @@ export default async function PaginaDre({ searchParams }: { searchParams: Promis
           </>
         }
         acoes={
-          <a href={`/financeiro/dre/exportar${consulta ? `?${consulta}` : ''}`} download className={classeBotao()}>
-            <Download className="size-4" />
+          <a href={`/financeiro/dre/exportar${consulta ? `?${consulta}` : ''}`} download className={classeBotao('primario', 'min-h-14 text-[1.25rem]')}>
             Exportar para Excel
           </a>
         }
       />
 
-      <div className="mb-4 flex flex-wrap items-end gap-x-5 gap-y-3">
-        <Filtro rotulo="Regime">
-          <SegmentedLinks
-            ativo={regime}
-            opcoes={Object.entries(REGIMES).map(([valor, { rotulo }]) => ({
-              valor,
-              rotulo,
-              href: link({ regime: valor === 'caixa' ? undefined : valor, linha: undefined, mes: undefined, pagina: undefined }),
-            }))}
-          />
-        </Filtro>
-        <Filtro rotulo="Período">
-          <SegmentedLinks
-            ativo={periodo.id}
-            opcoes={periodos.map(({ id, rotulo }) => ({
-              valor: id,
-              rotulo,
-              href: link({ periodo: id === 'tudo' ? undefined : id, linha: undefined, mes: undefined, pagina: undefined }),
-            }))}
-          />
-        </Filtro>
-        <p className="ml-auto text-xs text-muted">Valores em reais</p>
+      <div className="flex flex-wrap items-end gap-x-7 gap-y-4">
+        <SegmentedLinks
+          rotulo="Regime"
+          ativo={regime}
+          opcoes={Object.entries(REGIMES).map(([valor, { rotulo }]) => ({
+            valor,
+            rotulo,
+            href: link({ regime: valor === 'caixa' ? undefined : valor, linha: undefined, mes: undefined, pagina: undefined }),
+          }))}
+        />
+        <SegmentedLinks
+          rotulo="Período"
+          ativo={periodo.id}
+          opcoes={periodos.map(({ id, rotulo }) => ({
+            valor: id,
+            rotulo,
+            href: link({ periodo: id === 'tudo' ? undefined : id, linha: undefined, mes: undefined, pagina: undefined }),
+          }))}
+        />
       </div>
+
+      <p className="mb-3 mt-7 text-sm text-muted">
+        Valores em reais.{' '}
+        <span className="hidden xl:inline">
+          <strong className="font-semibold text-ink">A primeira coluna e o total do período ficam parados</strong>; os meses andam no meio.{' '}
+        </span>
+        Clique num valor para ver o que o forma.
+      </p>
 
       <TabelaDre
         meses={meses}
@@ -191,8 +192,8 @@ export default async function PaginaDre({ searchParams }: { searchParams: Promis
         </RolarParaVista>
       )}
 
-      <Expansivel resumo="Como ler" className="mt-4">
-        <dl className="grid gap-x-8 gap-y-3 rounded-lg border border-line bg-surface p-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
+      <Expansivel resumo="Como ler esta tabela" className="mt-5">
+        <dl className="grid gap-x-8 gap-y-4 rounded-xl bg-painel p-6 text-sm sm:grid-cols-2 xl:grid-cols-4">
           {COMO_LER.map(([titulo, texto]) => (
             <div key={titulo}>
               <dt className="font-medium text-ink">{titulo}</dt>

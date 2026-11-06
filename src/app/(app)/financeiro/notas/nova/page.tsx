@@ -1,7 +1,4 @@
-import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
-import { LinkRapido } from '@/components/ui/link-rapido'
-import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
 import { dadosParaNovaNota } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
@@ -18,33 +15,32 @@ export default async function PaginaNovaNota({ searchParams }: { searchParams: P
   const nomeDoCliente = (id: string) => clientes.find((c) => c.id === id)!.nome
 
   return (
-    <>
-      <LinkRapido href="/financeiro" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
-        <ArrowLeft className="size-4" /> Faturamento
-      </LinkRapido>
-      <PageHeader titulo="Registrar nota fiscal" resumo="A nota já emitida no site da Prefeitura. ISS (5%) e retenção (5,5%) saem do valor." />
+    <div className="max-w-[55rem]">
+      <PageHeader
+        titulo="Registrar nota fiscal"
+        voltar={{ href: '/financeiro', rotulo: 'Voltar para o Faturamento' }}
+        resumo="A nota já emitida no site da Prefeitura. ISS (5%) e retenção (5,5%) saem do valor."
+      />
 
       {deParcela && (
-        <p className="mb-4 rounded-lg bg-warn-soft px-4 py-3 text-sm text-ink">
+        <p className="mb-6 rounded-lg bg-warn-soft px-5 py-4 text-ink">
           Faturando a parcela <strong>{deParcela.parcela.descricao.toLowerCase()}</strong> ({brl(deParcela.parcela.valor)}) de{' '}
           <strong>{deParcela.processo.empreendimento}</strong>, {nomeDoCliente(deParcela.processo.clienteId)}.
         </p>
       )}
 
-      <Card>
-        <FormularioNota
-          clientes={clientes.map((c) => ({ id: c.id, nome: c.nome }))}
-          processos={processos.map((p) => ({ id: p.id, nome: `${p.empreendimento} · ${nomeDoCliente(p.clienteId)}` }))}
-          padrao={{
-            numero: proximoNumero,
-            emissao: hoje,
-            previsao: somarDias(hoje, DIAS_PARA_RECEBER),
-            descricao: deParcela ? `${deParcela.parcela.descricao} · ${deParcela.processo.empreendimento}` : '',
-            valor: deParcela?.parcela.valor,
-            parcela: deParcela && { id: deParcela.parcela.id, clienteId: deParcela.processo.clienteId, processoId: deParcela.processo.id },
-          }}
-        />
-      </Card>
-    </>
+      <FormularioNota
+        clientes={clientes.map((c) => ({ id: c.id, nome: c.nome }))}
+        processos={processos.map((p) => ({ id: p.id, nome: `${p.empreendimento} · ${nomeDoCliente(p.clienteId)}` }))}
+        padrao={{
+          numero: proximoNumero,
+          emissao: hoje,
+          previsao: somarDias(hoje, DIAS_PARA_RECEBER),
+          descricao: deParcela ? `${deParcela.parcela.descricao} · ${deParcela.processo.empreendimento}` : '',
+          valor: deParcela?.parcela.valor,
+          parcela: deParcela && { id: deParcela.parcela.id, clienteId: deParcela.processo.clienteId, processoId: deParcela.processo.id },
+        }}
+      />
+    </div>
   )
 }

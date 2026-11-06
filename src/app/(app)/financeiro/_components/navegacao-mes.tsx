@@ -1,47 +1,46 @@
-import { ChevronLeft, ChevronRight, type LucideIcon } from 'lucide-react'
+import { classeBotao } from '@/components/ui/form'
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { formatarMes } from '@/lib/formatar'
 
 /** Valor de `?mes=` para o histórico inteiro (útil com busca: "todas as notas do cliente X"). */
 export const TODOS_OS_MESES = 'todos'
 
+const MES_ATUAL = 'px-2 text-[1.5rem] font-semibold text-ink'
+
 /**
- * ‹ out/26 ›: anda pelos meses do histórico. O mês vive na URL (`?mes=`), quem usa monta o link.
+ * ← Mês anterior · out/26 · Próximo mês →: anda pelos meses do histórico. O mês vive na URL (`?mes=`), quem usa monta o link.
  * Com `todos`, oferece também o histórico inteiro (`href(TODOS_OS_MESES)`).
  */
 export function NavegacaoMes({ mes, meses, href, todos }: { mes: string; meses: string[]; href: (mes: string) => string; todos?: boolean }) {
   if (mes === TODOS_OS_MESES) {
     return (
-      <nav aria-label="Mês" className="inline-flex items-center gap-3 text-sm">
-        <span className="font-medium text-ink">Todos os meses</span>
-        <LinkRapido href={href(meses.at(-1)!)} scroll={false} className="link">
-          por mês
+      <nav aria-label="Mês" className="flex flex-wrap items-center gap-3">
+        <span className={MES_ATUAL}>Todos os meses</span>
+        <LinkRapido href={href(meses.at(-1)!)} scroll={false} className={classeBotao('secundario')}>
+          Ver por mês
         </LinkRapido>
       </nav>
     )
   }
 
   const i = meses.indexOf(mes)
-  const seta = (alvo: string | undefined, rotulo: string, Icone: LucideIcon) =>
+  const passo = (alvo: string | undefined, rotulo: string) =>
     alvo ? (
-      <LinkRapido href={href(alvo)} scroll={false} aria-label={rotulo} title={rotulo} className="rounded-md p-1.5 text-muted hover:bg-surface hover:text-ink">
-        <Icone className="size-4" />
+      <LinkRapido href={href(alvo)} scroll={false} className={classeBotao('secundario')}>
+        {rotulo}
       </LinkRapido>
     ) : (
-      <span className="p-1.5 text-line">
-        <Icone className="size-4" />
-      </span>
+      <span className="inline-flex min-h-13 items-center rounded-md border-2 border-line px-5 text-base font-medium text-subtle">{rotulo}</span>
     )
 
   return (
-    <nav aria-label="Mês" className="inline-flex items-center">
-      {seta(meses[i - 1], 'Mês anterior', ChevronLeft)}
-      <span className="min-w-16 text-center text-sm font-medium tabular-nums text-ink">{formatarMes(mes)}</span>
-      {seta(meses[i + 1], 'Próximo mês', ChevronRight)}
+    <nav aria-label="Mês" className="flex flex-wrap items-center gap-3">
+      {passo(meses[i - 1], '← Mês anterior')}
+      <span className={MES_ATUAL}>{formatarMes(mes)}</span>
+      {passo(meses[i + 1], 'Próximo mês →')}
       {todos && (
-        <LinkRapido href={href(TODOS_OS_MESES)} scroll={false} className="link ml-2 whitespace-nowrap text-sm">
-          {/* No celular, ao lado do botão "Registrar nota", o texto inteiro não cabe. */}
-          todos<span className="hidden sm:inline"> os meses</span>
+        <LinkRapido href={href(TODOS_OS_MESES)} scroll={false} className={classeBotao('secundario')}>
+          Todos os meses
         </LinkRapido>
       )}
     </nav>

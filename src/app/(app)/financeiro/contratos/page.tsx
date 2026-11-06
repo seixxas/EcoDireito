@@ -1,19 +1,22 @@
 import type { Metadata } from 'next'
 import { LinkRapido } from '@/components/ui/link-rapido'
+import { Badge } from '@/components/ui/badge'
 import { Busca } from '@/components/ui/busca'
 import { Card } from '@/components/ui/card'
 import { Vazio } from '@/components/ui/expansivel'
+import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
-import { ItemResumo, Resumo } from '@/components/ui/resumo'
 import { listarContratos } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import type { SituacaoParcela } from '@/domain/financeiro/parcelas'
 import { combina } from '@/lib/buscar'
+import { cn } from '@/lib/cn'
 import { somar } from '@/lib/dinheiro'
-import { brl, contar } from '@/lib/formatar'
+import { brl, contar, formatarPercentual } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
+import { NoCartao, TABELA_EMPILHADA } from '../_components/tabela-empilhada'
 
 export const metadata: Metadata = { title: 'Contratos' }
 
@@ -21,6 +24,22 @@ type Item = Awaited<ReturnType<typeof listarContratos>>[number]['parcelas'][numb
 
 const total = (parcelas: Item[], ...situacoes: SituacaoParcela[]) =>
   somar(parcelas.filter((p) => !situacoes.length || situacoes.includes(p.situacao)).map((p) => p.parcela.valor))
+
+/** Serviço e parcelas só ganham coluna onde sobra lugar; antes disso, vão embaixo do nome do projeto. */
+const SO_EM_TELA_GRANDE = 'hidden! min-[110rem]:table-cell!'
+
+function LinhaDoTotal({ cor, rotulo, detalhe, valor }: { cor: string; rotulo: string; detalhe?: string; valor: string }) {
+  return (
+    <div className="grid grid-cols-[1.125rem_minmax(0,1fr)_auto] items-baseline gap-3 border-b border-line py-2.5">
+      <i className={cn('size-4 self-center rounded-xs', cor)} />
+      <dt>
+        {rotulo}
+        {detalhe && <small className="block text-2xs text-muted">{detalhe}</small>}
+      </dt>
+      <dd className="text-right text-[1.25rem] font-semibold">{valor}</dd>
+    </div>
+  )
+}
 
 export default async function PaginaContratos({ searchParams }: { searchParams: Promise<{ q?: string; pagina?: string }> }) {
   const [filtros, usuario, contratos] = await Promise.all([searchParams, exigirArea('financeiro'), listarContratos()])
@@ -38,30 +57,60 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
     return params.size ? `/financeiro/contratos?${params}` : '/financeiro/contratos'
   }
 
+  const contratado = total(todas)
+  const faturado = total(todas, 'faturada', 'recebida')
+  const pronto = total(todas, 'liberada')
+  const aguardando = total(todas, 'aguardando')
+  const parte = (valor: number) => (contratado ? valor / contratado : 0)
+
   return (
     <>
       <PageHeader
         titulo="Contratos"
-        resumo={`${brl(total(todas, 'liberada'))} pronto para faturar. A parcela fica pronta quando o evento dela é lançado no projeto.`}
+        resumo={`${brl(pronto)} pronto para faturar. A parcela fica pronta quando o evento dela é lançado no projeto.`}
+        acoes={
+          editar &&
+          pronto > 0 && (
+            <LinkRapido href="/financeiro?aba=a-faturar" className={classeBotao('primario', 'min-h-14 text-[1.25rem]')}>
+              Faturar as parcelas prontas
+            </LinkRapido>
+          )
+        }
       />
 
-      <Resumo className="mb-6">
-        <ItemResumo rotulo="Contratado" valor={brl(total(todas))} detalhe={contar(fechados.filter((c) => c.parcelas.length).length, 'contrato', 'contratos')} />
-        <ItemResumo rotulo="Faturado" valor={brl(total(todas, 'faturada', 'recebida'))} tom="ok" />
-        <ItemResumo rotulo="Pronto para faturar" valor={brl(total(todas, 'liberada'))} detalhe="evento já aconteceu" tom="warn" />
-        <ItemResumo rotulo="Aguardando evento" valor={brl(total(todas, 'aguardando'))} />
-      </Resumo>
+      <section aria-label="Totais dos contratos" className="grid items-start gap-x-8 gap-y-4 rounded-xl bg-painel px-7 py-6 lg:grid-cols-[18.75rem_minmax(0,1fr)]">
+        <div>
+          <p className="text-xs font-semibold text-subtle">Contratado</p>
+          <p className="mt-0.5 text-2xl font-semibold">{brl(contratado)}</p>
+          <p className="mt-1 text-xs text-muted">{contar(fechados.filter((c) => c.parcelas.length).length, 'contrato', 'contratos')}</p>
+        </div>
+        <div>
+          <div
+            role="img"
+            aria-label={`Do total contratado: ${formatarPercentual(parte(faturado))} faturado, ${formatarPercentual(parte(pronto))} pronto para faturar e ${formatarPercentual(parte(aguardando))} aguardando evento`}
+            className="mb-2.5 mt-1.5 flex h-4.5 gap-0.75 overflow-hidden rounded-full"
+          >
+            <span className="bg-brand-700" style={{ width: `${parte(faturado) * 100}%` }} />
+            <span className="bg-brand-300" style={{ width: `${parte(pronto) * 100}%` }} />
+            <span className="bg-line" style={{ width: `${parte(aguardando) * 100}%` }} />
+          </div>
+          <dl>
+            <LinhaDoTotal cor="bg-brand-700" rotulo="Faturado" valor={brl(faturado)} />
+            <LinhaDoTotal cor="bg-brand-300" rotulo="Pronto para faturar" detalhe="o evento já aconteceu" valor={brl(pronto)} />
+            <LinhaDoTotal cor="border border-campo bg-line" rotulo="Aguardando evento" valor={brl(aguardando)} />
+          </dl>
+        </div>
+      </section>
+
       {propostasEmAberto > 0 && (
-        <p className="-mt-3 mb-6 text-sm text-muted">
+        <p className="mt-5 text-sm text-muted">
           Fora destes totais: {brl(total(emAberto))} em {contar(propostasEmAberto, 'proposta em aberto', 'propostas em aberto')}, que entram aqui quando o cliente aceita
           {pode(usuario.papel, 'comercial') ? (
             <>
-              {' '}
-              (
-              <LinkRapido href="/comercial" className="link">
-                ver no Comercial
+              .{' '}
+              <LinkRapido href="/comercial" className="link inline-flex min-h-12 items-center">
+                Ver em Propostas
               </LinkRapido>
-              ).
             </>
           ) : (
             '.'
@@ -69,46 +118,66 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
         </p>
       )}
 
-      <Busca valor={q} placeholder="Buscar projeto, cliente, grupo ou nº SEI" limpar="/financeiro/contratos" className="mb-3" />
+      <Busca valor={q} placeholder="Projeto, cliente, grupo ou nº SEI" limpar="/financeiro/contratos" className="mb-6 mt-5" />
       <Card flush>
-        <table className="tabela">
+        <table className={`${TABELA_EMPILHADA} max-[83.75rem]:[&_td:last-child]:ml-auto`}>
           <thead>
             <tr>
               <th>Projeto</th>
-              <th className="hidden sm:table-cell">Serviço</th>
-              <th className="num hidden sm:table-cell">Parcelas</th>
+              <th className={SO_EM_TELA_GRANDE}>Serviço</th>
+              <th className={cn('num', SO_EM_TELA_GRANDE)}>Parcelas</th>
               <th className="num">Contrato</th>
-              <th className="num hidden sm:table-cell">Faturado</th>
-              <th className="num hidden sm:table-cell">A faturar</th>
-              {editar && <th />}
+              <th className="num">Faturado</th>
+              <th className="num">Pronto para faturar</th>
+              {editar && <th className="num">Ação</th>}
             </tr>
           </thead>
           <tbody>
-            {paginado.itens.map(({ processo, cliente, parcelas }) => (
-              <tr key={processo.id}>
-                <td className="sm:min-w-64">
-                  <LinkRapido href={`/projetos/${processo.id}`} className="link font-medium">
-                    {processo.empreendimento}
-                  </LinkRapido>
-                  <p className="hidden text-xs text-muted sm:block">{cliente.nome}</p>
-                  {/* No celular a coluna "A faturar" some; o valor vem para cá. */}
-                  {total(parcelas, 'liberada') > 0 && <p className="text-xs text-warn sm:hidden">{brl(total(parcelas, 'liberada'))} a faturar</p>}
-                </td>
-                <td className="hidden sm:table-cell">{processo.servico === 'manejo' ? 'Manejo' : 'Licenciamento'}</td>
-                <td className="num hidden sm:table-cell">{parcelas.length || '—'}</td>
-                <td className="num font-medium">{parcelas.length ? brl(total(parcelas)) : '—'}</td>
-                <td className="num hidden sm:table-cell">{brl(total(parcelas, 'faturada', 'recebida'))}</td>
-                <td className="num hidden text-warn sm:table-cell">{total(parcelas, 'liberada') ? brl(total(parcelas, 'liberada')) : ''}</td>
-                {editar && (
-                  <td className="text-right">
-                    <LinkRapido href={`/financeiro/contratos/${processo.id}`} className="link whitespace-nowrap text-sm font-medium">
-                      {parcelas.length ? 'Editar' : 'Montar'}
-                      <span className="hidden sm:inline">{parcelas.length ? ' parcelas' : ' contrato'}</span>
+            {paginado.itens.map(({ processo, cliente, parcelas }) => {
+              const servico = processo.servico === 'manejo' ? 'Manejo' : 'Licenciamento'
+              const aFaturar = total(parcelas, 'liberada')
+              return (
+                <tr key={processo.id}>
+                  <td className="min-w-0 min-[83.75rem]:min-w-52">
+                    <LinkRapido href={`/projetos/${processo.id}`} className="link inline-flex min-h-12 items-center text-ink">
+                      {processo.empreendimento}
                     </LinkRapido>
+                    <p className="text-xs text-muted">{cliente.nome}</p>
+                    <p className="text-xs text-muted min-[110rem]:hidden">
+                      {servico} · {contar(parcelas.length, 'parcela', 'parcelas')}
+                    </p>
                   </td>
-                )}
-              </tr>
-            ))}
+                  <td className={SO_EM_TELA_GRANDE}>{servico}</td>
+                  <td className={cn('num', SO_EM_TELA_GRANDE)}>{parcelas.length || '—'}</td>
+                  <td className="num">
+                    <NoCartao>Contrato</NoCartao>
+                    {parcelas.length ? brl(total(parcelas)) : '—'}
+                  </td>
+                  <td className="num">
+                    <NoCartao>Faturado</NoCartao>
+                    {brl(total(parcelas, 'faturada', 'recebida'))}
+                  </td>
+                  <td className={cn('num', !aFaturar && 'font-normal text-subtle')}>
+                    <NoCartao>Pronto para faturar</NoCartao>
+                    {aFaturar ? (
+                      <span className="inline-flex flex-col items-end gap-0.5 max-[83.75rem]:items-start max-sm:items-end">
+                        <Badge tom="ok">Pronto</Badge>
+                        {brl(aFaturar)}
+                      </span>
+                    ) : (
+                      'Nada pronto'
+                    )}
+                  </td>
+                  {editar && (
+                    <td className="text-right">
+                      <LinkRapido href={`/financeiro/contratos/${processo.id}`} className={classeBotao('secundario')}>
+                        {parcelas.length ? 'Editar parcelas' : 'Montar contrato'}
+                      </LinkRapido>
+                    </td>
+                  )}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
         {encontrados.length === 0 && <Vazio>Nenhum projeto com “{q}”.</Vazio>}

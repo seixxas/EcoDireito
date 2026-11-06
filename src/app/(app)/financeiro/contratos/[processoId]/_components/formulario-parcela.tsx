@@ -15,7 +15,7 @@ export function FormularioParcela({ processoId, parcela }: { processoId: string;
   const { valores = {}, erros = {} } = estado
 
   return (
-    <form action={acao} className="grid flex-1 gap-3 md:grid-cols-[minmax(0,1fr)_9rem_minmax(0,16rem)_auto]">
+    <form action={acao} className="grid gap-x-3 gap-y-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_11rem_minmax(0,1fr)_auto]">
       <input type="hidden" name="processoId" value={processoId} />
       {parcela && <input type="hidden" name="id" value={parcela.id} />}
       <Campo rotulo="Parcela" erro={erros.descricao}>
@@ -36,11 +36,13 @@ export function FormularioParcela({ processoId, parcela }: { processoId: string;
           ))}
         </Selecao>
       </Campo>
-      <div className="md:pt-6">
-        <BotaoEnviar variante={parcela ? 'secundario' : 'primario'}>{parcela ? 'Salvar' : 'Incluir'}</BotaoEnviar>
+      <div className="sm:pt-9">
+        <BotaoEnviar variante={parcela ? 'secundario' : 'primario'} className="min-h-14">
+          {parcela ? 'Salvar' : 'Incluir'}
+        </BotaoEnviar>
       </div>
       {(estado.ok || estado.erro) && (
-        <div className="md:col-span-4">
+        <div className="col-span-full">
           <MensagemFormulario estado={estado} />
         </div>
       )}

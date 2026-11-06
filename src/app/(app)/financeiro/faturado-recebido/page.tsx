@@ -1,13 +1,12 @@
-import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
-import { LinkRapido } from '@/components/ui/link-rapido'
 import { GraficoBarras } from '@/components/charts/grafico-barras'
+import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
 import { listarNotas } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
-import { formatarMes } from '@/lib/formatar'
+import { brl, formatarMes } from '@/lib/formatar'
 
 export const metadata: Metadata = { title: 'Faturado × recebido' }
 
@@ -21,17 +20,42 @@ export default async function PaginaFaturadoRecebido() {
 
   return (
     <>
-      <LinkRapido href="/financeiro" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
-        <ArrowLeft className="size-4" /> Faturamento
-      </LinkRapido>
-      <PageHeader titulo="Faturado × recebido" resumo="Quanto foi emitido e quanto entrou na conta, mês a mês." />
-      <GraficoBarras
-        dados={dados}
-        series={[
-          { chave: 'faturado', nome: 'Faturado (emissão)', cor: 'var(--color-brand-700)' },
-          { chave: 'recebido', nome: 'Recebido (caixa)', cor: 'var(--color-brand-300)' },
-        ]}
-      />
+      <PageHeader titulo="Faturado × recebido" voltar={{ href: '/financeiro', rotulo: 'Voltar para o Faturamento' }} resumo="Quanto foi emitido e quanto entrou na conta, mês a mês." />
+      <Card className="mb-6">
+        {/* O gráfico é comum e escreve em 12 px; aqui a letra sobe para 16. */}
+        <div className="[&_.recharts-cartesian-axis-tick-value]:text-[1rem] [&_.recharts-legend-wrapper]:text-base! [&_.recharts-tooltip-wrapper_*]:text-base!">
+          <GraficoBarras
+            altura={360}
+            dados={dados}
+            series={[
+              { chave: 'faturado', nome: 'Faturado (emissão)', cor: 'var(--color-brand-700)' },
+              { chave: 'recebido', nome: 'Recebido (caixa)', cor: 'var(--color-brand-300)' },
+            ]}
+          />
+        </div>
+      </Card>
+      <Card flush>
+        <div className="overflow-x-auto">
+          <table className="tabela min-w-0">
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th className="num">Faturado (emissão)</th>
+                <th className="num">Recebido (caixa)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dados.map(({ rotulo, faturado, recebido }) => (
+                <tr key={rotulo}>
+                  <td>{rotulo}</td>
+                  <td className="num">{brl(faturado)}</td>
+                  <td className="num">{brl(recebido)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </>
   )
 }

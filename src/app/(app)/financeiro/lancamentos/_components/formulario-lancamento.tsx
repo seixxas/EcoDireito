@@ -13,7 +13,7 @@ export function FormularioLancamento({ hoje, processos }: { hoje: string; proces
   const { valores = {}, erros = {} } = estado
 
   return (
-    <form action={acao} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <form action={acao} className="grid gap-5 md:grid-cols-2">
       <Campo rotulo="Tipo">
         <Selecao name="sentido" defaultValue={valores.sentido ?? 'saida'}>
           <option value="saida">Saída</option>
@@ -29,7 +29,7 @@ export function FormularioLancamento({ hoje, processos }: { hoje: string; proces
       <Campo rotulo="Conta" erro={erros.contaId}>
         <SelecaoConta name="contaId" defaultValue={valores.contaId ?? ''} required />
       </Campo>
-      <Campo rotulo="Descrição" erro={erros.descricao} className="sm:col-span-2">
+      <Campo rotulo="Descrição" erro={erros.descricao} className="md:col-span-2">
         <Entrada name="descricao" defaultValue={valores.descricao} placeholder="Ex.: Viveiro Mata Nativa · plantio" required />
       </Campo>
       <Campo rotulo="Competência" erro={erros.competencia} dica={DICA_COMPETENCIA}>
@@ -45,11 +45,11 @@ export function FormularioLancamento({ hoje, processos }: { hoje: string; proces
           ))}
         </Selecao>
       </Campo>
-      <Campo rotulo="Observação" dica="Opcional. O que a descrição não diz; entra na busca." className="sm:col-span-2 lg:col-span-4">
+      <Campo rotulo="Observação" dica="Opcional. O que a descrição não diz; entra na busca." className="md:col-span-2">
         <Entrada name="observacao" defaultValue={valores.observacao} placeholder="Ex.: PIX para o Guilherme referente à festa de fim de ano" />
       </Campo>
-      <div className="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-4">
-        <BotaoEnviar>Lançar</BotaoEnviar>
+      <div className="flex flex-wrap items-center gap-3 md:col-span-2">
+        <BotaoEnviar className="min-h-14 text-[1.25rem]">Lançar</BotaoEnviar>
         <MensagemFormulario estado={estado} />
       </div>
     </form>

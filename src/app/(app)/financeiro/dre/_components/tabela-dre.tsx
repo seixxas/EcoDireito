@@ -1,8 +1,8 @@
 'use client'
 
-import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { Fragment, useState, type ReactNode } from 'react'
+import { classeBotao } from '@/components/ui/form'
 import { rotuloDaLinha, type LinhaDre } from '@/domain/financeiro/dre'
 import { cn } from '@/lib/cn'
 import { formatarMes, formatarPercentual, numeroInteiro } from '@/lib/formatar'
@@ -15,35 +15,35 @@ export type SelecaoDre = { linha: string; mes?: string }
  * Bordas por lado, sem border-collapse, para as células travadas levarem as linhas ao rolar.
  */
 const LINHA = 'border-b border-b-line'
+const LINHA_FORTE = 'border-y-2 border-y-brand-700'
+const CABECALHO = 'border-b-2 border-b-grade bg-painel font-semibold'
 const BORDA_DO_MES = 'border-x border-x-grade'
-const ESPACO = 'w-3.5 min-w-3.5 bg-surface p-0'
+const ESPACO = 'w-3 min-w-3 p-0'
 
-/** Bloco do período: travado à direita em tela larga. O realizado fica uma coluna para dentro; o espaço, duas. */
-const COLUNAS_DO_PERIODO = ['Realizado', '% rec. líq.']
-const FIXA = 'z-10 lg:sticky'
-const COLUNA_FIXA = 'w-24 min-w-24'
-const ESPACO_FIXO = cn(FIXA, 'right-48', ESPACO)
-const REALIZADO = cn(FIXA, 'right-24', COLUNA_FIXA, 'border-l border-r border-l-grade border-r-line')
-const PERCENTUAL = cn(FIXA, 'right-0', COLUNA_FIXA, 'border-r border-r-grade')
-
-/** A coluna das contas leva consigo o espaço seguinte, para os meses não encostarem nela ao rolar. */
-const ROTULO_FIXO = 'sticky left-0 z-10 shadow-[0.875rem_0_0_var(--color-surface)]'
+/**
+ * Larguras em rem, para acompanharem a letra, que cresce em monitor grande. Com elas, 3 meses inteiros cabem entre as colunas travadas em 1366 px e
+ * 6 em 1920 px. O realizado cabe −99.999.999 em negrito e o percentual, −999,9%. Em tela menor que `xl`, o período não trava: não sobraria lugar para os meses.
+ */
+const CONTAS = 'w-[11.5rem] min-w-[11.5rem] md:w-[20.5rem] md:min-w-[20.5rem] min-[87.5rem]:w-[24.5rem] min-[87.5rem]:min-w-[24.5rem]'
+const ROTULO_FIXO = cn('sticky left-0 z-10 border-r-2 border-r-grade px-3 text-left', CONTAS)
+const FIXA = 'z-10 xl:sticky'
+const REALIZADO = cn(FIXA, 'right-[8rem] w-[9.5rem] min-w-[9.5rem] border-l-2 border-l-grade')
+const PERCENTUAL = cn(FIXA, 'right-0 w-[8rem] min-w-[8rem]')
+const ESPACO_FIXO = cn(FIXA, 'right-[17.5rem]', ESPACO)
 
 const SELECIONADA = 'bg-rail outline-2 -outline-offset-2 outline-ink'
+const BOTAO_DA_LINHA =
+  'inline-flex min-h-12 min-w-[5.75rem] shrink-0 items-center justify-center gap-1 rounded-md border-2 border-brand-700 bg-surface px-2 text-2xs font-semibold text-brand-700 transition-colors hover:bg-brand-50'
 
-/** Resultados que fecham a conta: negrito mais forte, como a linha de total. */
-const FORTES = new Set(['subtotal-despesa', 'subtotal-outras'])
+/** Fecha o resultado: vai como a linha de total. */
+const RESULTADO_LIQUIDO = 'subtotal-outras'
 
+/** O link ocupa a célula inteira: é ele que precisa ser fácil de acertar. */
 function Valor({ href, escolhido, cor, titulo, children }: { href?: string; escolhido: boolean; cor?: string; titulo: string; children: ReactNode }) {
-  if (!href) return <span className={cn('block px-1 py-1.5', cor)}>{children}</span>
+  const classe = cn('flex min-h-14 items-center justify-end rounded-md px-2', cor)
+  if (!href) return <span className={classe}>{children}</span>
   return (
-    <Link
-      href={href}
-      scroll={false}
-      aria-current={escolhido || undefined}
-      title={titulo}
-      className={cn('block rounded px-1 py-1.5', cor, escolhido ? SELECIONADA : 'hover:bg-rail')}
-    >
+    <Link href={href} scroll={false} aria-current={escolhido || undefined} title={titulo} className={cn(classe, escolhido ? SELECIONADA : 'hover:bg-rail hover:underline')}>
       {children}
     </Link>
   )
@@ -55,11 +55,11 @@ function GradeVazia({ meses }: { meses: string[] }) {
     <>
       {meses.map((mes) => (
         <Fragment key={mes}>
-          <td className={ESPACO} />
-          <td className={cn(BORDA_DO_MES, LINHA)} />
+          <td className={cn(ESPACO, 'bg-surface')} />
+          <td className={cn('bg-surface', BORDA_DO_MES, LINHA)} />
         </Fragment>
       ))}
-      <td className={ESPACO_FIXO} />
+      <td className={cn(ESPACO_FIXO, 'bg-surface')} />
       <td className={cn(REALIZADO, 'bg-surface', LINHA)} />
       <td className={cn(PERCENTUAL, 'bg-surface', LINHA)} />
     </>
@@ -77,37 +77,37 @@ function LinhaDaGrade(props: {
   escolhido: (mes?: string) => boolean
 }) {
   const { linha, meses, receitaLiquida, aberto, aoAlternar, href, escolhido } = props
-  const total = linha.tipo === 'total'
-  const subtotal = linha.tipo === 'subtotal'
-  const bloco = linha.tipo === 'bloco'
-  const fundo = total ? 'bg-nav text-nav-ink' : subtotal ? 'bg-canvas' : 'bg-surface'
-  const peso = total || FORTES.has(linha.id) ? 'font-bold' : subtotal || bloco || !linha.bloco ? 'font-semibold' : 'font-normal'
-  const apagado = total ? 'text-nav-muted' : 'text-muted'
+  const total = linha.tipo === 'total' || linha.id === RESULTADO_LIQUIDO
+  const subtotal = linha.tipo === 'subtotal' && !total
+  const fundo = total ? 'bg-brand-100' : subtotal ? 'bg-brand-50' : 'bg-surface'
+  const borda = total ? LINHA_FORTE : LINHA
+  const peso = total || subtotal ? 'font-semibold' : 'font-normal'
   // Só subtotal e total ficam vermelhos: despesa é negativa por natureza.
-  const corDoValor = (valor: number) => ((subtotal || total) && Math.round(valor / 100) < 0 ? (total ? 'text-nav-danger' : 'text-danger') : '')
+  const corDoValor = (valor: number) => ((subtotal || total) && Math.round(valor / 100) < 0 ? 'text-danger' : '')
   const rotulo = rotuloDaLinha(linha)
 
   return (
-    <tr className={cn('text-right', fundo, peso)}>
-      <th
-        scope="row"
-        className={cn('max-w-48 text-left lg:max-w-none lg:whitespace-nowrap', ROTULO_FIXO, fundo, peso, LINHA, linha.bloco ? 'pl-10' : 'pl-4', 'pr-4', bloco ? 'py-0' : 'py-2')}
-      >
-        {bloco ? (
-          <button type="button" onClick={aoAlternar} aria-expanded={aberto} className="flex min-h-10 w-full items-center gap-1.5 text-left hover:text-brand-700">
-            <ChevronRight className={cn('size-4 shrink-0 text-muted transition-transform', aberto && 'rotate-90')} />
-            {rotulo}
-          </button>
-        ) : (
-          rotulo
-        )}
+    <tr className={cn('text-right', peso)}>
+      <th scope="row" className={cn(ROTULO_FIXO, fundo, peso, borda, subtotal && 'text-brand-700')}>
+        <span className="flex flex-col items-start gap-x-2.5 gap-y-1 py-1.5 md:flex-row md:items-center">
+          {linha.tipo === 'bloco' ? (
+            <button type="button" onClick={aoAlternar} aria-expanded={aberto} className={BOTAO_DA_LINHA}>
+              <span aria-hidden="true">{aberto ? '−' : '+'}</span>
+              {aberto ? 'Fechar' : 'Abrir'}
+              <span className="sr-only"> {rotulo}</span>
+            </button>
+          ) : (
+            <span className="hidden w-[5.75rem] shrink-0 md:block" />
+          )}
+          <span className={cn(linha.bloco && 'pl-3 md:pl-4')}>{rotulo}</span>
+        </span>
       </th>
       {meses.map((mes, i) => {
         const valor = linha.valores[i]
         return (
           <Fragment key={mes}>
-            <td className={ESPACO} />
-            <td className={cn('px-1 py-0.5', BORDA_DO_MES, LINHA)}>
+            <td className={cn(ESPACO, fundo, total && LINHA_FORTE)} />
+            <td className={cn('p-1', fundo, BORDA_DO_MES, borda)}>
               <Valor href={valor ? href(mes) : undefined} escolhido={escolhido(mes)} cor={corDoValor(valor)} titulo={`Ver o que forma ${formatarMes(mes)}`}>
                 {numeroInteiro(valor)}
               </Valor>
@@ -115,13 +115,13 @@ function LinhaDaGrade(props: {
           </Fragment>
         )
       })}
-      <td className={ESPACO_FIXO} />
-      <td className={cn(REALIZADO, fundo, 'px-1 py-0.5', LINHA)}>
+      <td className={cn(ESPACO_FIXO, fundo, total && LINHA_FORTE)} />
+      <td className={cn(REALIZADO, fundo, 'p-1 font-semibold', borda)}>
         <Valor href={linha.total ? href() : undefined} escolhido={escolhido()} cor={corDoValor(linha.total)} titulo="Ver o que forma o período">
           {numeroInteiro(linha.total)}
         </Valor>
       </td>
-      <td className={cn(PERCENTUAL, fundo, 'px-2 py-2', apagado, LINHA)}>{receitaLiquida ? formatarPercentual(linha.total / receitaLiquida) : '—'}</td>
+      <td className={cn(PERCENTUAL, fundo, 'px-3 py-1', borda)}>{receitaLiquida ? formatarPercentual(linha.total / receitaLiquida) : '—'}</td>
     </tr>
   )
 }
@@ -163,43 +163,40 @@ export function TabelaDre({
   }
 
   return (
-    <TabelaRolavel>
-      <table className="w-full min-w-max border-separate border-spacing-0 text-xs tabular-nums">
-        <thead>
-          <tr className="whitespace-nowrap text-muted">
-            <th scope="col" rowSpan={2} className={cn(ROTULO_FIXO, 'bg-surface px-4 py-2.5 text-left align-bottom font-medium', LINHA)}>
-              <span className="flex items-center gap-2.5">
-                Linha da DRE
-                {blocos.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setAbertos(todosAbertos ? new Set() : new Set(blocos))}
-                    className="rounded-md border border-line bg-surface px-2 py-0.5 font-medium text-ink transition-colors hover:border-brand-300 hover:bg-brand-50"
-                  >
-                    {todosAbertos ? 'Fechar tudo' : 'Abrir tudo'}
-                  </button>
-                )}
-              </span>
+    <TabelaRolavel
+      acoes={
+        blocos.length > 0 && (
+          <button type="button" onClick={() => setAbertos(todosAbertos ? new Set() : new Set(blocos))} className={classeBotao('secundario')}>
+            {todosAbertos ? 'Fechar todas as linhas' : 'Abrir todas as linhas'}
+          </button>
+        )
+      }
+    >
+      <table className="w-full min-w-max border-separate border-spacing-0 text-sm">
+        <thead className="text-xs text-subtle">
+          <tr className="whitespace-nowrap">
+            <th scope="col" rowSpan={2} className={cn(ROTULO_FIXO, CABECALHO, 'py-3 align-bottom')}>
+              Linha da DRE
             </th>
             {meses.map((mes) => (
               <Fragment key={mes}>
-                <td rowSpan={2} className={ESPACO} />
-                <th scope="col" rowSpan={2} className={cn('min-w-20 px-2 py-2.5 text-center align-bottom font-medium', BORDA_DO_MES, LINHA)}>
+                <td rowSpan={2} className={cn(ESPACO, CABECALHO)} />
+                <th data-mes scope="col" rowSpan={2} className={cn('min-w-[6.5rem] px-3.5 py-3 text-right align-bottom', BORDA_DO_MES, CABECALHO)}>
                   {formatarMes(mes)}
                 </th>
               </Fragment>
             ))}
-            <td data-espaco-fixo rowSpan={2} className={ESPACO_FIXO} />
-            <th scope="colgroup" colSpan={COLUNAS_DO_PERIODO.length} className={cn(FIXA, 'right-0 bg-surface px-2 pb-1.5 pt-3 text-center font-medium text-ink')}>
+            <td data-espaco-fixo rowSpan={2} className={cn(ESPACO_FIXO, CABECALHO)} />
+            <th scope="colgroup" colSpan={2} className={cn(FIXA, 'right-0 border-l-2 border-l-grade bg-painel px-3 pb-0.5 pt-3 text-right font-semibold text-ink')}>
               Período · {rotuloDoPeriodo}
             </th>
           </tr>
-          <tr className="whitespace-nowrap text-muted">
-            <th scope="col" className={cn(REALIZADO, 'bg-surface px-2 pb-2 pt-1.5 text-center font-medium text-ink', LINHA)}>
-              {COLUNAS_DO_PERIODO[0]}
+          <tr>
+            <th scope="col" className={cn(REALIZADO, CABECALHO, 'px-3.5 pb-3 pt-0.5 text-right align-bottom text-ink')}>
+              Realizado
             </th>
-            <th scope="col" className={cn(PERCENTUAL, 'bg-surface px-2 pb-2 pt-1.5 text-center font-medium', LINHA)}>
-              {COLUNAS_DO_PERIODO[1]}
+            <th scope="col" className={cn(PERCENTUAL, CABECALHO, 'px-2 pb-3 pt-0.5 text-right align-bottom leading-tight')}>
+              % da receita líquida
             </th>
           </tr>
         </thead>
@@ -209,14 +206,14 @@ export function TabelaDre({
               const fechada = secoesFechadas.has(linha.id)
               return (
                 <tr key={linha.id}>
-                  <th scope="colgroup" className={cn(ROTULO_FIXO, 'max-w-48 bg-surface px-4 pb-2 pt-3.5 text-left lg:max-w-none', LINHA)}>
+                  <th scope="colgroup" className={cn(ROTULO_FIXO, 'bg-surface py-0.5 font-semibold', LINHA)}>
                     <button
                       type="button"
                       aria-expanded={!fechada}
                       onClick={() => setSecoesFechadas((atuais) => alternar(atuais, linha.id))}
-                      className="flex items-start gap-1.5 text-left font-medium text-muted hover:text-brand-700"
+                      className="flex min-h-12 w-full items-center gap-2 text-left text-xs font-semibold text-subtle hover:text-brand-700"
                     >
-                      <ChevronRight className={cn('size-4 shrink-0 transition-transform', !fechada && 'rotate-90')} />
+                      <span aria-hidden="true">{fechada ? '+' : '−'}</span>
                       {linha.nome}
                     </button>
                   </th>
