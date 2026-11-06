@@ -30,9 +30,9 @@ function ativo(pathname: string, { href, tambem = [] }: Item) {
 
 function Marca() {
   return (
-    <LinkRapido href="/" className="block px-1.5 leading-tight">
-      <span className="block text-[1.625rem] font-semibold text-brand-700">Eco Direito</span>
-      <span className="mt-1 block text-2xs font-medium text-subtle">Consultoria ambiental</span>
+    <LinkRapido href="/" className="block px-2 leading-tight">
+      <span className="block text-xl font-semibold text-brand-700">Eco Direito</span>
+      <span className="block text-2xs text-subtle">Consultoria ambiental</span>
     </LinkRapido>
   )
 }
@@ -43,7 +43,7 @@ function ItemDoMenu({ item, pathname, className }: { item: Item; pathname: strin
     <LinkRapido
       href={item.href}
       aria-current={ligado ? 'page' : undefined}
-      className={cn('flex items-center rounded-lg font-medium transition-colors', ligado ? 'bg-brand-700 text-on-brand' : 'bg-surface text-brand-700 hover:bg-brand-100', className)}
+      className={cn('flex min-h-9 items-center rounded-md px-3 text-sm font-medium transition-colors pointer-coarse:min-h-10', ligado ? 'bg-brand-700 text-on-brand' : 'text-brand-700 hover:bg-brand-100', className)}
     >
       {item.rotulo}
     </LinkRapido>
@@ -53,7 +53,7 @@ function ItemDoMenu({ item, pathname, className }: { item: Item; pathname: strin
 function BotaoSair({ className }: { className?: string }) {
   return (
     <form action={sair} className={className}>
-      <button className={classeBotao('secundario', 'w-full')}>Sair</button>
+      <button className={classeBotao('secundario', 'w-full', 'pequeno')}>Sair</button>
     </form>
   )
 }
@@ -77,8 +77,8 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
 
   return (
     <>
-      <aside className="sticky top-0 hidden h-screen w-68 shrink-0 flex-col gap-3 overflow-y-auto border-r border-line bg-rail px-5 py-7 lg:flex print:hidden">
-        <div className="mb-3">
+      <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col gap-2 overflow-y-auto border-r border-line bg-rail px-3 py-4 lg:flex print:hidden">
+        <div className="mb-1">
           <Marca />
         </div>
         {usuario && (
@@ -87,52 +87,49 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
             <BotaoNovo papel={usuario.papel} />
           </>
         )}
-        <nav className="my-3 flex flex-col gap-3">
+        <nav className="my-1 flex flex-col gap-0.5">
           {itens.map((item) => (
-            <ItemDoMenu key={item.href} item={item} pathname={pathname} className="min-h-14 px-4.5 text-[1.25rem]" />
+            <ItemDoMenu key={item.href} item={item} pathname={pathname} />
           ))}
         </nav>
         {usuario && <ListaFixados />}
         {usuario && (
-          <div className="mt-auto flex flex-col gap-3 border-t border-line pt-5">
-            <p className="px-1.5 text-sm">
-              <b className="block text-base">{usuario.nome}</b>
+          <div className="mt-auto flex flex-col gap-2 border-t border-line pt-3">
+            <p className="px-2 text-xs leading-tight text-muted">
+              <b className="block text-sm font-medium text-ink">{usuario.nome}</b>
               {PAPEIS[usuario.papel].nome}
             </p>
-            <BotaoTema />
-            <BotaoSair />
-            <p className="px-1.5 text-2xs font-medium text-warn">Dados fictícios para demonstração</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              <BotaoTema />
+              <BotaoSair />
+            </div>
+            <p className="px-2 text-2xs text-warn">Dados fictícios para demonstração</p>
           </div>
         )}
       </aside>
 
-      <header className="border-b border-line bg-rail px-4 py-4 lg:hidden print:hidden">
-        <div className="flex items-center justify-between gap-3">
+      <header className="border-b border-line bg-rail px-4 py-2.5 lg:hidden print:hidden">
+        <div className="flex items-center justify-between gap-2">
           <Marca />
-          {usuario && <BotaoSair />}
+          <div className="flex items-center gap-1.5">
+            {usuario && <BotaoTema />}
+            {usuario && <BotaoSair />}
+          </div>
         </div>
         {usuario && (
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-2 grid grid-cols-2 gap-1.5">
             <BuscaGeral />
             <BotaoNovo papel={usuario.papel} />
           </div>
         )}
-        <nav className="mt-3 flex flex-wrap gap-2">
+        <nav className="mt-2 flex flex-wrap gap-1">
           {itens.map((item) => (
-            <ItemDoMenu key={item.href} item={item} pathname={pathname} className="min-h-13 px-3.5 text-base" />
+            <ItemDoMenu key={item.href} item={item} pathname={pathname} />
           ))}
         </nav>
         {usuario && (
-          <div className="mt-3">
+          <div className="mt-2">
             <ListaFixados />
-          </div>
-        )}
-        {usuario && (
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <p className="min-w-0 text-sm">
-              <b>{usuario.nome}</b> · {PAPEIS[usuario.papel].nome}
-            </p>
-            <BotaoTema />
           </div>
         )}
       </header>

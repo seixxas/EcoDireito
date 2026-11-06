@@ -24,7 +24,7 @@ export const metadata: Metadata = { title: 'Projetos' }
 type Filtros = { fase?: NumeroFase; q?: string; pagina?: number }
 
 /** O nome fica com a sobra. Em lista mais estreita que isso, cada projeto empilha em vez de espremer o nome. */
-const COLUNAS = '@[60rem]:grid @[60rem]:grid-cols-[minmax(0,1fr)_12rem_15rem_6.5rem_6rem]'
+const COLUNAS = '@[52rem]:grid @[52rem]:grid-cols-[minmax(0,1fr)_11rem_15rem_6.5rem_3.5rem]'
 
 function endereco({ fase, q, pagina = 1 }: Filtros) {
   const busca = new URLSearchParams()
@@ -56,18 +56,18 @@ export default async function PaginaProcessos({ searchParams }: { searchParams: 
         resumo={`${contar(itens.length, 'projeto', 'projetos')}${comVencido ? `, ${comVencido} com prazo vencido` : ''}. Os que vencem primeiro vêm antes.`}
         acoes={
           <>
-            <LinkRapido href="/projetos/clientes" className={classeBotao('secundario', 'min-h-14 text-[1.25rem]')}>
+            <LinkRapido href="/projetos/clientes" className={classeBotao('secundario')}>
               Clientes
             </LinkRapido>
             {pode(usuario.papel, 'prazos', 'editar') && (
-              <LinkRapido href="/projetos/novo" className={classeBotao('primario', 'min-h-14 text-[1.25rem]')}>
+              <LinkRapido href="/projetos/novo" className={classeBotao('primario')}>
                 + Novo projeto
               </LinkRapido>
             )}
           </>
         }
       />
-      <div className="mb-7 space-y-6">
+      <div className="mb-3 space-y-2">
         <Busca
           valor={q}
           placeholder="Empreendimento, cliente ou nº SEI"
@@ -91,7 +91,7 @@ export default async function PaginaProcessos({ searchParams }: { searchParams: 
       </div>
       {paginado.total > 0 ? (
         <Lista className="@container">
-          <li aria-hidden className={cn('hidden gap-x-5 px-4 pb-1 pt-2 text-xs font-semibold text-subtle', COLUNAS)}>
+          <li aria-hidden className={cn('hidden gap-x-3 px-3 py-1.5 text-xs font-medium text-subtle', COLUNAS)}>
             <span>Projeto</span>
             <span>Fase</span>
             <span>Próximo prazo</span>
@@ -100,10 +100,9 @@ export default async function PaginaProcessos({ searchParams }: { searchParams: 
           {paginado.itens.map(({ processo, cliente, proximo }) => (
             <Linha key={processo.id} href={`/projetos/${processo.id}`} className={COLUNAS}>
               <div className="min-w-0 basis-full">
-                <p className="text-[1.25rem] font-semibold leading-snug text-ink">{processo.empreendimento}</p>
-                <p className="mt-0.5 text-xs text-muted">{cliente.nome}</p>
+                <p className="font-semibold leading-snug text-ink">{processo.empreendimento}</p>
                 <p className="text-xs text-muted">
-                  <span className="whitespace-nowrap">{processo.numeroSei ? `SEI ${processo.numeroSei}` : 'Sem nº SEI'}</span>
+                  {cliente.nome} · <span className="whitespace-nowrap">{processo.numeroSei ? `SEI ${processo.numeroSei}` : 'Sem nº SEI'}</span>
                   {processo.servico === 'manejo' && ' · Manejo'}
                 </p>
               </div>
@@ -114,14 +113,14 @@ export default async function PaginaProcessos({ searchParams }: { searchParams: 
                 {proximo ? (
                   <>
                     <SituacaoPrazo prazo={proximo} hoje={dia} />
-                    <p className="mt-1.5 text-sm font-medium leading-snug text-ink">{proximo.regra.titulo}</p>
+                    <p className="text-xs leading-snug text-ink">{proximo.regra.titulo}</p>
                   </>
                 ) : (
-                  <span className="text-sm text-muted">Nenhum prazo em aberto</span>
+                  <span className="text-xs text-muted">Nenhum prazo em aberto</span>
                 )}
               </div>
-              <p className="text-sm text-ink">
-                {processo.responsavel && <span className="@[60rem]:hidden">Responsável: </span>}
+              <p className="text-xs text-ink">
+                {processo.responsavel && <span className="@[52rem]:hidden">Responsável: </span>}
                 {processo.responsavel}
               </p>
             </Linha>

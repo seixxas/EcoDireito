@@ -74,7 +74,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
         resumo={`${contar(filtrados.length, 'lançamento', 'lançamentos')} ${periodo}${conta ? ` em ${nomeDaConta(conta)}` : ''}${processo ? ` do ${processo.empreendimento}` : ''}${movimento ? `: ${movimento}` : ''}.${filtrado ? '' : ' A receita das notas entra sozinha com o recebimento.'}`}
         acoes={
           editar && (
-            <LinkRapido href={link({ novo: '1' })} scroll={false} className={classeBotao('primario', 'min-h-14 text-[1.25rem]')}>
+            <LinkRapido href={link({ novo: '1' })} scroll={false} className={classeBotao('primario')}>
               + Novo lançamento
             </LinkRapido>
           )
@@ -84,7 +84,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
       {editar && filtros.novo === '1' && (
         <Card
           titulo="Novo lançamento"
-          className="mb-7"
+          className="mb-4"
           acao={
             <LinkRapido href={link({})} scroll={false} className={classeBotao('secundario')}>
               Fechar
@@ -95,9 +95,9 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
         </Card>
       )}
 
-      <div className="mb-6 space-y-6">
+      <div className="mb-4 space-y-4">
         <NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m })} todos />
-        <div className="flex flex-wrap items-end gap-4">
+        <div className="flex flex-wrap items-end gap-3">
           <Busca
             valor={q}
             placeholder="Descrição, observação ou projeto"
@@ -107,7 +107,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
           />
           <FiltroConta acao="/financeiro/lancamentos" valor={conta} manter={{ mes: mes === atual ? undefined : mes, processo: processo?.id, q }} />
           {processo && (
-            <LinkRapido href={link({ processo: undefined })} className={classeBotao('secundario', 'min-h-14 max-w-full whitespace-normal! py-2 text-left')}>
+            <LinkRapido href={link({ processo: undefined })} className={classeBotao('secundario', 'max-w-full whitespace-normal! py-1.5 text-left')}>
               Tirar o filtro: {processo.empreendimento}
             </LinkRapido>
           )}
@@ -140,7 +140,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                   return (
                     <tr key={lancamento.id}>
                       <td className="hidden whitespace-nowrap @3xl:table-cell">{formatarData(lancamento.data)}</td>
-                      <td className="@max-3xl:rounded-[0.75rem]">
+                      <td>
                         {lancamento.descricao}
                         {lancamento.observacao && <span className="block text-xs text-muted">Obs.: {lancamento.observacao}</span>}
                         {/* Só quando a competência não é o mês do pagamento: é a exceção que muda a DRE por competência. */}
@@ -149,22 +149,22 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
                             Competência {textoDaCompetencia(lancamento)}
                           </span>
                         )}
-                        <span className="block text-sm text-muted @3xl:hidden">{formatarData(lancamento.data)}</span>
-                        <span className="block text-sm text-muted @min-[58rem]:hidden">
+                        <span className="block text-xs text-muted @3xl:hidden">{formatarData(lancamento.data)}</span>
+                        <span className="block text-xs text-muted @min-[58rem]:hidden">
                           {nomeDaConta(lancamento.contaId)} · {tipo}
                         </span>
-                        <span className={cn('mt-1 block text-[1.25rem] font-semibold @3xl:hidden', entrada && 'text-ok')}>{valor}</span>
+                        <span className={cn('mt-1 block text-sm font-semibold @3xl:hidden', entrada && 'text-ok')}>{valor}</span>
                         {lancamento.notaId && (
-                          <LinkRapido href={`/financeiro/notas/${lancamento.notaId}`} className="link flex min-h-12 w-fit items-center text-sm">
+                          <LinkRapido href={`/financeiro/notas/${lancamento.notaId}`} className="link block w-fit text-sm">
                             Ver nota
                           </LinkRapido>
                         )}
                         {!lancamento.notaId && lancamento.processoId && (
-                          <LinkRapido href={`/projetos/${lancamento.processoId}`} className="link flex min-h-12 w-fit items-center text-sm">
+                          <LinkRapido href={`/projetos/${lancamento.processoId}`} className="link block w-fit text-sm">
                             {nomeDoProcesso(lancamento.processoId)}
                           </LinkRapido>
                         )}
-                        <div className="mt-3 @3xl:hidden">
+                        <div className="mt-2 @3xl:hidden">
                           <BotaoAbrir href={href} rotulo={rotulo} />
                         </div>
                       </td>
@@ -180,7 +180,7 @@ export default async function PaginaLancamentos({ searchParams }: { searchParams
           </div>
         )}
       </Card>
-      {paginado.itens.some((l) => textoDaCompetencia(l)) && <p className="mt-3 text-sm text-muted">{EXPLICACAO_COMPETENCIA}</p>}
+      {paginado.itens.some((l) => textoDaCompetencia(l)) && <p className="mt-2 text-xs text-muted">{EXPLICACAO_COMPETENCIA}</p>}
       <Paginacao {...paginado} href={(n) => link({ pagina: String(n) })} />
     </>
   )

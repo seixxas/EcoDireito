@@ -27,17 +27,17 @@ export function FormularioProcesso({ clientes, valores, cancelar, novoCliente, v
   const erros = estado.erros ?? {}
   const valor = (nome: keyof Valores) => estado.valores?.[nome] ?? valores[nome]
   return (
-    <form action={acao} className="space-y-6">
+    <form action={acao} className="space-y-3">
       <input type="hidden" name="id" value={valores.id ?? ''} />
       <input type="hidden" name="voltar" value={voltar ?? ''} />
       <input type="hidden" name="ato" value={ato?.id ?? ''} />
       <Card titulo="O projeto">
-        <div className="space-y-5">
-          <Campo rotulo="Nome do empreendimento" erro={erros.empreendimento} dica="É o nome que aparece em todas as telas. Exemplo: Residencial Serra Azul Lapa.">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <Campo rotulo="Nome do empreendimento" erro={erros.empreendimento} dica="É o nome que aparece em todas as telas. Exemplo: Residencial Serra Azul Lapa." className="sm:col-span-2">
             <Entrada name="empreendimento" defaultValue={valor('empreendimento')} required />
           </Campo>
-          <Campo rotulo="Cliente" erro={erros.clienteId}>
-            <span className="flex flex-wrap gap-3">
+          <Campo rotulo="Cliente" erro={erros.clienteId} className="sm:col-span-2">
+            <span className="flex flex-wrap gap-1.5">
               <Selecao key={valor('clienteId')} name="clienteId" defaultValue={valor('clienteId') ?? ''} required className="min-w-0 flex-1 basis-64">
                 <option value="" disabled>
                   Escolha o cliente
@@ -49,42 +49,38 @@ export function FormularioProcesso({ clientes, valores, cancelar, novoCliente, v
                 ))}
               </Selecao>
               {novoCliente && (
-                <LinkRapido href={novoCliente} className={classeBotao('secundario', 'min-h-14')}>
+                <LinkRapido href={novoCliente} className={classeBotao('secundario')}>
                   Cadastrar novo cliente
                 </LinkRapido>
               )}
             </span>
           </Campo>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Campo rotulo="Endereço" erro={erros.endereco}>
-              <Entrada name="endereco" defaultValue={valor('endereco')} />
-            </Campo>
-            <Campo rotulo="Serviço" erro={erros.servico}>
-              <Selecao name="servico" defaultValue={valor('servico') ?? 'licenciamento'}>
-                <option value="licenciamento">Licenciamento</option>
-                <option value="manejo">Manejo</option>
-              </Selecao>
-            </Campo>
-          </div>
+          <Campo rotulo="Endereço" erro={erros.endereco} className="sm:col-span-2 xl:col-span-3">
+            <Entrada name="endereco" defaultValue={valor('endereco')} />
+          </Campo>
+          <Campo rotulo="Serviço" erro={erros.servico}>
+            <Selecao name="servico" defaultValue={valor('servico') ?? 'licenciamento'}>
+              <option value="licenciamento">Licenciamento</option>
+              <option value="manejo">Manejo</option>
+            </Selecao>
+          </Campo>
         </div>
       </Card>
       <Card titulo="Na Prefeitura">
-        <div className="space-y-5">
+        <div className="grid items-start gap-3 md:grid-cols-3">
           <Campo rotulo="Nº do processo SEI" erro={erros.numeroSei} dica="Deixe vazio até abrir o processo na SVMA. É por ele que o robô acha os atos no Diário Oficial.">
             <Entrada name="numeroSei" defaultValue={valor('numeroSei')} placeholder="6027.2026/0000021-3" pattern="\d{4}\.\d{4}/\d{7}-\d" />
           </Campo>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Campo rotulo="Nº SIMPROC" erro={erros.numeroSimproc} dica="Só em processo antigo, aberto antes do SEI.">
-              <Entrada name="numeroSimproc" defaultValue={valor('numeroSimproc')} placeholder="2016-0.084.512-3" pattern="\d{4}-0\.\d{3}\.\d{3}-\d" />
-            </Campo>
-            <Campo rotulo="Nº TCA" erro={erros.numeroTca} dica="Quando o Termo de Compromisso for publicado.">
-              <Entrada name="numeroTca" defaultValue={valor('numeroTca')} placeholder="318/2026" />
-            </Campo>
-          </div>
+          <Campo rotulo="Nº SIMPROC" erro={erros.numeroSimproc} dica="Só em processo antigo, aberto antes do SEI.">
+            <Entrada name="numeroSimproc" defaultValue={valor('numeroSimproc')} placeholder="2016-0.084.512-3" pattern="\d{4}-0\.\d{3}\.\d{3}-\d" />
+          </Campo>
+          <Campo rotulo="Nº TCA" erro={erros.numeroTca} dica="Quando o Termo de Compromisso for publicado.">
+            <Entrada name="numeroTca" defaultValue={valor('numeroTca')} placeholder="318/2026" />
+          </Campo>
         </div>
       </Card>
       <Card titulo="Na Eco Direito">
-        <div className="grid items-end gap-5 sm:grid-cols-2">
+        <div className="grid items-start gap-3 sm:grid-cols-2">
           <Campo rotulo="Responsável" erro={erros.responsavel} dica="Quem cuida deste projeto. Aparece na lista de projetos e na tela de prazos.">
             <Entrada name="responsavel" defaultValue={valor('responsavel')} />
           </Campo>
@@ -100,11 +96,11 @@ export function FormularioProcesso({ clientes, valores, cancelar, novoCliente, v
         </div>
       </Card>
       <MensagemFormulario estado={estado} />
-      <div className="flex flex-wrap justify-between gap-3">
-        <LinkRapido href={cancelar} className={classeBotao('secundario', 'min-h-14 text-[1.25rem]')}>
+      <div className="flex flex-wrap justify-between gap-2">
+        <LinkRapido href={cancelar} className={classeBotao('secundario')}>
           Cancelar
         </LinkRapido>
-        <BotaoEnviar className="min-h-14 text-[1.25rem]">{valores.id ? 'Salvar alterações' : (ato?.enviar ?? 'Cadastrar projeto')}</BotaoEnviar>
+        <BotaoEnviar>{valores.id ? 'Salvar alterações' : (ato?.enviar ?? 'Cadastrar projeto')}</BotaoEnviar>
       </div>
     </form>
   )

@@ -20,7 +20,7 @@ export default async function PaginaNovoCliente({ searchParams }: { searchParams
   const voltar = pedido && caminhoInterno(pedido) ? pedido : undefined
 
   return (
-    <div className="max-w-[55rem]">
+    <div className="max-w-6xl">
       <PageHeader
         voltar={voltar ? { href: voltar, rotulo: rotuloDaVolta(voltar) } : { href: '/projetos/clientes', rotulo: 'Voltar para Clientes' }}
         titulo="Novo cliente"

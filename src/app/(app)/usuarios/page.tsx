@@ -18,7 +18,7 @@ import { FormularioUsuario } from './_components/formulario-usuario'
 
 export const metadata: Metadata = { title: 'Usuários' }
 
-const COLUNAS = 'xl:grid xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.2fr)_8rem] xl:gap-x-5'
+const COLUNAS = 'xl:grid xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.6fr)_minmax(0,1.1fr)_5rem] xl:gap-x-3'
 
 /** "edita prazos e financeiro e cuida dos acessos", em vez de uma tabela de permissões. */
 function oQuePode(papel: Papel) {
@@ -43,31 +43,31 @@ export default async function PaginaUsuarios({ searchParams }: { searchParams: P
         titulo="Usuários"
         resumo={`${contar(usuarios.length, 'pessoa tem', 'pessoas têm')} acesso. Cada perfil vê só a sua parte.`}
         acoes={
-          <LinkRapido href={criando ? '/usuarios' : '/usuarios?novo=1'} className={classeBotao(criando ? 'secundario' : 'primario', 'min-h-14! text-[1.25rem]!')}>
+          <LinkRapido href={criando ? '/usuarios' : '/usuarios?novo=1'} className={classeBotao(criando ? 'secundario' : 'primario')}>
             {criando ? 'Fechar' : '+ Novo usuário'}
           </LinkRapido>
         }
       />
 
       {criando && (
-        <Card titulo="Dar acesso a outra pessoa" className="mb-7">
+        <Card titulo="Dar acesso a outra pessoa" className="mb-4">
           <FormularioUsuario clientes={clientes} />
         </Card>
       )}
 
       {usuarios.length > 0 && (
         <Lista>
-          <li aria-hidden className={`hidden px-4 pb-1 pt-2 text-xs font-semibold text-subtle ${COLUNAS}`}>
+          <li aria-hidden className={`hidden px-3 py-1.5 text-xs font-medium text-subtle ${COLUNAS}`}>
             <span>Nome</span>
             <span>Perfil</span>
             <span>E-mail</span>
           </li>
           {pagina.itens.map((usuario) => (
             <Linha key={usuario.id} className={COLUNAS}>
-              <div className="flex min-w-0 flex-1 basis-72 flex-col gap-1.5 xl:contents">
-                <p className="min-w-0 text-[1.25rem] font-semibold leading-snug wrap-anywhere">
+              <div className="flex min-w-0 flex-1 basis-72 flex-col xl:contents">
+                <p className="min-w-0 text-sm font-semibold leading-snug wrap-anywhere">
                   {usuario.nome}
-                  {usuario.id === eu.id && <small className="ml-2 text-2xs font-medium text-brand-700">você</small>}
+                  {usuario.id === eu.id && <small className="ml-1.5 text-2xs font-medium text-brand-700">você</small>}
                 </p>
                 <div className="min-w-0">
                   <p>
@@ -83,6 +83,7 @@ export default async function PaginaUsuarios({ searchParams }: { searchParams: P
                   <input type="hidden" name="id" value={usuario.id} />
                   <BotaoConfirmar
                     variante="secundario"
+                    tamanho="pequeno"
                     titulo={`Remover o acesso de ${usuario.nome}?`}
                     oQue={<span className="wrap-anywhere">{usuario.email}</span>}
                     consequencia="A pessoa não vai mais conseguir entrar no sistema."

@@ -7,7 +7,7 @@ type Props = { href: string; rotulo: string; scroll?: boolean }
 /** Botão "Abrir" da linha. `rotulo` diz o que abre, para o leitor de tela. Com `scroll={false}`, a lista fica onde está (painel). */
 export function BotaoAbrir({ href, rotulo, scroll }: Props) {
   return (
-    <LinkRapido href={href} scroll={scroll} aria-label={rotulo} className={classeBotao('secundario')}>
+    <LinkRapido href={href} scroll={scroll} aria-label={rotulo} className={classeBotao('secundario', undefined, 'pequeno')}>
       Abrir
     </LinkRapido>
   )

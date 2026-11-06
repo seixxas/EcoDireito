@@ -71,11 +71,11 @@ export default async function PaginaProspeccao() {
       <AbasDoComercial ativa="prospeccao" />
       <PageHeader titulo="Prospecção" resumo="Encontrar projetos e empresas que vão precisar de licenciamento ou manejo, antes de elas procurarem alguém." />
 
-      <p className="mb-6 rounded-lg bg-info-soft px-5.5 py-4.5">
+      <p className="mb-3 rounded-md bg-info-soft px-3 py-1.5 text-sm">
         <strong className="font-semibold text-info">Em desenvolvimento.</strong> Esta tela mostra a ideia com oportunidades de exemplo. Ainda não busca nada e os números abaixo não são reais.
       </p>
 
-      <Resumo className="mb-9">
+      <Resumo className="mb-3 xl:grid-cols-4">
         <ItemResumo rotulo="Oportunidades novas" valor="12" detalhe="nos últimos 30 dias" />
         <ItemResumo rotulo="De grupos que já são clientes" valor="3" detalhe="chance maior de fechar" />
         <ItemResumo rotulo="Terreno com vegetação" valor="5" detalhe="vão precisar de manejo" />
@@ -87,45 +87,39 @@ export default async function PaginaProspeccao() {
           <Item
             key={o.obra}
             titulo={o.obra}
-            detalhe={
-              <>
-                {o.empresa} · {o.origem}, {o.quando}
-                <span className="mt-2 flex flex-wrap gap-2">
-                  {o.sinais.map((sinal) => (
-                    <Badge key={sinal} className="bg-brand-100! text-ink!">
-                      {sinal}
-                    </Badge>
-                  ))}
-                </span>
-              </>
-            }
+            detalhe={`${o.empresa} · ${o.origem}, ${o.quando}`}
             fim={
-              <Situacao tom={o.chance === 'alta' ? 'ok' : 'brand'} className="whitespace-nowrap px-3.5! py-1.5! text-sm!">
-                {o.chance === 'alta' ? 'Chance alta' : 'Chance média'}
-              </Situacao>
+              <>
+                {o.sinais.map((sinal) => (
+                  <Badge key={sinal} className="bg-brand-100! text-ink!">
+                    {sinal}
+                  </Badge>
+                ))}
+                <Situacao tom={o.chance === 'alta' ? 'ok' : 'brand'} className="whitespace-nowrap">
+                  {o.chance === 'alta' ? 'Chance alta' : 'Chance média'}
+                </Situacao>
+              </>
             }
           />
         ))}
-        <p className="mb-2 mt-1 text-sm text-muted">Na versão pronta, cada linha terá o botão “Criar proposta”.</p>
+        <p className="mt-1 px-1 text-xs text-muted">Na versão pronta, cada linha terá o botão “Criar proposta”.</p>
       </Zona>
 
-      <Secao titulo="De onde vêm as oportunidades" className="mt-10">
-        <dl>
+      <Secao titulo="De onde vêm as oportunidades">
+        <dl className="grid gap-x-6 gap-y-2 text-sm md:grid-cols-2">
           {FONTES.map(([fonte, como]) => (
-            <div key={fonte} className="border-b border-line py-3.5">
-              <dt className="font-semibold">{fonte}</dt>
-              <dd className="mt-0.5">{como}</dd>
+            <div key={fonte}>
+              <dt className="font-medium">{fonte}</dt>
+              <dd className="text-xs text-muted">{como}</dd>
             </div>
           ))}
         </dl>
       </Secao>
 
-      <Secao titulo="O que esta área vai fazer" className="mt-10">
-        <ul>
+      <Secao titulo="O que esta área vai fazer">
+        <ul className="list-disc space-y-0.5 pl-4 text-xs text-muted">
           {IDEIAS.map((ideia) => (
-            <li key={ideia} className="border-b border-line py-3.5">
-              {ideia}
-            </li>
+            <li key={ideia}>{ideia}</li>
           ))}
         </ul>
       </Secao>

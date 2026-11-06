@@ -26,7 +26,7 @@ export type Aba = {
 export function Abas({ abas, ativa, className }: { abas: Aba[]; ativa: string; className?: string }) {
   if (abas.some((aba) => aba.detalhe)) return <AbasEmQuadros abas={abas} ativa={ativa} className={className} />
   return (
-    <nav className={cn('mb-7 flex flex-wrap gap-2 rounded-lg bg-rail p-1.5 print:hidden', className)}>
+    <nav className={cn('mb-4 flex flex-wrap gap-1 rounded-lg bg-rail p-1 print:hidden', className)}>
       {abas.map((aba) => (
         <LinkRapido
           key={aba.valor}
@@ -34,21 +34,22 @@ export function Abas({ abas, ativa, className }: { abas: Aba[]; ativa: string; c
           scroll={false}
           aria-current={aba.valor === ativa ? 'page' : undefined}
           className={cn(
-            'inline-flex min-h-13 items-center whitespace-nowrap rounded-md px-4.5 text-base font-medium transition-colors',
+            'inline-flex min-h-8 items-center whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors pointer-coarse:min-h-10',
             aba.valor === ativa ? 'bg-brand-700 text-on-brand' : 'text-brand-700 hover:bg-brand-100',
           )}
         >
           {aba.rotulo}
-          {aba.contagem !== undefined && <span className="ml-1.5">({aba.contagem})</span>}
+          {aba.contagem !== undefined && <span className="ml-1">({aba.contagem})</span>}
         </LinkRapido>
       ))}
     </nav>
   )
 }
 
+/** Quadros do ciclo, todos numa fileira quando cabem: nome e quantidade em cima, valor embaixo. */
 function AbasEmQuadros({ abas, ativa, className }: { abas: Aba[]; ativa: string; className?: string }) {
   return (
-    <nav className={cn('mb-7 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 print:hidden', className)}>
+    <nav className={cn('mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6 print:hidden', className)}>
       {abas.map((aba) => {
         const ligada = aba.valor === ativa
         return (
@@ -58,13 +59,15 @@ function AbasEmQuadros({ abas, ativa, className }: { abas: Aba[]; ativa: string;
             scroll={false}
             aria-current={ligada ? 'page' : undefined}
             className={cn(
-              'grid min-h-19 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-0.5 rounded-lg px-4.5 py-3 transition-colors',
-              ligada ? 'bg-brand-700 text-on-brand' : cn(FUNDOS[aba.fundo ?? 'neutro'], 'text-ink hover:ring-2 hover:ring-brand-700'),
+              'block rounded-lg px-3 py-1.5 transition-colors',
+              ligada ? 'bg-brand-700 text-on-brand' : cn(FUNDOS[aba.fundo ?? 'neutro'], 'text-ink hover:ring-1 hover:ring-brand-700'),
             )}
           >
-            <span className={cn('text-base font-semibold', !ligada && aba.alerta && 'text-danger')}>{aba.rotulo}</span>
-            <span className={cn('col-start-2 row-span-2 row-start-1 text-right text-[1.25rem] font-semibold', !ligada && aba.alerta && 'text-danger')}>{aba.detalhe}</span>
-            {(aba.legenda ?? aba.contagem !== undefined) && <span className={cn('text-xs', !ligada && 'text-muted')}>{aba.legenda ?? aba.contagem}</span>}
+            <span className="flex flex-wrap items-baseline justify-between gap-x-2">
+              <span className={cn('text-sm font-medium', !ligada && aba.alerta && 'text-danger')}>{aba.rotulo}</span>
+              {(aba.legenda ?? aba.contagem !== undefined) && <span className={cn('text-2xs', !ligada && 'text-muted')}>{aba.legenda ?? aba.contagem}</span>}
+            </span>
+            <span className={cn('block text-lg font-semibold', !ligada && aba.alerta && 'text-danger')}>{aba.detalhe}</span>
           </LinkRapido>
         )
       })}

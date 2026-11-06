@@ -9,7 +9,7 @@ import { registrarRecebimento } from '../notas/actions'
 export function FormularioRecebimento({ notaId, data, valor }: { notaId: string; data: string; valor: number }) {
   const [estado, acao] = useActionState(registrarRecebimento, {})
   return (
-    <form action={acao} className="space-y-4">
+    <form action={acao} className="space-y-3">
       <input type="hidden" name="notaId" value={notaId} />
       <Campo rotulo="Data em que entrou na conta" erro={estado.erros?.data}>
         <Entrada name="data" type="date" defaultValue={estado.valores?.data ?? data} required />

@@ -20,7 +20,8 @@ const PASSOS = [
   { nome: 'Texto da proposta', campos: ['escopo'] },
 ]
 
-const BOTAO_GRANDE = 'min-h-14 whitespace-normal! py-2 text-[1.25rem]'
+/** Texto comprido: no celular, quebra em duas linhas. */
+const BOTAO_DE_PASSO = 'whitespace-normal! py-1'
 
 /**
  * Nova proposta: escolher o serviço troca o texto padrão (se ainda não foi mexido) e as parcelas.
@@ -93,21 +94,18 @@ export function FormularioProposta({ clientes, clienteId }: { clientes: { id: st
 
   return (
     <>
-      <ol className="mb-9 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <ol className="mb-3 flex flex-wrap gap-1 rounded-lg bg-rail p-1">
         {PASSOS.map(({ nome }, indice) => (
-          <li key={nome} aria-current={indice === passo ? 'step' : undefined} className={cn('rounded-lg px-4.5 py-3.5 text-sm', indice === passo ? 'bg-brand-700 text-on-brand' : 'bg-painel')}>
-            <b className={cn('block text-2xs font-semibold', indice !== passo && 'text-subtle')}>
-              Passo {indice + 1} de {PASSOS.length}
-            </b>
-            {nome}
+          <li key={nome} aria-current={indice === passo ? 'step' : undefined} className={cn('rounded-md px-3 py-1 text-sm font-medium', indice === passo ? 'bg-brand-700 text-on-brand' : 'text-muted')}>
+            {indice + 1}. {nome}
           </li>
         ))}
       </ol>
 
-      <form ref={formulario} action={acao} noValidate onSubmit={aoEnviar} onKeyDown={aoTeclar} className="space-y-7">
-        <div hidden={passo !== 0} className="space-y-7">
-          <Campo rotulo="Cliente" dica="Empresa que vai receber a proposta." erro={erros.clienteId}>
-            <span className="flex flex-col gap-3 sm:flex-row">
+      <form ref={formulario} action={acao} noValidate onSubmit={aoEnviar} onKeyDown={aoTeclar} className="space-y-3">
+        <div hidden={passo !== 0} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 [&[hidden]]:hidden">
+          <Campo rotulo="Cliente" dica="Empresa que vai receber a proposta." erro={erros.clienteId} className="sm:col-span-2">
+            <span className="flex flex-col gap-1.5 sm:flex-row">
               {/* Depois da action o React limpa o formulário e não reaplica `defaultValue` em select. A `key` recria o select com a escolha como padrão; sem ela, a escolha some. Vale também para o Serviço. */}
               <Selecao key={v.clienteId ?? clienteId} name="clienteId" defaultValue={v.clienteId ?? clienteId ?? ''} required className="min-w-0 flex-1">
                 <option value="" disabled>
@@ -119,15 +117,15 @@ export function FormularioProposta({ clientes, clienteId }: { clientes: { id: st
                   </option>
                 ))}
               </Selecao>
-              <LinkRapido href={`/projetos/clientes/novo?voltar=${encodeURIComponent('/comercial/nova')}`} className={classeBotao('secundario', 'min-h-14 shrink-0')}>
+              <LinkRapido href={`/projetos/clientes/novo?voltar=${encodeURIComponent('/comercial/nova')}`} className={classeBotao('secundario', 'shrink-0')}>
                 Cadastrar novo cliente
               </LinkRapido>
             </span>
           </Campo>
-          <Campo rotulo="Nome da proposta" dica="Empreendimento e o que será feito. Exemplo: Bebidas Serrana · nova linha de envase." erro={erros.empreendimento}>
+          <Campo rotulo="Nome da proposta" dica="Empreendimento e o que será feito. Exemplo: Bebidas Serrana · nova linha de envase." erro={erros.empreendimento} className="sm:col-span-2">
             <Entrada name="empreendimento" defaultValue={v.empreendimento} required />
           </Campo>
-          <Campo rotulo="Endereço" erro={erros.endereco}>
+          <Campo rotulo="Endereço" erro={erros.endereco} className="sm:col-span-2">
             <Entrada name="endereco" defaultValue={v.endereco} />
           </Campo>
           <Campo rotulo="Serviço" erro={erros.servico}>
@@ -141,47 +139,47 @@ export function FormularioProposta({ clientes, clienteId }: { clientes: { id: st
           </Campo>
         </div>
 
-        <div hidden={passo !== 1} className="space-y-7">
+        <div hidden={passo !== 1} className="grid items-start gap-3 sm:grid-cols-2 xl:grid-cols-4 [&[hidden]]:hidden">
           <Campo rotulo="Valor total (R$)" erro={erros.valor}>
             <Entrada name="valor" value={valor} onChange={(e) => setValor(e.target.value)} placeholder="95.000,00" inputMode="decimal" required />
           </Campo>
           <Campo rotulo="Validade (dias)" erro={erros.validadeDias} dica="Contada da data de hoje.">
             <Entrada type="number" name="validadeDias" defaultValue={v.validadeDias ?? VALIDADE_PADRAO} min={1} max={365} inputMode="numeric" />
           </Campo>
-          <Card titulo="Forma de pagamento">
+          <Card titulo="Forma de pagamento" className="sm:col-span-2">
             <dl>
               {parcelasDaProposta(servico, total ?? 0).map((parcela) => (
                 <ItemResumo key={parcela.descricao} rotulo={parcela.descricao} detalhe={`Libera quando: ${EVENTOS[parcela.gatilho].nome}`} valor={total ? brl(parcela.valor) : '—'} />
               ))}
             </dl>
-            <p className="mt-3 text-xs text-muted">As parcelas viram o contrato do projeto. Dá para ajustar depois, em Financeiro &gt; Contratos.</p>
+            <p className="mt-2 text-xs text-muted">As parcelas viram o contrato do projeto. Dá para ajustar depois, em Financeiro &gt; Contratos.</p>
           </Card>
         </div>
 
         <div hidden={passo !== 2}>
           <Campo rotulo="O que será feito" erro={erros.escopo} dica="Vai no texto da proposta. Muda sozinho ao trocar o serviço, enquanto você não editar.">
-            <AreaTexto name="escopo" value={escopo} onChange={(e) => setEscopo(e.target.value)} rows={10} required />
+            <AreaTexto name="escopo" value={escopo} onChange={(e) => setEscopo(e.target.value)} rows={9} required />
           </Campo>
         </div>
 
         <MensagemFormulario estado={estado} />
 
-        <div className="mt-10 flex flex-wrap justify-between gap-3 border-t border-line pt-6">
+        <div className="flex flex-wrap justify-between gap-2 border-t border-line pt-3">
           {passo === 0 ? (
-            <LinkRapido href="/comercial" className={classeBotao('secundario', BOTAO_GRANDE)}>
+            <LinkRapido href="/comercial" className={classeBotao('secundario', BOTAO_DE_PASSO)}>
               Cancelar
             </LinkRapido>
           ) : (
-            <Botao type="button" variante="secundario" onClick={() => irPara(passo - 1)} className={BOTAO_GRANDE}>
+            <Botao type="button" variante="secundario" onClick={() => irPara(passo - 1)} className={BOTAO_DE_PASSO}>
               Voltar para {PASSOS[passo - 1].nome}
             </Botao>
           )}
           {passo < PASSOS.length - 1 ? (
-            <Botao type="button" onClick={avancar} className={BOTAO_GRANDE}>
+            <Botao type="button" onClick={avancar} className={BOTAO_DE_PASSO}>
               Continuar para {PASSOS[passo + 1].nome}
             </Botao>
           ) : (
-            <BotaoEnviar className={BOTAO_GRANDE}>Criar proposta</BotaoEnviar>
+            <BotaoEnviar className={BOTAO_DE_PASSO}>Criar proposta</BotaoEnviar>
           )}
         </div>
       </form>

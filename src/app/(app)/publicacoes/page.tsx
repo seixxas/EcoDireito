@@ -90,10 +90,10 @@ function AoLancar({ evento, prazosSugeridos, processo, dia }: PublicacaoNaCaixa 
 function AvisoDoCadastro({ item }: { item: PublicacaoNaCaixa }) {
   const lancado = item.ato.status !== 'nova'
   return (
-    <div className={cn('mb-6 rounded-lg border-2 px-5 py-4 text-base font-medium', lancado ? 'border-brand-700 bg-brand-100 text-brand-700' : 'border-warn bg-warn-soft text-warn')}>
+    <div className={cn('mb-3 rounded-md border px-3 py-2 text-sm font-medium', lancado ? 'border-brand-700 bg-brand-100 text-brand-700' : 'border-warn bg-warn-soft text-warn')}>
       <p>{lancado ? `Projeto cadastrado e ato ${item.evento ? 'lançado' : 'registrado como visto'}.` : 'Projeto cadastrado com outro nº SEI: o ato não foi lançado e continua aqui para revisar.'}</p>
       {lancado && item.processo && (
-        <LinkRapido href={`/projetos/${item.processo.id}`} className={classeBotao('secundario', 'mt-3')}>
+        <LinkRapido href={`/projetos/${item.processo.id}`} className={classeBotao('secundario', 'mt-2')}>
           Abrir o projeto
         </LinkRapido>
       )}
@@ -104,8 +104,8 @@ function AvisoDoCadastro({ item }: { item: PublicacaoNaCaixa }) {
 /** O botão fica com os outros, à direita, mas o texto abre embaixo do ato, onde há largura. */
 function VerOTexto() {
   return (
-    <details className="group/texto xl:w-full">
-      <summary className={classeBotao('secundario', 'w-full list-none [&::-webkit-details-marker]:hidden')}>
+    <details className="group/texto">
+      <summary className={classeBotao('secundario', 'list-none [&::-webkit-details-marker]:hidden')}>
         <span className="group-open/texto:hidden">Ver o texto do ato</span>
         <span className="hidden group-open/texto:inline">Esconder o texto do ato</span>
       </summary>
@@ -138,18 +138,18 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
     return (
       <Item
         key={ato.id}
-        className="group/ato items-start! md:grid-cols-1! xl:grid-cols-[minmax(0,1fr)_18.75rem]!"
+        className="group/ato"
         etiqueta={
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <Badge tom="info">{ato.serie}</Badge>
-            <span className="text-sm font-semibold text-muted">{data}</span>
+            <span className="text-xs text-muted">{data}</span>
             {ato.status === 'confirmada' && (evento ? <Situacao tom="ok">Lançado</Situacao> : <Situacao>Visto</Situacao>)}
             {ato.status === 'descartada' && <Situacao>Ignorado</Situacao>}
           </div>
         }
         titulo={cliente.nome}
         detalhe={
-          <div className="mt-1.5 space-y-1.5">
+          <div className="space-y-0.5">
             <p>
               <PorQue {...item} />
             </p>
@@ -160,15 +160,15 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
             )}
             {ato.status === 'confirmada' && evento && <p>Marcou a etapa “{EVENTOS[evento].nome}”.</p>}
             {ato.status === 'descartada' && ato.motivo && <p className="font-medium text-ink">Motivo: {ato.motivo}</p>}
-            <div className="flex flex-wrap items-center gap-x-4 pt-0.5 text-xs">
+            <div className="flex flex-wrap items-center gap-x-3">
               <span>{ato.unidade}</span>
               {ato.link && (
-                <a href={ato.link} target="_blank" rel="noopener noreferrer" className="link inline-flex min-h-12 items-center">
+                <a href={ato.link} target="_blank" rel="noopener noreferrer" className="link">
                   Abrir no Diário
                 </a>
               )}
             </div>
-            <p className="mt-3! hidden max-h-72 overflow-y-auto whitespace-pre-line rounded-md bg-rail p-3 text-sm leading-relaxed group-has-[details[open]]/ato:block">{ato.texto}</p>
+            <p className="mt-1! hidden max-h-72 overflow-y-auto whitespace-pre-line rounded-md bg-rail p-2 leading-relaxed group-has-[details[open]]/ato:block">{ato.texto}</p>
           </div>
         }
         fim={
@@ -179,16 +179,14 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
               marcaEtapa={Boolean(evento)}
               oQue={`${ato.serie} · ${cliente.nome} · ${data}`}
               prazos={prazosSugeridos.map((prazo) => prazo.titulo)}
-              emColuna
+              destaque
             >
               <VerOTexto />
             </AcoesPublicacao>
           ) : (
-            <div className="flex w-full flex-wrap items-center gap-3 xl:flex-col xl:items-stretch">
+            <div className="flex flex-wrap items-center gap-1.5">
               {ato.status === 'nova' && (
-                <Situacao tom="warn" className="self-start">
-                  Esperando revisão
-                </Situacao>
+                <Situacao tom="warn">Esperando revisão</Situacao>
               )}
               <VerOTexto />
             </div>
@@ -220,13 +218,13 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
         acoes={editar && <BuscaEdicao dia={ehDiaUtil(dia) ? dia : diaUtilAnterior(dia)} />}
       />
       {edicao.erro && (
-        <p className="-mt-3 mb-5">
+        <p className="-mt-2 mb-3">
           <Situacao tom="warn">{edicao.erro}</Situacao>
         </p>
       )}
       {cadastrado && <AvisoDoCadastro item={cadastrado} />}
 
-      <div className={cn('flex flex-wrap items-end justify-between gap-6', aba === 'nova' ? 'mb-6' : 'mb-8')}>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <SegmentedLinks
           ativo={aba}
           opcoes={Object.entries(ABAS).map(([valor, rotulo]) => ({
@@ -245,7 +243,7 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
         />
       </div>
       {aba === 'nova' && (
-        <p className="mb-8 rounded-lg bg-painel px-5 py-4 text-base">
+        <p className="mb-3 rounded-md bg-painel px-3 py-1.5 text-sm">
           O robô lê o Diário Oficial e traz os atos que parecem ser dos nossos clientes. Para cada um, decida: <b className="font-semibold">lançar no projeto</b> (marca a etapa e conta o prazo) ou{' '}
           <b className="font-semibold">ignorar</b>.
         </p>

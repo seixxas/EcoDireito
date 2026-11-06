@@ -14,7 +14,7 @@ export default async function PaginaEditarCliente({ params }: { params: Promise<
   if (!cliente) notFound()
 
   return (
-    <div className="max-w-[55rem]">
+    <div className="max-w-6xl">
       <PageHeader voltar={{ href: '/projetos/clientes', rotulo: 'Voltar para Clientes' }} titulo={cliente.nome} />
       <FormularioCliente cliente={cliente} />
     </div>

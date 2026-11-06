@@ -32,7 +32,7 @@ export function BotaoTema({ className }: { className?: string }) {
   }
 
   return (
-    <button type="button" onClick={trocar} className={classeBotao('secundario', className)}>
+    <button type="button" onClick={trocar} className={classeBotao('secundario', className, 'pequeno')}>
       <span className="dark:hidden">Tema escuro</span>
       <span className="hidden dark:inline">Tema claro</span>
     </button>

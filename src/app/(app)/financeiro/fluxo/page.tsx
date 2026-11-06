@@ -25,7 +25,7 @@ const comSinal = (valor: number) => (valor > 0 ? `+ ${brl(valor)}` : valor < 0 ?
 
 function NaConta({ rotulo, valor, detalhe, cor, fundo = 'bg-surface' }: { rotulo: string; valor: string; detalhe: string; cor?: string; fundo?: string }) {
   return (
-    <div className={cn('rounded-lg px-3.5 py-3.5', fundo)}>
+    <div className={cn('rounded-lg px-2.5 py-2.5', fundo)}>
       <p className="text-xs font-semibold text-subtle">{rotulo}</p>
       <p className={cn('mt-0.5 text-lg font-semibold', cor)}>{valor}</p>
       <p className="mt-0.5 text-2xs text-muted">{detalhe}</p>
@@ -35,7 +35,7 @@ function NaConta({ rotulo, valor, detalhe, cor, fundo = 'bg-surface' }: { rotulo
 
 function Sinal({ children }: { children: ReactNode }) {
   return (
-    <span aria-hidden="true" className="hidden text-center text-[1.875rem] font-semibold text-subtle xl:block">
+    <span aria-hidden="true" className="hidden text-center text-2xl font-semibold text-subtle xl:block">
       {children}
     </span>
   )
@@ -57,7 +57,7 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
         resumo={`${brl(saldoHoje)} na conta hoje; ${brl(ultima.saldoFinal)} em ${formatarDataCurta(ultima.fim)} se nada mudar.`}
       />
 
-      <section aria-label="Conta das próximas 8 semanas" className="grid items-center gap-3 rounded-xl bg-painel px-6 py-5.5 sm:grid-cols-2 xl:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]">
+      <section aria-label="Conta das próximas 8 semanas" className="grid items-center gap-2 rounded-xl bg-painel px-4 py-3.5 sm:grid-cols-2 xl:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]">
         <NaConta rotulo="Saldo hoje" valor={brl(saldoHoje)} detalhe={`mais ${brl(aplicado)} aplicados`} />
         <Sinal>+</Sinal>
         <NaConta rotulo="Entradas previstas" valor={brl(entradas)} detalhe="próximas 8 semanas" cor="text-ok" />
@@ -74,7 +74,7 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
       </section>
 
       {menor.saldoFinal < saldoHoje / 2 && (
-        <div role="note" className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border-2 border-warn bg-warn-soft px-5 py-4">
+        <div role="note" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warn bg-warn-soft px-3 py-3">
           <p className="max-w-[80ch]">
             <strong className="font-semibold text-warn">Atenção:</strong> o saldo chega a {brl(menor.saldoFinal)} na semana de {formatarDataCurta(menor.inicio)}. Dá para antecipar a
             cobrança das notas atrasadas ({brl(atrasado)}) ou programar um resgate das aplicações.
@@ -86,7 +86,7 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
       )}
 
       <Abas
-        className="mb-6 mt-9 w-fit"
+        className="mb-4 mt-5 w-fit"
         ativa={aba}
         abas={[
           { valor: 'projecao', rotulo: 'Próximas 8 semanas', href: '/financeiro/fluxo' },
@@ -97,7 +97,7 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
       {aba === 'realizado' ? (
         <Card titulo="Entradas, saídas e saldo de cada mês">
           <GraficoFluxo dados={mensal.map((m) => ({ rotulo: formatarMes(m.mes), entradas: m.entradas, saidas: m.saidas, saldo: m.saldo }))} />
-          <p className="mt-3 text-xs text-muted">Inclui aplicações e resgates, retiradas das sócias e mútuo entre empresas: é o extrato da conta.</p>
+          <p className="mt-2 text-xs text-muted">Inclui aplicações e resgates, retiradas das sócias e mútuo entre empresas: é o extrato da conta.</p>
         </Card>
       ) : zoom >= 0 ? (
         <ZoomDaSemana semana={semanas[zoom]} anterior={semanas[zoom - 1]} proxima={semanas[zoom + 1]} hoje={dia} />
@@ -105,14 +105,14 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
         <>
           <Card titulo="Saldo no fim de cada semana">
             <GraficoSaldo dados={semanas.map((s) => ({ rotulo: formatarDataCurta(s.inicio), saldo: s.saldoFinal }))} links={semanas.map(linkDaSemana)} />
-            <p className="mt-3 text-xs text-muted">
+            <p className="mt-2 text-xs text-muted">
               {menor === ultima ? 'A última semana' : `A semana de ${formatarDataCurta(menor.inicio)}`} está em {menor.saldoFinal < 0 ? 'vermelho' : 'amarelo'} porque é o menor saldo do
               período. Entradas e saídas de cada semana estão na tabela abaixo. Clique numa semana, no gráfico ou na tabela, para ver dia a dia.
             </p>
           </Card>
 
-          <Card flush className="mt-6">
-            <table className={`${TABELA_EMPILHADA} max-[83.75rem]:[&_td:last-child]:w-full`}>
+          <Card flush className="mt-4">
+            <table className={`${TABELA_EMPILHADA} max-[48rem]:[&_td:last-child]:w-full`}>
               <thead>
                 <tr>
                   <th>Semana</th>
@@ -126,7 +126,7 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
                 {semanas.map((semana) => (
                   <tr key={semana.inicio}>
                     <td className="whitespace-nowrap">
-                      <LinkRapido href={linkDaSemana(semana)} className="link inline-flex min-h-12 items-center">
+                      <LinkRapido href={linkDaSemana(semana)} className="link">
                         {formatarDataCurta(semana.inicio)} a {formatarDataCurta(semana.fim)}
                       </LinkRapido>
                     </td>
@@ -142,11 +142,11 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
                       <NoCartao>Saldo no fim</NoCartao>
                       {brl(semana.saldoFinal)}
                     </td>
-                    <td className="min-w-[16rem] text-right max-[83.75rem]:text-left">
+                    <td className="min-w-[16rem] text-right max-[48rem]:text-left">
                       <Expansivel resumo={`Ver ${contar(semana.movimentos.length, 'movimento', 'movimentos')}`}>
-                        <ul className="space-y-2 text-left text-xs">
+                        <ul className="space-y-1.5 text-left text-xs">
                           {semana.movimentos.map((m, i) => (
-                            <li key={i} className="flex justify-between gap-4">
+                            <li key={i} className="flex justify-between gap-3">
                               <span className="text-muted">
                                 {formatarData(m.data)} · {m.descricao}
                               </span>
@@ -161,7 +161,7 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
               </tbody>
             </table>
           </Card>
-          <p className="mt-3 max-w-[110ch] text-xs text-muted">
+          <p className="mt-2 max-w-[110ch] text-xs text-muted">
             Notas a receber pela previsão, parcelas liberadas e despesas fixas pela média dos últimos 3 meses. Fora da projeção: {brl(atrasado)} em notas atrasadas, mútuo, imobilizado e
             distribuições extras de lucro.
           </p>
@@ -187,19 +187,19 @@ function ZoomDaSemana({ semana, anterior, proxima, hoje }: { semana: SemanaFluxo
 
   return (
     <>
-      <LinkRapido href="/financeiro/fluxo" scroll={false} className="link inline-flex min-h-12 items-center text-sm">
+      <LinkRapido href="/financeiro/fluxo" scroll={false} className="link text-sm">
         ← As 8 semanas
       </LinkRapido>
-      <div className="mb-5 mt-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+      <div className="mb-3 mt-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <h2 className="text-xl font-semibold text-ink">
           Semana de {formatarDataCurta(semana.inicio)} a {formatarDataCurta(semana.fim)}
         </h2>
-        <nav aria-label="Semana" className="flex flex-wrap gap-3">
+        <nav aria-label="Semana" className="flex flex-wrap gap-2">
           {passo(anterior, '← Semana anterior')}
           {passo(proxima, 'Próxima semana →')}
         </nav>
       </div>
-      <p className="mb-5 text-muted">
+      <p className="mb-3 text-muted">
         Começa com {brl(saldoInicial)}, entram <span className="font-medium text-ok">{brl(semana.entradas)}</span>, saem {brl(-semana.saidas)} e termina com{' '}
         <strong className={cn('font-semibold', semana.saldoFinal < 0 ? 'text-danger' : 'text-ink')}>{brl(semana.saldoFinal)}</strong>.
       </p>
@@ -208,7 +208,7 @@ function ZoomDaSemana({ semana, anterior, proxima, hoje }: { semana: SemanaFluxo
       <Card titulo="Entradas e saídas de cada dia">
         <GraficoFluxo dados={dias.map((d) => ({ rotulo: formatarDiaEData(d.data), entradas: d.entradas, saidas: d.saidas, saldo: d.saldoFinal }))} saldo={false} altura={280} />
         {semana.inicio < hoje && (
-          <p className="mt-3 text-xs text-muted">
+          <p className="mt-2 text-xs text-muted">
             A projeção começa hoje; o que já passou nesta semana está em{' '}
             <LinkRapido href="/financeiro/lancamentos" className="link">
               Lançamentos
@@ -218,10 +218,10 @@ function ZoomDaSemana({ semana, anterior, proxima, hoje }: { semana: SemanaFluxo
         )}
       </Card>
 
-      <div className="mt-7 space-y-6">
+      <div className="mt-4 space-y-4">
         {comMovimento.map((d) => (
           <section key={d.data}>
-            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3">
+            <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-2">
               <h3 className="text-lg font-semibold text-ink">{formatarDataLonga(d.data)}</h3>
               <span className="text-muted">
                 saldo no fim do dia <span className={cn('text-lg font-semibold', d.saldoFinal < 0 ? 'text-danger' : 'text-ink')}>{brl(d.saldoFinal)}</span>
@@ -231,7 +231,7 @@ function ZoomDaSemana({ semana, anterior, proxima, hoje }: { semana: SemanaFluxo
               {d.movimentos.map((m, i) => (
                 <Linha key={i}>
                   <span className="min-w-0 flex-1 basis-60">{m.descricao}</span>
-                  <span className={cn('ml-auto text-[1.25rem] font-semibold', m.valor > 0 && 'text-ok')}>{comSinal(m.valor)}</span>
+                  <span className={cn('ml-auto text-lg font-semibold', m.valor > 0 && 'text-ok')}>{comSinal(m.valor)}</span>
                 </Linha>
               ))}
             </Lista>

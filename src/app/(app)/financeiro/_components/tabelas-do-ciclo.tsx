@@ -25,20 +25,17 @@ function Grade({ children }: { children: ReactNode }) {
   )
 }
 
-/** A primeira coluna que aparece. Empilhada, ela é a linha inteira e arredonda dos dois lados. */
-const CELULA_PRINCIPAL = '@max-3xl:rounded-[0.75rem]'
-
 function Valor({ children }: { children: ReactNode }) {
-  return <p className="mt-1 text-[1.25rem] font-semibold @3xl:hidden">{children}</p>
+  return <p className="mt-1 text-sm font-semibold @3xl:hidden">{children}</p>
 }
 
 function AcoesDaNota({ nota, linkDaNota }: { nota: NotaFiscal; linkDaNota: LinkDaNota }) {
   return (
     <>
-      <LinkRapido href={linkDaNota(nota.id, 'receber')} scroll={false} aria-label={`Receber a NF ${nota.numero}`} className={classeBotao('secundario')}>
+      <LinkRapido href={linkDaNota(nota.id, 'receber')} scroll={false} aria-label={`Receber a NF ${nota.numero}`} className={classeBotao('secundario', undefined, 'pequeno')}>
         Receber
       </LinkRapido>
-      <LinkRapido href={linkDaNota(nota.id, 'cobrar')} scroll={false} aria-label={`Cobrar a NF ${nota.numero}`} className={classeBotao('secundario')}>
+      <LinkRapido href={linkDaNota(nota.id, 'cobrar')} scroll={false} aria-label={`Cobrar a NF ${nota.numero}`} className={classeBotao('secundario', undefined, 'pequeno')}>
         Cobrar
       </LinkRapido>
     </>
@@ -65,13 +62,12 @@ export function TabelaEmAberto({ itens, dia, notaAberta, linkDaNota, editar, com
           const textoDoAtraso = comAtraso && `${contar(atraso, 'dia', 'dias')} de atraso`
           return (
             <LinhaDaNota key={nota.id} href={linkDaNota(nota.id)} aberta={nota.id === notaAberta}>
-              <td className={CELULA_PRINCIPAL}>
+              <td>
                 <span className="font-medium">{cliente.nome}</span>
-                <p className="text-sm text-muted">
-                  NF {nota.numero} · {nota.descricao}
+                <p className="text-xs text-muted">
+                  NF {nota.numero} · {nota.descricao} {parcial && <SituacaoDaNota situacao="parcial" />}
                 </p>
-                {parcial && <SituacaoDaNota situacao="parcial" />}
-                <p className="text-sm text-muted @3xl:hidden">
+                <p className="text-xs text-muted @3xl:hidden">
                   Previsão {formatarDataNaLista(nota.previsao, dia)}
                   {textoDoAtraso && ` · ${textoDoAtraso}`}
                 </p>
@@ -79,7 +75,7 @@ export function TabelaEmAberto({ itens, dia, notaAberta, linkDaNota, editar, com
                   {brl(saldoAReceber(nota, dia))}
                   {parcial && <span className="block text-sm font-normal text-muted">de {brl(valorLiquido(nota))}</span>}
                 </Valor>
-                <div className={cn('mt-3 flex flex-wrap gap-3', editar ? '@5xl:hidden' : '@3xl:hidden')}>
+                <div className={cn('mt-2 flex flex-wrap gap-2', editar ? '@5xl:hidden' : '@3xl:hidden')}>
                   {editar && <AcoesDaNota nota={nota} linkDaNota={linkDaNota} />}
                   <span className="@3xl:hidden">{abrir}</span>
                 </div>
@@ -93,9 +89,9 @@ export function TabelaEmAberto({ itens, dia, notaAberta, linkDaNota, editar, com
                 {parcial && <p className="text-sm font-normal text-muted">de {brl(valorLiquido(nota))}</p>}
               </td>
               <td className="hidden @3xl:table-cell">
-                <div className="flex justify-end gap-3">
+                <div className="flex justify-end gap-1">
                   {editar && (
-                    <div className="hidden gap-3 @5xl:flex">
+                    <div className="hidden gap-1 @5xl:flex">
                       <AcoesDaNota nota={nota} linkDaNota={linkDaNota} />
                     </div>
                   )}
@@ -126,14 +122,14 @@ export function TabelaRecebidas({ itens, notaAberta, linkDaNota }: Omit<Tabela, 
           const abrir = <BotaoAbrir href={linkDaNota(nota.id)} scroll={false} rotulo={`Abrir NF ${nota.numero}`} />
           return (
             <LinhaDaNota key={nota.id} href={linkDaNota(nota.id)} aberta={nota.id === notaAberta}>
-              <td className={CELULA_PRINCIPAL}>
+              <td>
                 <span className="font-medium">{cliente.nome}</span>
-                <p className="text-sm text-muted">
+                <p className="text-xs text-muted">
                   NF {nota.numero} · {nota.descricao}
                 </p>
-                <p className="text-sm text-muted @3xl:hidden">Recebida em {formatarData(nota.recebimento!.data)}</p>
+                <p className="text-xs text-muted @3xl:hidden">Recebida em {formatarData(nota.recebimento!.data)}</p>
                 <Valor>{brl(nota.recebimento!.valor)}</Valor>
-                <div className="mt-3 @3xl:hidden">{abrir}</div>
+                <div className="mt-2 @3xl:hidden">{abrir}</div>
               </td>
               <td className="hidden whitespace-nowrap @3xl:table-cell">{formatarData(nota.recebimento!.data)}</td>
               <td className="num hidden @3xl:table-cell">{brl(nota.recebimento!.valor)}</td>
@@ -167,18 +163,18 @@ export function TabelaTodas({ itens, dia, notaAberta, linkDaNota }: Tabela) {
           return (
             <LinhaDaNota key={nota.id} href={linkDaNota(nota.id)} aberta={nota.id === notaAberta} className={nota.cancelada ? 'text-subtle line-through decoration-subtle/50' : undefined}>
               <td className="hidden @3xl:table-cell">
-                <LinkRapido href={linkDaNota(nota.id)} scroll={false} className="link inline-flex min-h-12 items-center">
+                <LinkRapido href={linkDaNota(nota.id)} scroll={false} className="link">
                   {nota.numero}
                 </LinkRapido>
               </td>
               <td className="hidden whitespace-nowrap @min-[70rem]:table-cell">{formatarData(nota.emissao)}</td>
-              <td className={CELULA_PRINCIPAL}>
+              <td>
                 <span className="font-medium">{cliente.nome}</span>
-                <p className="text-sm text-muted">
+                <p className="text-xs text-muted">
                   <span className="@3xl:hidden">NF {nota.numero} · </span>
                   {nota.descricao}
                 </p>
-                <p className="text-sm text-muted @min-[70rem]:hidden">
+                <p className="text-xs text-muted @min-[70rem]:hidden">
                   Emissão {formatarData(nota.emissao)}
                   <span className="@min-[58rem]:hidden"> · Previsão {formatarData(nota.previsao)}</span>
                 </p>
@@ -186,7 +182,7 @@ export function TabelaTodas({ itens, dia, notaAberta, linkDaNota }: Tabela) {
                   {brl(valorLiquido(nota))}
                   {nota.retencao > 0 && <span className="block text-sm font-normal text-muted">de {brl(nota.valor)}</span>}
                 </Valor>
-                <div className="mt-3 flex flex-wrap items-center gap-3 @3xl:hidden">
+                <div className="mt-2 flex flex-wrap items-center gap-2 @3xl:hidden">
                   {situacao}
                   {abrir}
                 </div>
@@ -222,22 +218,22 @@ export function TabelaAFaturar({ itens, editar }: { itens: Awaited<ReturnType<ty
       <tbody>
         {itens.map(({ parcela, processo, cliente, liberadaEm }) => {
           const registrar = (
-            <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('secundario')}>
+            <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('secundario', undefined, 'pequeno')}>
               Registrar nota
             </LinkRapido>
           )
           return (
             <tr key={parcela.id}>
-              <td className={CELULA_PRINCIPAL}>
-                <LinkRapido href={`/projetos/${processo.id}`} className="link inline-flex min-h-12 items-center text-ink hover:text-brand-700">
+              <td>
+                <LinkRapido href={`/projetos/${processo.id}`} className="link text-ink hover:text-brand-700">
                   {processo.empreendimento}
                 </LinkRapido>
-                <p className="text-sm text-muted @5xl:hidden">
+                <p className="text-xs text-muted @5xl:hidden">
                   {parcela.descricao} · {cliente.nome}
                 </p>
-                <p className="text-sm text-muted @3xl:hidden">Liberada em {formatarData(liberadaEm!)}</p>
+                <p className="text-xs text-muted @3xl:hidden">Liberada em {formatarData(liberadaEm!)}</p>
                 <Valor>{brl(parcela.valor)}</Valor>
-                {editar && <div className="mt-3 @3xl:hidden">{registrar}</div>}
+                {editar && <div className="mt-2 @3xl:hidden">{registrar}</div>}
               </td>
               <td className="hidden @5xl:table-cell">{parcela.descricao}</td>
               <td className="hidden @5xl:table-cell">{cliente.nome}</td>

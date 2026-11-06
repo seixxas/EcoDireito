@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from 'react'
 import { useFormStatus } from 'react-dom'
-import { classeBotao, type VarianteBotao } from './form'
+import { classeBotao, type TamanhoBotao, type VarianteBotao } from './form'
 
 type Props = {
   children: ReactNode
@@ -15,6 +15,7 @@ type Props = {
   /** Texto do botão que confirma: "Sim, ignorar o ato". */
   sim: string
   variante?: VarianteBotao
+  tamanho?: TamanhoBotao
   className?: string
 }
 
@@ -22,20 +23,20 @@ type Props = {
  * Para ação que não dá para desfazer. Vai dentro do `<form>` da Server Action, no lugar do botão de enviar: pergunta antes,
  * e o "sim" é que envia o formulário. Campos colocados em `oQue` ou `consequencia` vão junto.
  */
-export function BotaoConfirmar({ children, titulo, oQue, consequencia, sim, variante = 'perigo', className }: Props) {
+export function BotaoConfirmar({ children, titulo, oQue, consequencia, sim, variante = 'perigo', tamanho, className }: Props) {
   const caixa = useRef<HTMLDialogElement>(null)
   const { pending } = useFormStatus()
   return (
     <>
-      <button type="button" disabled={pending} onClick={() => caixa.current?.showModal()} className={classeBotao(variante, className)}>
+      <button type="button" disabled={pending} onClick={() => caixa.current?.showModal()} className={classeBotao(variante, className, tamanho)}>
         {pending ? 'Salvando…' : children}
       </button>
       <dialog ref={caixa} className="dialogo">
-        <p className="text-[1.875rem] font-semibold leading-tight">{titulo}</p>
-        {oQue && <div className="mt-3 rounded-lg bg-painel px-4 py-3 font-medium">{oQue}</div>}
-        {consequencia && <div className="mt-3 whitespace-normal">{consequencia}</div>}
-        <div className="mt-6 flex flex-wrap justify-between gap-4">
-          <button type="button" onClick={() => caixa.current?.close()} className={classeBotao('secundario', 'min-h-14')}>
+        <p className="text-lg font-semibold leading-tight">{titulo}</p>
+        {oQue && <div className="mt-2 rounded-md bg-painel px-3 py-2 text-sm font-medium">{oQue}</div>}
+        {consequencia && <div className="mt-2 whitespace-normal text-sm">{consequencia}</div>}
+        <div className="mt-4 flex flex-wrap justify-end gap-2">
+          <button type="button" onClick={() => caixa.current?.close()} className={classeBotao('secundario')}>
             Não, voltar
           </button>
           <button
@@ -44,7 +45,7 @@ export function BotaoConfirmar({ children, titulo, oQue, consequencia, sim, vari
               // Com campo obrigatório vazio, a caixa fica aberta: fechada, o navegador trava o envio sem mostrar por quê.
               if (evento.currentTarget.form?.checkValidity()) caixa.current?.close()
             }}
-            className={classeBotao('perigo', 'min-h-14')}
+            className={classeBotao('perigo')}
           >
             {sim}
           </button>

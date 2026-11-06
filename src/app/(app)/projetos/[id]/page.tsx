@@ -92,12 +92,12 @@ export default async function PaginaProcesso({
           titulo={processo.empreendimento}
           resumo={
             <>
-              {recusada && <p className="mb-3">Proposta recusada em {formatarData(situacaoProposta.recusadaEm!)}. Não aparece na lista de projetos; fica em Propostas.</p>}
-              <dl className="mt-3.5 flex flex-wrap gap-x-12 gap-y-2">
+              {recusada && <p className="mb-2">Proposta recusada em {formatarData(situacaoProposta.recusadaEm!)}. Não aparece na lista de projetos; fica em Propostas.</p>}
+              <dl className="mt-1 flex flex-wrap gap-x-6 gap-y-1">
                 {ficha.map(([rotulo, valor]) => (
                   <div key={rotulo} className="min-w-0">
-                    <dt className="text-2xs font-semibold text-subtle">{rotulo}</dt>
-                    <dd className="text-base text-ink">{valor}</dd>
+                    <dt className="text-2xs text-subtle">{rotulo}</dt>
+                    <dd className="text-sm text-ink">{valor}</dd>
                   </div>
                 ))}
               </dl>
@@ -122,7 +122,6 @@ export default async function PaginaProcesso({
           tom="proximos"
           titulo={`Fase ${fase.numero} de ${FASES.length} — ${fase.nome}`}
           detalhe={!recusada && (proximo ? `Próximo prazo: ${proximo.regra.titulo} (${descreverSituacao(proximo, dia).rotulo.toLowerCase()}).` : 'Nenhum prazo em aberto.')}
-          className="pb-5.5!"
         >
           <TrilhaDeFases
             fases={FASES.map((f) => ({
@@ -134,7 +133,7 @@ export default async function PaginaProcesso({
               selecionada: aba === 'etapas' && f.numero === faseVista,
             }))}
           />
-          <p className="mt-4 text-sm text-muted">Clique numa fase para ver as etapas dela.</p>
+          <p className="mt-1 px-1 text-2xs text-muted">Clique numa fase para ver as etapas dela.</p>
         </Zona>
 
         <Abas abas={abas} ativa={aba} className="w-fit max-w-full" />
@@ -185,7 +184,7 @@ export default async function PaginaProcesso({
       {aba === 'linha-do-tempo' && (
         <>
           {editar && (
-            <p className="mb-4 max-w-[84ch] text-base text-muted">
+            <p className="mb-2 max-w-[100ch] text-sm text-muted">
               Para lançar um evento, marque a etapa na{' '}
               <LinkRapido href={`/projetos/${id}?aba=etapas&fase=${fase.numero}`} className="link">
                 fase {fase.nome}
@@ -200,18 +199,18 @@ export default async function PaginaProcesso({
                 const seguinte = FASES.find((f) => f.numero === info.fase + 1)
                 return (
                   <Linha key={evento.id} className="@[52rem]:flex-nowrap">
-                    <span className="w-30 shrink-0 text-base font-semibold text-ink">{formatarData(evento.data)}</span>
+                    <span className="w-20 shrink-0 font-medium text-ink">{formatarData(evento.data)}</span>
                     <div className="order-1 min-w-0 basis-full @[52rem]:order-none @[52rem]:flex-1 @[52rem]:basis-0">
-                      <p className="text-lg font-semibold text-ink">{info.nome}</p>
-                      <p className="text-sm text-muted">
+                      <p className="font-medium text-ink">{info.nome}</p>
+                      <p className="text-xs text-muted">
                         Fase {info.fase} · {FASES[info.fase - 1].nome}
                       </p>
-                      {evento.observacao && <p className="mt-1 whitespace-pre-line text-sm text-muted">{evento.observacao}</p>}
+                      {evento.observacao && <p className="whitespace-pre-line text-xs text-muted">{evento.observacao}</p>}
                       {info.fecha && evento.data <= dia && (
-                        <p className="mt-1 text-sm font-medium text-ok">{seguinte ? `Fechou a fase ${FASES[info.fase - 1].nome}; o projeto passou para ${seguinte.nome}` : 'Encerrou o projeto'}</p>
+                        <p className="text-xs font-medium text-ok">{seguinte ? `Fechou a fase ${FASES[info.fase - 1].nome}; o projeto passou para ${seguinte.nome}` : 'Encerrou o projeto'}</p>
                       )}
                     </div>
-                    <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+                    <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
                       {evento.data > dia && <Situacao tom="warn">Planejado</Situacao>}
                       <Badge>{evento.origem === 'diario' ? 'Diário Oficial' : 'Equipe'}</Badge>
                     </div>
@@ -219,6 +218,7 @@ export default async function PaginaProcesso({
                       <form action={apagarEvento.bind(null, evento.id)} className="order-2 @[52rem]:order-none">
                         <BotaoConfirmar
                           variante="secundario"
+                          tamanho="pequeno"
                           titulo="Apagar este evento?"
                           oQue={`${info.nome} · ${formatarData(evento.data)}`}
                           consequencia={
@@ -286,7 +286,7 @@ export default async function PaginaProcesso({
                       {nota ? (
                         `NF ${nota.numero} · ${formatarData(nota.emissao)}`
                       ) : situacao === 'liberada' && editarFinanceiro ? (
-                        <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('secundario')}>
+                        <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('secundario', undefined, 'pequeno')}>
                           Emitir nota
                         </LinkRapido>
                       ) : (

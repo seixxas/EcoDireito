@@ -43,23 +43,23 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
         }
       />
 
-      <Card titulo="Parcelas" className="mb-6">
+      <Card titulo="Parcelas" className="mb-4">
         {parcelas.length ? (
           <ul>
             {parcelas.map(({ parcela, situacao, nota, liberadaEm }) => (
-              <li key={parcela.id} className="mb-3 rounded-lg bg-surface px-5 py-4.5">
-                <div className="mb-3.5 flex flex-wrap items-center gap-x-4 gap-y-2.5">
+              <li key={parcela.id} className="mb-2 rounded-lg bg-surface px-3 py-3">
+                <div className="mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-2">
                   <Situacao tom={SITUACAO[situacao].tom}>{SITUACAO[situacao].rotulo}</Situacao>
                   {situacao === 'liberada' && (
                     <>
                       <span className="text-xs text-muted">Liberada em {formatarData(liberadaEm!)}</span>
-                      <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('primario')}>
+                      <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('primario', undefined, 'pequeno')}>
                         Registrar nota
                       </LinkRapido>
                     </>
                   )}
                   {nota ? (
-                    <LinkRapido href={`/financeiro/notas/${nota.id}`} className="link inline-flex min-h-12 items-center">
+                    <LinkRapido href={`/financeiro/notas/${nota.id}`} className="link">
                       NF {nota.numero}
                     </LinkRapido>
                   ) : (
@@ -71,6 +71,7 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
                         consequencia="A parcela sai do contrato. Não dá para desfazer."
                         sim="Sim, apagar a parcela"
                         variante="secundario"
+                        tamanho="pequeno"
                         className="border-danger! text-danger! hover:bg-danger-soft!"
                       >
                         Apagar parcela
@@ -83,13 +84,13 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
             ))}
           </ul>
         ) : (
-          <p className="py-6 text-center text-lg text-muted">Este projeto ainda não tem parcelas.</p>
+          <p className="py-4 text-center text-lg text-muted">Este projeto ainda não tem parcelas.</p>
         )}
       </Card>
 
       <Card titulo="Nova parcela">
         <FormularioParcela processoId={processo.id} />
-        <p className="mt-3 text-xs text-muted">Licenciamento costuma ter 3 parcelas (aceite da proposta, LAA e TCA); manejo, 50% na entrada e 50% no fim do corte.</p>
+        <p className="mt-2 text-xs text-muted">Licenciamento costuma ter 3 parcelas (aceite da proposta, LAA e TCA); manejo, 50% na entrada e 50% no fim do corte.</p>
       </Card>
     </>
   )

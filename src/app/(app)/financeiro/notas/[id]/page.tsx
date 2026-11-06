@@ -22,7 +22,7 @@ export default async function PaginaNota({ params }: { params: Promise<{ id: str
         titulo={`NF ${nota.numero}`}
         voltar={{ href: '/financeiro', rotulo: 'Voltar para o Faturamento' }}
         resumo={
-          <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
             {cliente.nome} <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
           </span>
         }

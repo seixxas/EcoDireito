@@ -7,7 +7,7 @@ import { AMARELO, DICA, TEXTO_DO_EIXO } from './estilo'
 
 export type PontoSaldo = { rotulo: string; saldo: number }
 
-const LARGURA_DA_BARRA = 84
+const LARGURA_DA_BARRA = 64
 /** Sobra acima da maior barra, para o valor caber em cima dela, mesmo de pé no celular. */
 const FOLGA = 1.4
 
@@ -18,7 +18,7 @@ const saldoCurto = (centavos: number) => (Math.abs(centavos) < 100_000_000 ? mil
  * Saldo por coluna, com o valor escrito em cima, sem depender do mouse. O menor saldo fica amarelo; saldo negativo, vermelho.
  * Valores em centavos. Com `links` (um por ponto), clicar numa coluna abre o link dela.
  */
-export function GraficoSaldo({ dados, links, altura = 340 }: { dados: PontoSaldo[]; links?: string[]; altura?: number }) {
+export function GraficoSaldo({ dados, links, altura = 220 }: { dados: PontoSaldo[]; links?: string[]; altura?: number }) {
   const router = useRouter()
   const saldos = dados.map((ponto) => ponto.saldo)
   const menor = Math.min(...saldos)
@@ -38,15 +38,15 @@ export function GraficoSaldo({ dados, links, altura = 340 }: { dados: PontoSaldo
         if (link) router.push(link, { scroll: false })
       }}
     >
-      <XAxis dataKey="rotulo" tickLine={false} tickMargin={8} axisLine={{ stroke: 'var(--color-campo)', strokeWidth: 2 }} tick={{ ...TEXTO_DO_EIXO, fontWeight: 700 }} />
+      <XAxis dataKey="rotulo" tickLine={false} tickMargin={8} axisLine={{ stroke: 'var(--color-campo)' }} tick={TEXTO_DO_EIXO} />
       <YAxis hide domain={[Math.min(menor, 0) * FOLGA, Math.max(maior, 0) * FOLGA]} />
       <Tooltip {...DICA} />
-      {menor < 0 && <ReferenceLine y={0} stroke="var(--color-campo)" strokeWidth={2} />}
+      {menor < 0 && <ReferenceLine y={0} stroke="var(--color-campo)" />}
       <Bar
         dataKey="saldo"
         name="Saldo no fim"
         maxBarSize={LARGURA_DA_BARRA}
-        radius={[8, 8, 0, 0]}
+        radius={[4, 4, 0, 0]}
         isAnimationActive={false}
         shape={(barra: BarShapeProps) => <Rectangle {...barra} fill={corDaBarra(saldos[barra.index])} />}
       >
@@ -57,7 +57,7 @@ export function GraficoSaldo({ dados, links, altura = 340 }: { dados: PontoSaldo
             const meio = Number(x) + Number(width) / 2
             const deitado = Number(width) >= LARGURA_DA_BARRA
             const ponta = [Number(y), Number(y) + Number(height)]
-            const alturaDoTexto = saldo < 0 ? Math.max(...ponta) + (deitado ? 20 : 8) : Math.min(...ponta) - 8
+            const alturaDoTexto = saldo < 0 ? Math.max(...ponta) + (deitado ? 16 : 8) : Math.min(...ponta) - 8
             return (
               <text
                 x={meio}
@@ -66,8 +66,8 @@ export function GraficoSaldo({ dados, links, altura = 340 }: { dados: PontoSaldo
                 dominantBaseline={deitado ? undefined : 'central'}
                 transform={deitado ? undefined : `rotate(-90 ${meio} ${alturaDoTexto})`}
                 fill={corDoTexto(saldo)}
-                fontSize={deitado ? 17 : 16}
-                fontWeight={800}
+                fontSize={deitado ? 13 : 12}
+                fontWeight={600}
               >
                 {saldoCurto(saldo)}
               </text>

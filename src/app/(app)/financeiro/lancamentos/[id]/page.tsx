@@ -45,10 +45,10 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
         resumo={`${brl(lancamento.valor)} em ${formatarData(lancamento.data)} · ${nomeDaConta(lancamento.contaId)}`}
       />
 
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="min-w-0">
           <Card titulo="Lançamento">
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
+            <dl className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-3">
               <Dado rotulo="Data">{formatarData(lancamento.data)}</Dado>
               <Dado rotulo="Valor">
                 <span className={cn('font-semibold', lancamento.valor > 0 && 'text-ok')}>{brl(lancamento.valor)}</span>
@@ -59,14 +59,14 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
                   <span className="font-medium text-warn">{textoDaCompetencia(lancamento)}</span>
                 ) : (
                   <>
-                    {formatarMes(lancamento.competencia)} <span className="text-sm text-muted">(o mês do pagamento)</span>
+                    {formatarMes(lancamento.competencia)} <span className="text-xs text-muted">(o mês do pagamento)</span>
                   </>
                 )}
-                <span className="mt-1 block max-w-prose text-sm text-muted">{EXPLICACAO_COMPETENCIA}</span>
+                <span className="mt-1 block max-w-prose text-xs text-muted">{EXPLICACAO_COMPETENCIA}</span>
               </Dado>
               <Dado rotulo="Projeto">
                 {processo ? (
-                  <LinkRapido href={`/projetos/${processo.id}`} className="link inline-flex min-h-12 items-center">
+                  <LinkRapido href={`/projetos/${processo.id}`} className="link">
                     {processo.empreendimento}
                   </LinkRapido>
                 ) : (
@@ -75,7 +75,7 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
               </Dado>
               <Dado rotulo="Nota fiscal">
                 {nota ? (
-                  <LinkRapido href={`/financeiro/notas/${nota.id}`} className="link inline-flex min-h-12 items-center">
+                  <LinkRapido href={`/financeiro/notas/${nota.id}`} className="link">
                     NF {nota.numero}
                   </LinkRapido>
                 ) : (
@@ -86,7 +86,7 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
                 {linhaExtrato ? (
                   <>
                     {linhaExtrato.descricao}
-                    <span className="block text-sm text-muted">
+                    <span className="block text-xs text-muted">
                       {formatarData(linhaExtrato.data)} · arquivo {linhaExtrato.arquivo}
                     </span>
                   </>
@@ -102,14 +102,14 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
         </div>
 
         {editar && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <Card titulo={nota ? 'Observação' : 'Editar'}>
-              {nota && <p className="mb-4">Descrição, conta e valor vêm da NF {nota.numero} e mudam pelo recebimento da nota.</p>}
+              {nota && <p className="mb-3">Descrição, conta e valor vêm da NF {nota.numero} e mudam pelo recebimento da nota.</p>}
               <FormularioEdicao lancamento={lancamento} processos={processos.map((p) => ({ id: p.id, nome: p.empreendimento }))} soObservacao={Boolean(nota)} />
             </Card>
             {!lancamento.notaId && (
               <Card titulo="Apagar lançamento">
-                <p className="mb-4">
+                <p className="mb-3">
                   {linhaExtrato ? 'A linha do extrato volta para a fila “a classificar”.' : 'Some do caixa e da DRE.'} Data e valor não se editam: apague e lance de novo.
                 </p>
                 <form action={excluirLancamento}>

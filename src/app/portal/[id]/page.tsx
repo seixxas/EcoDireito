@@ -42,15 +42,15 @@ export default async function Portal({ params }: { params: Promise<{ id: string 
     <PaginaDoPortal comSair={usuario.papel === 'cliente'}>
       <p className="font-medium text-brand-700">Seu projeto</p>
       <h1 className="mt-1 text-3xl font-semibold lg:text-4xl">{processo.empreendimento}</h1>
-      <p className="mt-2 text-muted">{processo.endereco}</p>
+      <p className="mt-1.5 text-muted">{processo.endereco}</p>
 
-      <section className="mt-10 rounded-xl bg-brand-50 p-5 sm:p-7">
+      <section className="mt-6 rounded-xl bg-brand-50 p-3 sm:p-4">
         <p className="text-base font-semibold text-subtle">Fase atual</p>
-        <h2 className="mt-0.5 text-[1.75rem] font-semibold leading-tight text-brand-700 sm:text-[2.25rem]">
+        <h2 className="mt-0.5 text-2xl font-semibold leading-tight text-brand-700 sm:text-2xl">
           {fase.numero} de {FASES.length} — {fase.nome}
         </h2>
-        <p className="mt-2">{fase.descricao}</p>
-        <div className="mt-6">
+        <p className="mt-1.5">{fase.descricao}</p>
+        <div className="mt-4">
           <TrilhaDeFases
             fases={FASES.map((f) => {
               const estado = f.numero < fase.numero ? 'feita' : f.numero === fase.numero ? 'atual' : 'futura'
@@ -60,34 +60,34 @@ export default async function Portal({ params }: { params: Promise<{ id: string 
         </div>
       </section>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
         {proximo && conta && (
-          <section className="rounded-xl bg-painel px-5 py-6.5 sm:px-7">
+          <section className="rounded-xl bg-painel px-3 py-4 sm:px-4">
             <p className="text-base font-semibold text-subtle">Próximo prazo</p>
-            <p className="mt-1 text-[2.5rem] font-semibold leading-tight">{formatarData(proximo.vencimento)}</p>
+            <p className="mt-1 text-3xl font-semibold leading-tight">{formatarData(proximo.vencimento)}</p>
             <Situacao tom={conta.tom} className="mt-1 text-base!">
               {conta.texto}
             </Situacao>
-            <p className="mt-3">{proximo.regra.titulo}</p>
+            <p className="mt-2">{proximo.regra.titulo}</p>
           </section>
         )}
-        <section className="rounded-xl bg-painel px-5 py-6.5 sm:px-7">
+        <section className="rounded-xl bg-painel px-3 py-4 sm:px-4">
           <p className="text-base font-semibold text-subtle">Quem cuida do seu projeto</p>
-          <p className="mt-1 text-[2rem] font-semibold leading-tight">{processo.responsavel}</p>
+          <p className="mt-1 text-2xl font-semibold leading-tight">{processo.responsavel}</p>
           <p className="mt-1 font-medium text-muted">Eco Direito</p>
         </section>
       </div>
 
       {processo.numeroSei && (
-        <dl className="mt-8">
-          <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-b border-line py-4">
+        <dl className="mt-5">
+          <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 border-b border-line py-3">
             <dt className="font-medium">Processo na Prefeitura</dt>
             <dd>SEI {processo.numeroSei}</dd>
           </div>
         </dl>
       )}
 
-      <p className="mt-8 text-xs text-subtle">Eco Direito Ambiental · sistema desenvolvido pela Awer</p>
+      <p className="mt-5 text-xs text-subtle">Eco Direito Ambiental · sistema desenvolvido pela Awer</p>
     </PaginaDoPortal>
   )
 }

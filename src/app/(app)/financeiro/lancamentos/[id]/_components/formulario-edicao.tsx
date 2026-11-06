@@ -22,7 +22,7 @@ export function FormularioEdicao({
   const { valores = {}, erros = {} } = estado
 
   return (
-    <form action={acao} className="space-y-4">
+    <form action={acao} className="space-y-3">
       <input type="hidden" name="id" value={lancamento.id} />
       {!soObservacao && (
         <>
@@ -50,7 +50,7 @@ export function FormularioEdicao({
       <Campo rotulo="Observação" dica="O que a descrição do banco não diz. Aparece na lista e entra na busca.">
         <AreaTexto name="observacao" rows={3} defaultValue={valores.observacao ?? lancamento.observacao ?? ''} placeholder="Ex.: PIX para o Guilherme referente à festa de fim de ano" />
       </Campo>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <BotaoEnviar>Salvar</BotaoEnviar>
         <MensagemFormulario estado={estado} />
       </div>

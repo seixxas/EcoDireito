@@ -34,7 +34,7 @@ const COMO_LER: [string, string][] = [
 
 /** No celular, cada lançamento vira um cartão, em vez de a tabela rolar para o lado. */
 const TABELA_EMPILHADA =
-  'tabela min-w-0 max-sm:block max-sm:[&_tbody]:mt-3 max-sm:[&_tbody]:block max-sm:[&_thead]:hidden max-sm:[&_tr]:mb-2 max-sm:[&_tr]:flex max-sm:[&_tr]:flex-wrap max-sm:[&_tr]:items-center max-sm:[&_tr]:justify-between max-sm:[&_tr]:rounded-xl max-sm:[&_tr]:bg-surface max-sm:[&_tr]:py-2 max-sm:[&_td]:py-1 max-sm:[&_td:first-child]:w-full'
+  'tabela min-w-0 max-sm:block max-sm:[&_tbody]:mt-2 max-sm:[&_tbody]:block max-sm:[&_thead]:hidden max-sm:[&_tr]:mb-1.5 max-sm:[&_tr]:flex max-sm:[&_tr]:flex-wrap max-sm:[&_tr]:items-center max-sm:[&_tr]:justify-between max-sm:[&_tr]:rounded-xl max-sm:[&_tr]:bg-surface max-sm:[&_tr]:py-1.5 max-sm:[&_td]:py-1 max-sm:[&_td:first-child]:w-full'
 
 function linkDoItem(item: ItemDaDre) {
   return item.origem === 'nota' ? `/financeiro/notas/${item.id}` : `/financeiro/lancamentos/${item.id}`
@@ -48,7 +48,7 @@ function QuadroDeLancamentos(props: { linha: LinhaDre; periodo: string; itens: I
   return (
     <section aria-label="Lançamentos de origem">
       <Card
-        className="mt-6"
+        className="mt-4"
         flush
         titulo={
           <>
@@ -78,7 +78,7 @@ function QuadroDeLancamentos(props: { linha: LinhaDre; periodo: string; itens: I
               <tr key={item.id}>
                 <td className="whitespace-nowrap">{formatarData(item.data)}</td>
                 <td>
-                  <LinkRapido href={linkDoItem(item)} className="link inline-flex min-h-12 items-center">
+                  <LinkRapido href={linkDoItem(item)} className="link">
                     {item.descricao}
                   </LinkRapido>
                 </td>
@@ -88,7 +88,7 @@ function QuadroDeLancamentos(props: { linha: LinhaDre; periodo: string; itens: I
             ))}
           </tbody>
         </table>
-        <div className="px-3 pb-2">
+        <div className="px-2 pb-1.5">
           <Paginacao {...paginado} href={hrefPagina} />
         </div>
       </Card>
@@ -137,13 +137,13 @@ export default async function PaginaDre({ searchParams }: { searchParams: Promis
           </>
         }
         acoes={
-          <a href={`/financeiro/dre/exportar${consulta ? `?${consulta}` : ''}`} download className={classeBotao('primario', 'min-h-14 text-[1.25rem]')}>
+          <a href={`/financeiro/dre/exportar${consulta ? `?${consulta}` : ''}`} download className={classeBotao('primario')}>
             Exportar para Excel
           </a>
         }
       />
 
-      <div className="flex flex-wrap items-end gap-x-7 gap-y-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
         <SegmentedLinks
           rotulo="Regime"
           ativo={regime}
@@ -164,7 +164,7 @@ export default async function PaginaDre({ searchParams }: { searchParams: Promis
         />
       </div>
 
-      <p className="mb-3 mt-7 text-sm text-muted">
+      <p className="mb-1.5 mt-2 text-xs text-muted">
         Valores em reais.{' '}
         <span className="hidden xl:inline">
           <strong className="font-semibold text-ink">A primeira coluna e o total do período ficam parados</strong>; os meses andam no meio.{' '}
@@ -194,8 +194,8 @@ export default async function PaginaDre({ searchParams }: { searchParams: Promis
         </RolarParaVista>
       )}
 
-      <Expansivel resumo="Como ler esta tabela" className="mt-5">
-        <dl className="grid gap-x-8 gap-y-4 rounded-xl bg-painel p-6 text-sm sm:grid-cols-2 xl:grid-cols-4">
+      <Expansivel resumo="Como ler esta tabela" className="mt-3">
+        <dl className="grid gap-x-5 gap-y-2 rounded-lg bg-painel p-3 text-xs sm:grid-cols-2 xl:grid-cols-4">
           {COMO_LER.map(([titulo, texto]) => (
             <div key={titulo}>
               <dt className="font-medium text-ink">{titulo}</dt>

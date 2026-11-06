@@ -29,7 +29,7 @@ export function PainelLateral({ titulo, subtitulo, fechar, children }: { titulo:
       tabIndex={-1}
       className="fixed inset-0 z-20 overflow-y-auto overscroll-contain bg-canvas outline-none md:left-auto md:w-[42rem] md:border-l-2 md:border-line md:shadow-lg"
     >
-      <header className="sticky top-0 z-10 flex flex-wrap items-start justify-between gap-3 border-b-2 border-line bg-canvas px-4 py-4 sm:px-6">
+      <header className="sticky top-0 z-10 flex flex-wrap items-start justify-between gap-2 border-b-2 border-line bg-canvas px-3 py-3 sm:px-4">
         <div className="min-w-0 flex-1 basis-60">
           <h2 className="text-2xl font-semibold text-ink">{titulo}</h2>
           <div className="mt-1 text-base text-muted">{subtitulo}</div>
@@ -38,7 +38,7 @@ export function PainelLateral({ titulo, subtitulo, fechar, children }: { titulo:
           Fechar
         </LinkRapido>
       </header>
-      <div className="p-4 sm:p-6">{children}</div>
+      <div className="p-3 sm:p-4">{children}</div>
     </aside>
   )
 }

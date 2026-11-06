@@ -15,7 +15,7 @@ export default async function PaginaEditarProcesso({ params }: { params: Promise
   const { eventos, ...processo } = dados.processo
 
   return (
-    <div className="max-w-[55rem]">
+    <div className="max-w-6xl">
       <PageHeader
         voltar={{ href: `/projetos/${id}`, rotulo: `Voltar para ${processo.empreendimento}` }}
         titulo="Editar projeto"

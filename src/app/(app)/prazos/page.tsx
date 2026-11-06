@@ -83,7 +83,7 @@ export default async function PaginaPrazos({
         titulo="Prazos"
         resumo={frase(periodosNossos.filter((p) => p === 'vencidos').length, periodosNossos.filter((p) => p === 'semana').length)}
       />
-      <div className="mb-9 flex flex-wrap items-end gap-x-6 gap-y-5">
+      <div className="mb-5 flex flex-wrap items-end gap-x-4 gap-y-3">
         <SegmentedLinks
           rotulo="Quais prazos"
           ativo={vista}

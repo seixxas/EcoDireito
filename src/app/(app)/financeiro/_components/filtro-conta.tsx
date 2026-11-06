@@ -6,9 +6,9 @@ import { SelecaoConta } from './selecao-conta'
 /** Filtro de conta na URL (`?conta=`), como a `Busca`: escolher já filtra e volta para a página 1. */
 export function FiltroConta({ acao, valor, manter }: { acao: string; valor?: string; manter: Record<string, string | undefined> }) {
   return (
-    <Form action={acao} scroll={false} className="w-full sm:w-auto">
+    <Form action={acao} scroll={false} className="flex items-center gap-2">
       {Object.entries(manter).map(([nome, v]) => v && <input key={nome} type="hidden" name={nome} value={v} />)}
-      <label htmlFor="filtro-conta" className="mb-2 block text-base font-medium text-ink">
+      <label htmlFor="filtro-conta" className="text-sm font-medium text-muted">
         Conta
       </label>
       <SelecaoConta

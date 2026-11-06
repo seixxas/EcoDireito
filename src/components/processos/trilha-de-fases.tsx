@@ -21,28 +21,21 @@ const LEGENDA = { feita: 'Concluída', atual: 'Fase atual', futura: 'A seguir' }
 function Fase({ numero, nome, estado, legenda, selecionada }: FaseDaTrilha) {
   return (
     <>
-      <span
-        className={cn(
-          'block rounded-md border-2',
-          estado === 'atual' ? '-mt-[5px] h-6.5 border-brand-500 bg-brand-500' : 'h-4 border-brand-700',
-          estado === 'feita' && 'bg-brand-700',
-          estado === 'futura' && 'bg-surface',
-        )}
-      />
-      <span className={cn('block text-2xs font-medium leading-tight text-ink', estado === 'atual' && 'font-semibold', selecionada && 'underline decoration-2 underline-offset-3')}>
+      <span className={cn('block h-1.5 rounded-sm', estado === 'atual' && 'bg-brand-500', estado === 'feita' && 'bg-brand-700', estado === 'futura' && 'bg-line')} />
+      <span className={cn('block text-xs leading-tight text-ink', estado === 'atual' ? 'font-semibold' : 'font-medium', selecionada && 'underline decoration-1 underline-offset-2')}>
         <span className="sr-only">{numero}. </span>
         {nome}
       </span>
-      <span className={cn('self-start text-2xs font-medium leading-snug', estado === 'atual' && !legenda ? 'rounded-sm bg-brand-700 px-2 py-px text-on-brand' : 'text-subtle')}>{legenda ?? LEGENDA[estado]}</span>
+      <span className={cn('block text-2xs leading-tight', estado === 'atual' && !legenda ? 'font-semibold text-brand-700' : 'text-subtle')}>{legenda ?? LEGENDA[estado]}</span>
     </>
   )
 }
 
-/** As 8 fases do projeto: a feita preenchida, a atual maior, a seguir só com a borda. Em tela estreita, quebra em duas fileiras. */
+/** As 8 fases do projeto numa barra só: a feita preenchida, a atual destacada, a seguir apagada. Em tela estreita, quebra em duas fileiras. */
 export function TrilhaDeFases({ fases }: { fases: FaseDaTrilha[] }) {
   return (
     <div className="@container">
-      <ol className="grid grid-cols-2 gap-x-1.5 gap-y-5 @[32rem]:grid-cols-4 @[59rem]:grid-cols-8">
+      <ol className="grid grid-cols-2 gap-x-1 gap-y-2 @[24rem]:grid-cols-4 @[44rem]:grid-cols-8">
         {fases.map((fase) => (
           <li key={fase.numero} className="min-w-0">
             {fase.href ? (
@@ -51,12 +44,12 @@ export function TrilhaDeFases({ fases }: { fases: FaseDaTrilha[] }) {
                 scroll={false}
                 title={fase.dica}
                 aria-current={fase.selecionada ? 'true' : undefined}
-                className={cn('flex min-h-12 flex-col gap-2 rounded-md hover:bg-brand-100', fase.selecionada && 'bg-brand-100 outline-6 outline-brand-100')}
+                className={cn('flex flex-col gap-1 rounded-sm px-1 py-1 hover:bg-brand-100', fase.selecionada && 'bg-brand-100')}
               >
                 <Fase {...fase} />
               </LinkRapido>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1 px-1 py-1">
                 <Fase {...fase} />
               </div>
             )}

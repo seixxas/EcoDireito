@@ -3,7 +3,7 @@
 import Form from 'next/form'
 import { useEffect, useRef } from 'react'
 
-/** Busca de toda a plataforma (cliente, projeto, nota), sempre à vista. Parada, tem cara de botão; ao clicar, vira campo. Ctrl+K leva o cursor para ela. */
+/** Busca de toda a plataforma (cliente, projeto, nota), sempre à vista. Ctrl+K leva o cursor para ela. */
 export function BuscaGeral() {
   const campo = useRef<HTMLInputElement>(null)
 
@@ -24,10 +24,10 @@ export function BuscaGeral() {
         ref={campo}
         type="search"
         name="q"
-        placeholder="Buscar"
+        placeholder="Buscar (Ctrl+K)"
         aria-label="Buscar cliente, projeto ou nota"
         title="Cliente, projeto, nº SEI ou nº da NF (Ctrl+K)"
-        className="min-h-13 w-full cursor-pointer rounded-md border-2 border-brand-700 bg-surface px-4 text-center text-base font-medium text-ink outline-none transition-colors placeholder:text-brand-700 placeholder:opacity-100 hover:bg-brand-50 focus:cursor-text focus:bg-surface focus:text-left focus:ring-3 focus:ring-brand-300 focus:placeholder:text-subtle"
+        className="min-h-9 w-full rounded-md border border-campo bg-surface px-3 text-sm text-ink outline-none placeholder:text-subtle focus:border-brand-700 focus:ring-2 focus:ring-brand-100 pointer-coarse:min-h-11"
       />
     </Form>
   )

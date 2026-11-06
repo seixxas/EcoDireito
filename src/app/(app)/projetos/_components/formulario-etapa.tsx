@@ -24,10 +24,10 @@ export function FormularioEtapa({ processoId, tipo, info, dia, prazoPadrao, pedi
   const [estado, acao] = useActionState(lancarEvento, {})
   const erros = estado.erros ?? {}
   return (
-    <form action={acao} className="max-w-2xl space-y-4">
+    <form action={acao} className="max-w-2xl space-y-3">
       <input type="hidden" name="processoId" value={processoId} />
       <input type="hidden" name="tipo" value={tipo} />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Campo rotulo={info.planejada ? 'Data planejada' : 'Quando aconteceu'} erro={erros.data}>
           <Entrada type="date" name="data" defaultValue={estado.valores?.data ?? dia} max={info.planejada ? undefined : dia} required />
         </Campo>
@@ -50,7 +50,7 @@ export function FormularioEtapa({ processoId, tipo, info, dia, prazoPadrao, pedi
         <AreaTexto name="observacao" defaultValue={estado.valores?.observacao} rows={2} placeholder="Ex.: protocolo nº, o que a SVMA pediu, com quem falou" />
       </Campo>
       <MensagemFormulario estado={estado} />
-      <BotaoEnviar className="min-h-14 text-[1.25rem]">{rotuloBotao ?? (info.planejada ? 'Marcar a data' : 'Marcar como feita')}</BotaoEnviar>
+      <BotaoEnviar>{rotuloBotao ?? (info.planejada ? 'Marcar a data' : 'Marcar como feita')}</BotaoEnviar>
     </form>
   )
 }

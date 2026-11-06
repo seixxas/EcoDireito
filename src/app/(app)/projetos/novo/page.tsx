@@ -18,7 +18,7 @@ export default async function PaginaNovoProcesso({ searchParams }: { searchParam
   const daqui = ato ? `/projetos/novo?ato=${encodeURIComponent(ato)}` : '/projetos/novo'
 
   return (
-    <div className="max-w-[55rem]">
+    <div className="max-w-6xl">
       <PageHeader
         voltar={publicacao ? { href: '/publicacoes', rotulo: 'Voltar para o Diário Oficial' } : { href: '/projetos', rotulo: 'Voltar para Projetos' }}
         titulo="Novo projeto"
@@ -29,7 +29,7 @@ export default async function PaginaNovoProcesso({ searchParams }: { searchParam
         }
       />
       {publicacao && (
-        <Zona tom="diario" titulo="Ao cadastrar" className="pb-5.5!">
+        <Zona tom="diario" titulo="Ao cadastrar" className="pb-3.5!">
           <p>
             {publicacao.evento ? `O ato é lançado no projeto (marca a etapa “${EVENTOS[publicacao.evento].nome}”)` : 'O ato fica registrado como visto'} e você volta ao Diário Oficial. Mantenha o nº SEI do
             ato: é por ele que o robô liga os atos ao projeto.

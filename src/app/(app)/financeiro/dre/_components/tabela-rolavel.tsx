@@ -106,13 +106,13 @@ export function TabelaRolavel({ acoes, children }: { acoes?: ReactNode; children
 
   return (
     <div className="min-w-0">
-      <div className="mb-3 flex flex-wrap gap-3">
+      <div className="mb-1.5 flex flex-wrap gap-1">
         {largura > 0 && (
           <>
-            <button type="button" disabled={!medida?.antes} onClick={() => andar('antes')} className={classeBotao('secundario')}>
+            <button type="button" disabled={!medida?.antes} onClick={() => andar('antes')} className={classeBotao('secundario', undefined, 'pequeno')}>
               ← Meses anteriores
             </button>
-            <button type="button" disabled={!medida?.depois} onClick={() => andar('depois')} className={classeBotao('secundario')}>
+            <button type="button" disabled={!medida?.depois} onClick={() => andar('depois')} className={classeBotao('secundario', undefined, 'pequeno')}>
               Próximos meses →
             </button>
           </>
@@ -129,7 +129,7 @@ export function TabelaRolavel({ acoes, children }: { acoes?: ReactNode; children
           onScroll={(evento) => {
             if (lider.current === 'topo' && area.current) area.current.scrollLeft = evento.currentTarget.scrollLeft
           }}
-          className="top-0 z-30 mb-1.5 hidden overflow-x-auto overscroll-x-contain bg-canvas lg:sticky lg:block [&::-webkit-scrollbar-thumb:hover]:bg-brand-700 [&::-webkit-scrollbar-thumb]:rounded-md [&::-webkit-scrollbar-thumb]:bg-campo [&::-webkit-scrollbar-track]:rounded-md [&::-webkit-scrollbar-track]:bg-rail [&::-webkit-scrollbar]:h-7"
+          className="top-0 z-30 mb-1 hidden overflow-x-auto overscroll-x-contain bg-canvas lg:sticky lg:block [&::-webkit-scrollbar-thumb:hover]:bg-brand-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-campo [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-rail [&::-webkit-scrollbar]:h-2"
         >
           <div style={{ width: largura, height: 1 }} />
         </div>
@@ -139,7 +139,7 @@ export function TabelaRolavel({ acoes, children }: { acoes?: ReactNode; children
           ref={area}
           // Com o foco no teclado, o navegador traz o valor para a parte que não fica por baixo das colunas travadas.
           style={{ scrollPaddingLeft: medida?.inicio, scrollPaddingRight: medida?.fim }}
-          className="min-w-0 overflow-x-auto overscroll-x-contain rounded-xl border-2 border-line bg-surface [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="min-w-0 overflow-x-auto overscroll-x-contain rounded-lg border border-line bg-surface [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {children}
         </div>

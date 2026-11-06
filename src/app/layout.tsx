@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import './globals.css'
 
 /** Fonte feita para quem enxerga pouco: letras e números difíceis de confundir. */
-const atkinson = Atkinson_Hyperlegible_Next({ variable: '--font-atkinson', subsets: ['latin', 'latin-ext'], weight: ['400', '500', '700', '800'] })
+const atkinson = Atkinson_Hyperlegible_Next({ variable: '--font-atkinson', subsets: ['latin', 'latin-ext'], weight: ['400', '500', '600', '700'] })
 
 export const metadata: Metadata = {
   title: { default: 'Eco Direito', template: '%s · Eco Direito' },
