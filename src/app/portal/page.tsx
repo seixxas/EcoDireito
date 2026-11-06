@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
+import { Vazio } from '@/components/ui/expansivel'
 import { Linha, Lista } from '@/components/ui/lista'
+import { PageHeader } from '@/components/ui/page-header'
 import { listarProcessos } from '@/data/processos'
 import { exigirUsuario } from '@/data/sessao'
-import { TopoDoPortal } from './_components/topo'
+import { PaginaDoPortal } from './_components/topo'
 
 export const metadata: Metadata = { title: 'Seus projetos' }
 
@@ -15,26 +17,22 @@ export default async function PortalInicio() {
   if (processos.length === 1) redirect(`/portal/${processos[0].processo.id}`)
 
   return (
-    <>
-      <TopoDoPortal comSair />
-      <main className="mx-auto max-w-6xl px-5 py-10">
-        <h1 className="font-display text-[1.75rem] font-semibold leading-tight text-ink">Seus projetos</h1>
-        <p className="mb-6 mt-1 text-muted">Escolha o empreendimento para ver a fase e o próximo prazo.</p>
-        {processos.length ? (
-          <Lista>
-            {processos.map(({ processo }) => (
-              <Linha key={processo.id} href={`/portal/${processo.id}`}>
-                <span>
-                  <span className="block font-medium text-ink">{processo.empreendimento}</span>
-                  <span className="block text-xs text-muted">{processo.endereco}</span>
-                </span>
-              </Linha>
-            ))}
-          </Lista>
-        ) : (
-          <p className="text-muted">Nenhum projeto ligado à sua conta. Fale com a Eco Direito.</p>
-        )}
-      </main>
-    </>
+    <PaginaDoPortal comSair>
+      <PageHeader titulo="Seus projetos" resumo="Escolha o empreendimento para ver a fase e o próximo prazo." />
+      {processos.length ? (
+        <Lista>
+          {processos.map(({ processo }) => (
+            <Linha key={processo.id} href={`/portal/${processo.id}`}>
+              <span className="min-w-0 flex-1 basis-60">
+                <span className="block text-[1.25rem] font-semibold leading-snug">{processo.empreendimento}</span>
+                <span className="block text-sm text-muted">{processo.endereco}</span>
+              </span>
+            </Linha>
+          ))}
+        </Lista>
+      ) : (
+        <Vazio>Nenhum projeto ligado à sua conta. Fale com a Eco Direito.</Vazio>
+      )}
+    </PaginaDoPortal>
   )
 }

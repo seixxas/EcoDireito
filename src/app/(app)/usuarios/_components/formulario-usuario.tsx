@@ -11,7 +11,7 @@ export function FormularioUsuario({ clientes }: { clientes: { id: string; nome: 
   const [papel, setPapel] = useState<Papel>('equipe')
 
   return (
-    <form action={acao} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <form action={acao} className="grid items-end gap-5 md:grid-cols-2">
       <Campo rotulo="Nome" erro={estado.erros?.nome}>
         <Entrada name="nome" defaultValue={estado.valores?.nome} required />
       </Campo>
@@ -27,7 +27,7 @@ export function FormularioUsuario({ clientes }: { clientes: { id: string; nome: 
           ))}
         </Selecao>
       </Campo>
-      {papel === 'cliente' ? (
+      {papel === 'cliente' && (
         <Campo rotulo="Cliente" erro={estado.erros?.clienteId} dica="Ele verá só os projetos deste cliente">
           <Selecao name="clienteId" defaultValue="">
             <option value="" disabled>
@@ -40,17 +40,13 @@ export function FormularioUsuario({ clientes }: { clientes: { id: string; nome: 
             ))}
           </Selecao>
         </Campo>
-      ) : (
-        <div />
       )}
       <Campo rotulo="Senha inicial" erro={estado.erros?.senha} dica="Mínimo de 8 caracteres. Passe para a pessoa por um canal seguro.">
         <Entrada name="senha" type="password" autoComplete="new-password" required />
       </Campo>
-      <div className="flex items-end">
-        <BotaoEnviar>Criar acesso</BotaoEnviar>
-      </div>
-      <div className="col-span-full">
+      <div className="col-span-full space-y-4">
         <MensagemFormulario estado={estado} />
+        <BotaoEnviar className="min-h-14! text-[1.25rem]!">Criar acesso</BotaoEnviar>
       </div>
     </form>
   )
