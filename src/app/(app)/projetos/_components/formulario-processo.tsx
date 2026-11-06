@@ -38,7 +38,7 @@ export function FormularioProcesso({ clientes, valores, cancelar, novoCliente, v
           </Campo>
           <Campo rotulo="Cliente" erro={erros.clienteId}>
             <span className="flex flex-wrap gap-3">
-              <Selecao name="clienteId" defaultValue={valor('clienteId') ?? ''} required className="min-w-0 flex-1 basis-64">
+              <Selecao key={valor('clienteId')} name="clienteId" defaultValue={valor('clienteId') ?? ''} required className="min-w-0 flex-1 basis-64">
                 <option value="" disabled>
                   Escolha o cliente
                 </option>

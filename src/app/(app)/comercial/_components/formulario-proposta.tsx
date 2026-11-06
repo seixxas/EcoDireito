@@ -109,7 +109,7 @@ export function FormularioProposta({ clientes, clienteId }: { clientes: { id: st
           <Campo rotulo="Cliente" dica="Empresa que vai receber a proposta." erro={erros.clienteId}>
             <span className="flex flex-col gap-3 sm:flex-row">
               {/* Depois da action o React limpa o formulário e não reaplica `defaultValue` em select. A `key` recria o select com a escolha como padrão; sem ela, a escolha some. Vale também para o Serviço. */}
-              <Selecao key={v.clienteId} name="clienteId" defaultValue={v.clienteId ?? clienteId ?? ''} required className="min-w-0 flex-1">
+              <Selecao key={v.clienteId ?? clienteId} name="clienteId" defaultValue={v.clienteId ?? clienteId ?? ''} required className="min-w-0 flex-1">
                 <option value="" disabled>
                   Escolha o cliente
                 </option>

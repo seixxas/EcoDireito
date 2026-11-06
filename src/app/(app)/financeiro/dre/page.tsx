@@ -46,51 +46,53 @@ function QuadroDeLancamentos(props: { linha: LinhaDre; periodo: string; itens: I
   const paginado = paginar(itens, pagina)
   const soma = brl(somar(itens.map((item) => item.valor)))
   return (
-    <Card
-      className="mt-6"
-      flush
-      titulo={
-        <>
-          <span className="block text-sm font-normal text-muted">
-            {rotuloDaLinha(linha)} › {periodo}
-          </span>
-          {itens.length === 1 ? '1 lançamento soma' : `${itens.length} lançamentos somam`} <span className="whitespace-nowrap">{soma}</span>
-        </>
-      }
-      acao={
-        <LinkRapido href={hrefFechar} scroll={false} className={classeBotao('secundario')}>
-          Fechar
-        </LinkRapido>
-      }
-    >
-      <table className={TABELA_EMPILHADA}>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Descrição</th>
-            {linha.tipo === 'bloco' && <th>Conta</th>}
-            <th className="num">Valor</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginado.itens.map((item) => (
-            <tr key={item.id}>
-              <td className="whitespace-nowrap">{formatarData(item.data)}</td>
-              <td>
-                <LinkRapido href={linkDoItem(item)} className="link inline-flex min-h-12 items-center">
-                  {item.descricao}
-                </LinkRapido>
-              </td>
-              {linha.tipo === 'bloco' && <td className="text-muted">{nomeDaConta(item.contaId)}</td>}
-              <td className="num">{brl(item.valor)}</td>
+    <section aria-label="Lançamentos de origem">
+      <Card
+        className="mt-6"
+        flush
+        titulo={
+          <>
+            <span className="block text-sm font-normal text-muted">
+              {rotuloDaLinha(linha)} › {periodo}
+            </span>
+            {itens.length === 1 ? '1 lançamento soma' : `${itens.length} lançamentos somam`} <span className="whitespace-nowrap">{soma}</span>
+          </>
+        }
+        acao={
+          <LinkRapido href={hrefFechar} scroll={false} className={classeBotao('secundario')}>
+            Fechar
+          </LinkRapido>
+        }
+      >
+        <table className={TABELA_EMPILHADA}>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Descrição</th>
+              {linha.tipo === 'bloco' && <th>Conta</th>}
+              <th className="num">Valor</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="px-3 pb-2">
-        <Paginacao {...paginado} href={hrefPagina} />
-      </div>
-    </Card>
+          </thead>
+          <tbody>
+            {paginado.itens.map((item) => (
+              <tr key={item.id}>
+                <td className="whitespace-nowrap">{formatarData(item.data)}</td>
+                <td>
+                  <LinkRapido href={linkDoItem(item)} className="link inline-flex min-h-12 items-center">
+                    {item.descricao}
+                  </LinkRapido>
+                </td>
+                {linha.tipo === 'bloco' && <td className="text-muted">{nomeDaConta(item.contaId)}</td>}
+                <td className="num">{brl(item.valor)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="px-3 pb-2">
+          <Paginacao {...paginado} href={hrefPagina} />
+        </div>
+      </Card>
+    </section>
   )
 }
 
