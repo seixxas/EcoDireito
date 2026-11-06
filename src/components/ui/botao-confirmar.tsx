@@ -38,7 +38,14 @@ export function BotaoConfirmar({ children, titulo, oQue, consequencia, sim, vari
           <button type="button" onClick={() => caixa.current?.close()} className={classeBotao('secundario', 'min-h-14')}>
             Não, voltar
           </button>
-          <button type="submit" onClick={() => caixa.current?.close()} className={classeBotao('perigo', 'min-h-14')}>
+          <button
+            type="submit"
+            onClick={(evento) => {
+              // Com campo obrigatório vazio, a caixa fica aberta: fechada, o navegador trava o envio sem mostrar por quê.
+              if (evento.currentTarget.form?.checkValidity()) caixa.current?.close()
+            }}
+            className={classeBotao('perigo', 'min-h-14')}
+          >
             {sim}
           </button>
         </div>

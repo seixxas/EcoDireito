@@ -85,7 +85,7 @@
   color-scheme: dark;
 
   --color-canvas: #121815;
-  --color-surface: #1c241f;
+  --color-surface: #25302a;
   --color-painel: #161d19;
   --color-rail: #1a231d;
   --color-apagado: #1c211e;
@@ -142,7 +142,8 @@ body {
 
 /* Impressão (proposta em PDF): papel branco e texto escuro, mesmo no modo escuro. */
 @media print {
-  :root {
+  :root,
+  :root[data-theme='dark'] {
     color-scheme: light;
   }
   body {
@@ -198,11 +199,6 @@ body {
   .barra-de-espera {
     @apply fixed inset-x-0 top-0 z-50 h-1.5 origin-left bg-accent;
     animation: barra-de-espera 8s cubic-bezier(0.1, 0.7, 0.2, 1) 200ms both;
-  }
-
-  /* Barra de rolagem da grade da DRE. */
-  .rolagem-fina {
-    scrollbar-color: var(--color-campo) var(--color-rail);
   }
 
   /* Caixa de confirmação (`BotaoConfirmar`). */

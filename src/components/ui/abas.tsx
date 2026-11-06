@@ -48,7 +48,7 @@ export function Abas({ abas, ativa, className }: { abas: Aba[]; ativa: string; c
 
 function AbasEmQuadros({ abas, ativa, className }: { abas: Aba[]; ativa: string; className?: string }) {
   return (
-    <nav className={cn('mb-7 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 print:hidden', className)}>
+    <nav className={cn('mb-7 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 print:hidden', className)}>
       {abas.map((aba) => {
         const ligada = aba.valor === ativa
         return (
