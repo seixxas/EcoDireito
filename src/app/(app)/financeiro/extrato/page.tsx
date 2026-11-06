@@ -93,7 +93,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
       />
 
       {editar && (
-        <Card titulo="Importar extrato" className="mb-9">
+        <Card titulo="Importar extrato" className="mb-5">
           <FormularioImportacao />
         </Card>
       )}
@@ -113,7 +113,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
         placeholder={aba === 'regras' ? 'Trecho, conta ou projeto' : 'Descrição, valor, NF ou cliente'}
         manter={{ aba: aba === 'fila' ? undefined : aba }}
         limpar={link({ q: undefined })}
-        className="mb-6"
+        className="mb-4"
       />
 
       {aba === 'fila' && (
@@ -138,7 +138,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
       {aba === 'regras' && (
         <>
           {editar && (
-            <Expansivel resumo="Nova regra" className="mb-6">
+            <Expansivel resumo="Nova regra" className="mb-4">
               <Card>
                 <FormularioRegra processos={opcoesDeProcesso} />
               </Card>
@@ -150,7 +150,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
                 <Linha key={regra.id}>
                   <span className="min-w-48 flex-1">
                     Descrição com “{regra.contem}”
-                    {regra.processoId && <span className="block text-sm text-muted">{processos.find((p) => p.id === regra.processoId)?.empreendimento}</span>}
+                    {regra.processoId && <span className="block text-xs text-muted">{processos.find((p) => p.id === regra.processoId)?.empreendimento}</span>}
                   </span>
                   <span className="text-muted">{nomeDaConta(regra.contaId)}</span>
                   {editar && (
@@ -185,7 +185,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
                 <Linha key={linha.id}>
                   <span className="whitespace-nowrap text-muted">{formatarData(linha.data)}</span>
                   <span className="min-w-48 flex-1">{linha.descricao}</span>
-                  <span className="whitespace-nowrap text-[1.25rem] font-semibold">{brl(linha.valor)}</span>
+                  <span className="whitespace-nowrap text-sm font-semibold">{brl(linha.valor)}</span>
                   {editar && (
                     <form action={devolverLinha}>
                       <input type="hidden" name="linhaId" value={linha.id} />

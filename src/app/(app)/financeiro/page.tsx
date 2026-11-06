@@ -126,28 +126,27 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
         resumo={fraseDoCiclo(quantidades, q)}
         acoes={
           editar && (
-            <LinkRapido href="/financeiro/notas/nova" className={classeBotao('primario', 'min-h-14 text-[1.25rem]')}>
+            <LinkRapido href="/financeiro/notas/nova" className={classeBotao('primario')}>
               + Registrar nota
             </LinkRapido>
           )
         }
       />
 
-      <p className="mb-3 text-base font-semibold text-ink">Mostrar</p>
       <Abas
         ativa={aba}
         abas={(Object.keys(ABAS_DO_CICLO) as AbaDoCiclo[]).map((id) => ({
           valor: id,
           rotulo: ABAS_DO_CICLO[id],
           href: link({ aba: id }),
-          legenda: `${contarItens(id, quantidades[id])}${id === aba ? ' · selecionado' : ''}`,
+          legenda: contarItens(id, quantidades[id]),
           detalhe: brl(id === 'a-faturar' ? somar(parcelasBuscadas.map(({ parcela }) => parcela.valor)) : somar(grupos[id].map(({ nota }) => valorNaAba(id, nota, dia)))),
           fundo: id === 'atrasadas' && !quantidades.atrasadas ? 'neutro' : FUNDOS[id],
           alerta: id === 'atrasadas' && quantidades.atrasadas > 0,
         }))}
       />
 
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
         <Busca
           valor={q}
           placeholder="Cliente, grupo, NF ou serviço"
@@ -160,19 +159,19 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
           limpar={link({ q: undefined })}
           className="min-w-60"
         />
-        <LinkRapido href="/financeiro/faturado-recebido" className="link inline-flex min-h-12 items-center text-base">
+        <LinkRapido href="/financeiro/faturado-recebido" className="link text-base">
           Ver faturado × recebido
         </LinkRapido>
       </div>
 
       {abaUsaMes(aba) && (
-        <div className="mb-6">
+        <div className="mb-4">
           <NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m })} todos />
         </div>
       )}
 
       {aba === 'atrasadas' && (
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
           <SegmentedLinks
             rotulo="Tempo de atraso"
             ativo={faixa?.id ?? 'todas'}
@@ -228,7 +227,7 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
           key={`${painel.nota.id}:${acao ?? ''}`}
           titulo={`NF ${painel.nota.numero}`}
           subtitulo={
-            <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
               {painel.cliente.nome} <SituacaoDaNota situacao={situacaoNota(painel.nota, dia)} />
             </span>
           }

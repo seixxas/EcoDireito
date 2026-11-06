@@ -12,11 +12,11 @@ export function FormularioCliente({ cliente, voltar }: { cliente?: Cliente; volt
   const [estado, acao] = useActionState(salvarCliente, {})
   const digitado = estado.valores
   return (
-    <form action={acao} className="space-y-6">
+    <form action={acao} className="space-y-3">
       <input type="hidden" name="id" value={cliente?.id ?? ''} />
       <input type="hidden" name="voltar" value={voltar ?? ''} />
       <Card titulo="Dados do cliente">
-        <div className="space-y-5">
+        <div className="grid items-start gap-3 md:grid-cols-3">
           <Campo rotulo="Razão social ou nome" erro={estado.erros?.nome}>
             <Entrada name="nome" defaultValue={digitado?.nome ?? cliente?.nome} required autoFocus />
           </Campo>
@@ -29,11 +29,11 @@ export function FormularioCliente({ cliente, voltar }: { cliente?: Cliente; volt
         </div>
       </Card>
       <MensagemFormulario estado={estado} />
-      <div className="flex flex-wrap justify-between gap-3">
-        <LinkRapido href={voltar ?? '/projetos/clientes'} className={classeBotao('secundario', 'min-h-14 text-[1.25rem]')}>
+      <div className="flex flex-wrap justify-between gap-2">
+        <LinkRapido href={voltar ?? '/projetos/clientes'} className={classeBotao('secundario')}>
           Cancelar
         </LinkRapido>
-        <BotaoEnviar className="min-h-14 text-[1.25rem]">{cliente ? 'Salvar alterações' : 'Cadastrar cliente'}</BotaoEnviar>
+        <BotaoEnviar>{cliente ? 'Salvar alterações' : 'Cadastrar cliente'}</BotaoEnviar>
       </div>
     </form>
   )

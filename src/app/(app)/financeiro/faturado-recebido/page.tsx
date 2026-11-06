@@ -21,18 +21,16 @@ export default async function PaginaFaturadoRecebido() {
   return (
     <>
       <PageHeader titulo="Faturado × recebido" voltar={{ href: '/financeiro', rotulo: 'Voltar para o Faturamento' }} resumo="Quanto foi emitido e quanto entrou na conta, mês a mês." />
-      <Card className="mb-6">
-        {/* O gráfico é comum e escreve em 12 px; aqui a letra sobe para 16. */}
-        <div className="[&_.recharts-cartesian-axis-tick-value]:text-[1rem] [&_.recharts-legend-wrapper]:text-base! [&_.recharts-tooltip-wrapper_*]:text-base!">
-          <GraficoBarras
-            altura={360}
+      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <Card>
+        <GraficoBarras
+            altura={420}
             dados={dados}
             series={[
               { chave: 'faturado', nome: 'Faturado (emissão)', cor: 'var(--color-brand-700)' },
               { chave: 'recebido', nome: 'Recebido (caixa)', cor: 'var(--color-brand-300)' },
             ]}
           />
-        </div>
       </Card>
       <Card flush>
         <div className="overflow-x-auto">
@@ -56,6 +54,7 @@ export default async function PaginaFaturadoRecebido() {
           </table>
         </div>
       </Card>
+      </div>
     </>
   )
 }

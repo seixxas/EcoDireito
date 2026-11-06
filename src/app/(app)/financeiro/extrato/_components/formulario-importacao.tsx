@@ -7,7 +7,7 @@ import { importarExtrato } from '../actions'
 
 function Passo({ numero, texto, children }: { numero: number; texto: string; children?: ReactNode }) {
   return (
-    <li className="flex flex-col gap-2.5 rounded-lg bg-surface px-5 py-4.5">
+    <li className="flex flex-col gap-2 rounded-lg bg-surface px-3 py-3">
       <b className="text-xs font-semibold text-subtle">Passo {numero}</b>
       <p>{texto}</p>
       {children}
@@ -19,8 +19,8 @@ export function FormularioImportacao() {
   const [estado, acao] = useActionState(importarExtrato, {})
   const [arquivo, setArquivo] = useState<string>()
   return (
-    <form action={acao} onReset={() => setArquivo(undefined)} className="space-y-4">
-      <ol className="grid gap-4 xl:grid-cols-3">
+    <form action={acao} onReset={() => setArquivo(undefined)} className="space-y-3">
+      <ol className="grid gap-3 xl:grid-cols-3">
         <Passo numero={1} texto="Baixe o extrato no site do banco, em OFX (recomendado) ou CSV." />
         <Passo numero={2} texto="Escolha o arquivo no computador.">
           <label className={classeBotao('secundario', 'has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-info')}>
@@ -37,12 +37,12 @@ export function FormularioImportacao() {
           <span className="text-sm break-words text-muted">{arquivo ?? 'Nenhum arquivo escolhido'}</span>
         </Passo>
         <Passo numero={3} texto="Importe. Importar o mesmo período de novo não duplica nada.">
-          <BotaoEnviar className="mt-auto min-h-14 text-[1.25rem]">Importar</BotaoEnviar>
+          <BotaoEnviar className="mt-auto ">Importar</BotaoEnviar>
         </Passo>
       </ol>
-      <p className="text-sm text-muted">
+      <p className="text-xs text-muted">
         Para testar:{' '}
-        <a href="/financeiro/extrato/exemplo" download className="link inline-flex min-h-12 items-center">
+        <a href="/financeiro/extrato/exemplo" download className="link">
           baixar extrato de exemplo
         </a>{' '}
         (montado com as notas e os lançamentos de hoje).

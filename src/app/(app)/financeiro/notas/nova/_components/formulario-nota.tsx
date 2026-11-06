@@ -26,7 +26,7 @@ export function FormularioNota({ clientes, processos, padrao }: { clientes: Opca
   const { parcela } = padrao
 
   return (
-    <form action={acao} className="space-y-6">
+    <form action={acao} className="space-y-3">
       {parcela ? (
         <>
           <input type="hidden" name="parcelaId" value={parcela.id} />
@@ -35,7 +35,7 @@ export function FormularioNota({ clientes, processos, padrao }: { clientes: Opca
         </>
       ) : (
         <Card titulo="Cliente e projeto">
-          <div className="space-y-5">
+          <div className="grid items-start gap-3 sm:grid-cols-2">
             <Campo rotulo="Cliente" erro={erros.clienteId}>
               <Selecao name="clienteId" defaultValue={valores.clienteId ?? ''} required>
                 <option value="" disabled>
@@ -63,7 +63,7 @@ export function FormularioNota({ clientes, processos, padrao }: { clientes: Opca
       )}
 
       <Card titulo="A nota">
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Campo rotulo="Nº da NF" erro={erros.numero}>
             <Entrada name="numero" inputMode="numeric" defaultValue={valores.numero ?? padrao.numero} required />
           </Campo>
@@ -77,15 +77,15 @@ export function FormularioNota({ clientes, processos, padrao }: { clientes: Opca
       </Card>
 
       <Card titulo="Valor e pagamento">
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Campo rotulo="Valor da nota" erro={erros.valor}>
             <EntradaDinheiro name="valor" centavos={valores.valor ?? padrao.valor} required />
           </Campo>
           <Campo rotulo="Previsão de pagamento" erro={erros.previsao}>
             <Entrada name="previsao" type="date" defaultValue={valores.previsao ?? padrao.previsao} required />
           </Campo>
-          <label className="flex min-h-12 items-center gap-3 text-ink sm:col-span-2">
-            <input type="checkbox" name="comRetencao" defaultChecked={valores.comRetencao === 'on'} className="size-6 shrink-0 accent-brand-700" />
+          <label className="flex min-h-9 items-center gap-2 self-end text-sm text-ink sm:col-span-2">
+            <input type="checkbox" name="comRetencao" defaultChecked={valores.comRetencao === 'on'} className="size-4 shrink-0 accent-brand-700" />
             O cliente retém 5,5% na fonte
           </label>
         </div>
@@ -93,11 +93,11 @@ export function FormularioNota({ clientes, processos, padrao }: { clientes: Opca
 
       <MensagemFormulario estado={{ erro: erros.parcelaId }} />
       <MensagemFormulario estado={estado} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <LinkRapido href="/financeiro" className={classeBotao('secundario', 'min-h-14 text-[1.25rem]')}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <LinkRapido href="/financeiro" className={classeBotao('secundario')}>
           Cancelar
         </LinkRapido>
-        <BotaoEnviar className="min-h-14 text-[1.25rem]">Registrar nota</BotaoEnviar>
+        <BotaoEnviar>Registrar nota</BotaoEnviar>
       </div>
     </form>
   )

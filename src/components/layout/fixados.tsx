@@ -67,14 +67,14 @@ export function ListaFixados() {
   if (fixados.length === 0) return null
   return (
     <div>
-      <p className="mb-2 px-1.5 text-xs font-semibold text-subtle">Fixados</p>
-      <ul className="flex flex-col gap-2">
+      <p className="mb-1 px-2 text-xs font-medium text-subtle">Fixados</p>
+      <ul className="flex flex-col gap-0.5">
         {fixados.map(({ href, rotulo }) => (
-          <li key={href} className="flex items-stretch gap-1.5">
-            <LinkRapido href={href} className="flex min-h-12 min-w-0 flex-1 items-center rounded-md bg-surface px-3 text-sm font-medium text-brand-700 hover:bg-brand-100">
+          <li key={href} className="flex items-center gap-1">
+            <LinkRapido href={href} className="flex min-h-7 min-w-0 flex-1 items-center rounded-md px-2 text-sm text-brand-700 hover:bg-brand-100">
               <span className="truncate">{rotulo}</span>
             </LinkRapido>
-            <button type="button" title="Tirar dos fixados" onClick={() => gravar(fixados.filter((item) => item.href !== href))} className={classeBotao('secundario', 'min-h-12 px-2.5 text-sm')}>
+            <button type="button" title="Tirar dos fixados" onClick={() => gravar(fixados.filter((item) => item.href !== href))} className={classeBotao('secundario', undefined, 'pequeno')}>
               Tirar
             </button>
           </li>

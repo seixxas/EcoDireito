@@ -24,7 +24,7 @@ function Grupo({ titulo, total, verTodos, children }: { titulo: string; total: n
       titulo={`${titulo} (${total})`}
       acao={
         total > POR_GRUPO && (
-          <LinkRapido href={verTodos} className="link inline-flex min-h-12 items-center text-sm">
+          <LinkRapido href={verTodos} className="link text-sm">
             Ver todos
           </LinkRapido>
         )
@@ -54,15 +54,15 @@ export default async function PaginaBusca({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader titulo="Busca" resumo={total ? `${contar(total, 'resultado', 'resultados')} para “${q}”.` : `Nada encontrado para “${q}”.`} />
-      <Busca valor={q} placeholder="Cliente, projeto, nº SEI ou nº da NF" limpar="/busca" className="mb-7" />
+      <Busca valor={q} placeholder="Cliente, projeto, nº SEI ou nº da NF" limpar="/busca" className="mb-4" />
       {total === 0 && <Vazio>Confira a grafia ou procure só pelo começo do nome.</Vazio>}
 
       <Grupo titulo="Projetos" total={processos.length} verTodos={`/projetos?q=${emTexto}`}>
         {processos.slice(0, POR_GRUPO).map(({ processo, cliente, recusada }) => (
           <Linha key={processo.id} href={`/projetos/${processo.id}`}>
             <span className="min-w-0 flex-[1_1_18rem]">
-              <span className="block text-lg font-semibold text-ink">{processo.empreendimento}</span>
-              <span className="block text-sm text-muted">
+              <span className="block text-sm font-semibold text-ink">{processo.empreendimento}</span>
+              <span className="block text-xs text-muted">
                 {cliente.nome} · {processo.numeroSei ? `SEI ${processo.numeroSei}` : 'sem nº SEI'}
               </span>
             </span>
@@ -75,8 +75,8 @@ export default async function PaginaBusca({ searchParams }: { searchParams: Prom
         {clientes.slice(0, POR_GRUPO).map((cliente) => (
           <Linha key={cliente.id} href={`/projetos/clientes/${cliente.id}`}>
             <span className="min-w-0 flex-[1_1_18rem]">
-              <span className="block text-lg font-semibold text-ink">{cliente.nome}</span>
-              <span className="block text-sm text-muted">
+              <span className="block text-sm font-semibold text-ink">{cliente.nome}</span>
+              <span className="block text-xs text-muted">
                 {cliente.documento}
                 {cliente.grupo && ` · ${cliente.grupo}`}
               </span>
@@ -89,14 +89,14 @@ export default async function PaginaBusca({ searchParams }: { searchParams: Prom
         {notas.slice(0, POR_GRUPO).map(({ nota, cliente }) => (
           <Linha key={nota.id} href={`/financeiro/notas/${nota.id}`}>
             <span className="min-w-0 flex-[1_1_18rem]">
-              <span className="block text-lg font-semibold text-ink">
+              <span className="block text-sm font-semibold text-ink">
                 NF {nota.numero} · {cliente.nome}
               </span>
-              <span className="block text-sm text-muted">
+              <span className="block text-xs text-muted">
                 {nota.descricao} · {formatarData(nota.emissao)}
               </span>
             </span>
-            <span className="text-[1.25rem] font-semibold text-ink">{brl(nota.valor)}</span>
+            <span className="text-sm font-semibold text-ink">{brl(nota.valor)}</span>
             <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
           </Linha>
         ))}

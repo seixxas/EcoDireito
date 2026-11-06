@@ -24,7 +24,7 @@ export const metadata: Metadata = { title: 'Lucratividade por projeto' }
 type Filtros = { q?: string; margem?: string; pagina?: string }
 
 /** Letra do desenho nesta tabela, mais apertada: são muitas colunas de dinheiro. */
-const VALOR = 'num px-2.5 text-sm font-normal'
+const VALOR = 'num px-2 text-sm font-normal'
 const SO_EM_TELA_GRANDE = 'hidden! 2xl:table-cell!'
 
 export default async function PaginaLucratividade({ searchParams }: { searchParams: Promise<Filtros> }) {
@@ -52,15 +52,15 @@ export default async function PaginaLucratividade({ searchParams }: { searchPara
 
       <AvisoDeSimulacao />
 
-      <section aria-label="Resumo" className="mt-6 grid gap-x-8 gap-y-4 rounded-xl bg-painel px-7 py-6 lg:grid-cols-[18.75rem_minmax(0,1fr)]">
+      <section aria-label="Resumo" className="mt-3 grid items-center gap-x-6 gap-y-2 rounded-lg bg-painel px-4 py-2 lg:grid-cols-[13rem_minmax(0,1fr)]">
         <div>
-          <p className="text-xs font-semibold text-subtle">Margem média</p>
-          <p className={cn('mt-0.5 text-[2.5rem] font-semibold leading-tight', COR_DO_TEXTO[tomDaMedia])}>
+          <p className="text-xs text-subtle">Margem média</p>
+          <p className={cn('text-xl font-semibold leading-tight', COR_DO_TEXTO[tomDaMedia])}>
             {resumo.margemPct === undefined ? '—' : formatarPercentual(resumo.margemPct)}
           </p>
-          <p className="mt-1 text-xs text-muted">{brl(resumo.margem)} sobre o faturado</p>
+          <p className="text-xs text-muted">{brl(resumo.margem)} sobre o faturado</p>
         </div>
-        <dl>
+        <dl className="grid gap-x-6 sm:grid-cols-2">
           <ItemResumo rotulo="Faturado" valor={brl(resumo.receita)} />
           <ItemResumo rotulo="Custo" valor={`− ${brl(resumo.custo)}`} detalhe="diretos + equipe" />
           <ItemResumo rotulo="Mais lucrativo" valor={resumo.melhor ? formatarPercentual(resumo.melhor.margemPct!) : '—'} detalhe={resumo.melhor?.processo.empreendimento} tom="ok" />
@@ -73,7 +73,7 @@ export default async function PaginaLucratividade({ searchParams }: { searchPara
         </dl>
       </section>
 
-      <div className="mb-5 mt-7 flex flex-wrap items-end justify-between gap-6">
+      <div className="mb-2 mt-3 flex flex-wrap items-center justify-between gap-2">
         <SegmentedLinks
           rotulo="Margem"
           ativo={margem ?? 'todas'}
@@ -91,7 +91,7 @@ export default async function PaginaLucratividade({ searchParams }: { searchPara
       </div>
 
       <Card flush>
-        <table className={`${TABELA_EMPILHADA} max-[83.75rem]:[&_td:last-child]:ml-auto`}>
+        <table className={`${TABELA_EMPILHADA} max-[48rem]:[&_td:last-child]:ml-auto`}>
           <thead>
             <tr>
               <th>Projeto</th>
@@ -106,12 +106,14 @@ export default async function PaginaLucratividade({ searchParams }: { searchPara
           <tbody>
             {paginado.itens.map((p) => (
               <tr key={p.processo.id}>
-                <td className="min-w-0 min-[83.75rem]:min-w-52">
-                  <LinkRapido href={`/financeiro/lucratividade/${p.processo.id}`} className="link inline-flex min-h-12 items-center text-ink">
+                <td className="min-w-0 min-[48rem]:min-w-52">
+                  <LinkRapido href={`/financeiro/lucratividade/${p.processo.id}`} className="link text-ink">
                     {p.processo.empreendimento}
                   </LinkRapido>
-                  <p className="text-2xs text-muted">{p.cliente.nome}</p>
-                  <p className="text-2xs text-muted 2xl:hidden">Contrato de {brl(p.contratado)}</p>
+                  <p className="text-xs text-muted">
+                    {p.cliente.nome}
+                    <span className="2xl:hidden"> · Contrato de {brl(p.contratado)}</span>
+                  </p>
                 </td>
                 <td className={cn(VALOR, SO_EM_TELA_GRANDE)}>{brl(p.contratado)}</td>
                 <td className={VALOR}>
@@ -126,21 +128,21 @@ export default async function PaginaLucratividade({ searchParams }: { searchPara
                   <NoCartao>Equipe (estimado)</NoCartao>
                   {brl(p.custoEquipe)}
                 </td>
-                <td className="num px-2.5 text-base">
+                <td className="num px-2">
                   <NoCartao>Margem</NoCartao>
                   <span className="max-sm:text-right">
                     {p.margem !== undefined && <span className="block">{brl(p.margem)}</span>}
                     <Margem margemPct={p.margemPct} situacao={p.situacao} />
                   </span>
                 </td>
-                <AbrirLinha href={`/financeiro/lucratividade/${p.processo.id}`} rotulo={`Abrir a lucratividade de ${p.processo.empreendimento}`} className="px-2.5" />
+                <AbrirLinha href={`/financeiro/lucratividade/${p.processo.id}`} rotulo={`Abrir a lucratividade de ${p.processo.empreendimento}`} className="px-2" />
               </tr>
             ))}
           </tbody>
         </table>
         {lista.length === 0 && <Vazio>Nenhum projeto neste filtro.</Vazio>}
       </Card>
-      <p className="mt-3 max-w-[110ch] text-xs text-muted">
+      <p className="mt-2 max-w-[110ch] text-xs text-muted">
         Margem = faturado − custos diretos − equipe (estimado). Boa a partir de {formatarPercentual(MARGEM_BOA)}, atenção de {formatarPercentual(MARGEM_MINIMA)} a{' '}
         {formatarPercentual(MARGEM_BOA)}, ruim abaixo de {formatarPercentual(MARGEM_MINIMA)}. Só entram projetos com proposta aceita.
       </p>

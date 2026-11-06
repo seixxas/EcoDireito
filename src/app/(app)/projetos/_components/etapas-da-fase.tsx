@@ -32,10 +32,10 @@ function estadoDaEtapa(etapa: Etapa, fase: SituacaoFase): EstadoEtapa {
 
 function Ocorrencia({ evento, planejada }: { evento: Evento; planejada?: boolean }) {
   return (
-    <p className="mt-1.5 text-base text-ink">
+    <p className="text-xs text-ink">
       <span className="font-medium">{planejada ? `Marcada para ${formatarData(evento.data)}` : formatarData(evento.data)}</span>
       <span className="text-muted"> · {evento.origem === 'diario' ? 'Diário Oficial' : 'Equipe'}</span>
-      {evento.observacao && <span className="block whitespace-pre-line text-sm text-muted">{evento.observacao}</span>}
+      {evento.observacao && <span className="block whitespace-pre-line text-muted">{evento.observacao}</span>}
     </p>
   )
 }
@@ -53,7 +53,7 @@ export function EtapasDaFase({ processo, fase, dia, prazos, editar }: Props) {
 
   return (
     <Zona tom="proximos" titulo={`Fase ${fase} · ${nome}`} acao={<Situacao tom={SITUACAO_FASE[situacao]}>{rotuloFase}</Situacao>}>
-      <p className="mb-4 max-w-[84ch] text-sm text-muted">
+      <p className="mb-1.5 max-w-[100ch] px-1 text-xs text-muted">
         {descricao}
         {final && (
           <>
@@ -71,24 +71,24 @@ export function EtapasDaFase({ processo, fase, dia, prazos, editar }: Props) {
           const abertos = prazos.filter((p) => p.regra.cumpridoPor === tipo && estaAberto(p, dia))
           const podeMarcar = editar && ((estado !== 'feita' && estado !== 'planejada') || info.repete)
           return (
-            <li key={tipo} className="relative mb-3 rounded-lg bg-surface px-4 py-4.5 sm:px-5">
-              <div className="flex gap-4">
+            <li key={tipo} className="relative mb-px bg-surface px-3 py-2 first:rounded-t-md last:mb-0 last:rounded-b-md">
+              <div className="flex gap-2.5">
                 <span
                   aria-hidden
                   className={cn(
-                    'flex size-9 shrink-0 items-center justify-center rounded-md border-2 text-lg font-semibold',
+                    'mt-px flex size-5 shrink-0 items-center justify-center rounded-sm border text-xs font-semibold',
                     estado === 'feita' ? 'border-brand-700 bg-brand-700 text-on-brand' : 'border-campo text-subtle',
                   )}
                 >
                   {marca}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    <p className="text-sm font-medium text-ink">{info.nome}</p>
                     <Situacao tom={tom}>{rotulo}</Situacao>
                     {info.fecha && <Situacao tom="brand">Etapa final</Situacao>}
                   </div>
-                  <p className="mt-1.5 text-lg font-semibold text-ink">{info.nome}</p>
-                  <p className="mt-0.5 text-sm text-muted">
+                  <p className="text-xs text-muted">
                     Quem faz: {info.quem} · {info.diario ? 'chega pelo Diário Oficial (ou marque aqui)' : 'marcada aqui pela equipe'}
                     {info.quando && ` · ${info.quando}`}
                   </p>
@@ -99,20 +99,20 @@ export function EtapasDaFase({ processo, fase, dia, prazos, editar }: Props) {
                     <Ocorrencia key={evento.id} evento={evento} planejada />
                   ))}
                   {abertos.map((prazo) => (
-                    <p key={prazo.id} className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+                    <p key={prazo.id} className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted">
                       {prazo.regra.titulo}: <SituacaoPrazo prazo={prazo} hoje={dia} />
                     </p>
                   ))}
-                  {info.ajuda && estado !== 'feita' && <p className="mt-1.5 text-sm text-muted">{info.ajuda}</p>}
+                  {info.ajuda && estado !== 'feita' && <p className="text-xs text-muted">{info.ajuda}</p>}
                 </div>
               </div>
               {podeMarcar && (
                 // O `after` do botão fica em cima da caixa da etapa: clicar nela também abre o formulário.
                 <Expansivel
                   resumo={etapa.feitos.length ? 'Marcar de novo' : info.planejada ? 'Marcar a data' : 'Marcar como feita'}
-                  className="mt-3.5 sm:ml-13 [&>summary]:min-h-14 [&>summary]:text-[1.25rem] [&>summary]:after:absolute [&>summary]:after:left-4 [&>summary]:after:top-4.5 [&>summary]:after:size-9 sm:[&>summary]:after:left-5"
+                  className="ml-7.5 [&>summary]:after:absolute [&>summary]:after:left-3 [&>summary]:after:top-2 [&>summary]:after:size-5"
                 >
-                  <div className="rounded-lg bg-painel p-4 sm:p-5">
+                  <div className="rounded-md bg-painel p-3">
                     <FormularioEtapa
                       processoId={processo.id}
                       tipo={tipo}

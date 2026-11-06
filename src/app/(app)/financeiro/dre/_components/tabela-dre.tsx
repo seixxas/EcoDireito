@@ -20,26 +20,26 @@ const CABECALHO = 'border-b-2 border-b-grade bg-painel font-semibold'
 const ESPACO = 'w-3 min-w-3 p-0'
 
 /**
- * Larguras em rem, para acompanharem a letra, que cresce em monitor grande. Com elas, 3 meses inteiros cabem entre as colunas travadas em 1366 px e
- * 6 em 1920 px. O realizado cabe −99.999.999 em negrito e o percentual, −999,9%. Em tela menor que `xl`, o período não trava: não sobraria lugar para os meses.
+ * Larguras em rem, para acompanharem a letra, que cresce em monitor grande. Com elas, 4 meses inteiros cabem entre as colunas travadas em 1366 px e
+ * 7 em 1920 px. O realizado cabe −99.999.999 em negrito e o percentual, −999,9%. Em tela menor que `xl`, o período não trava: não sobraria lugar para os meses.
  */
-const CONTAS = 'w-[11.5rem] min-w-[11.5rem] md:w-[20.5rem] md:min-w-[20.5rem] min-[87.5rem]:w-[24.5rem] min-[87.5rem]:min-w-[24.5rem]'
-const ROTULO_FIXO = cn('sticky left-0 z-10 border-r-2 border-r-grade px-3 text-left', CONTAS)
+const CONTAS = 'w-[11.5rem] min-w-[11.5rem] md:w-[18rem] md:min-w-[18rem] min-[87.5rem]:w-[21rem] min-[87.5rem]:min-w-[21rem]'
+const ROTULO_FIXO = cn('sticky left-0 z-10 border-r-2 border-r-grade px-2 text-left', CONTAS)
 const FIXA = 'z-10 xl:sticky'
-const REALIZADO = cn(FIXA, 'right-[8rem] w-[9.5rem] min-w-[9.5rem] border-l-2 border-l-grade')
-const PERCENTUAL = cn(FIXA, 'right-0 w-[8rem] min-w-[8rem]')
-const ESPACO_FIXO = cn(FIXA, 'right-[17.5rem]', ESPACO)
+const REALIZADO = cn(FIXA, 'right-[6rem] w-[7.5rem] min-w-[7.5rem] border-l-2 border-l-grade')
+const PERCENTUAL = cn(FIXA, 'right-0 w-[6rem] min-w-[6rem]')
+const ESPACO_FIXO = cn(FIXA, 'right-[13.5rem]', ESPACO)
 
 const SELECIONADA = 'bg-rail outline-2 -outline-offset-2 outline-ink'
 const BOTAO_DA_LINHA =
-  'inline-flex min-h-12 min-w-[5.75rem] shrink-0 items-center justify-center gap-1 rounded-md border-2 border-brand-700 bg-surface px-2 text-2xs font-semibold text-brand-700 transition-colors hover:bg-brand-50'
+  'inline-flex min-h-6 min-w-[3.75rem] shrink-0 items-center pointer-coarse:min-h-8 justify-center gap-1 rounded-sm border border-campo bg-surface px-1 text-2xs font-medium text-brand-700 transition-colors hover:border-brand-700 hover:bg-brand-50'
 
 /** Fecha o resultado: vai como a linha de total. */
 const RESULTADO_LIQUIDO = 'subtotal-outras'
 
 /** O link ocupa a célula inteira: é ele que precisa ser fácil de acertar. */
 function Valor({ href, escolhido, cor, titulo, children }: { href?: string; escolhido: boolean; cor?: string; titulo: string; children: ReactNode }) {
-  const classe = cn('flex min-h-14 items-center justify-end rounded-md px-2', cor)
+  const classe = cn('flex min-h-7 items-center justify-end rounded-sm px-1.5 pointer-coarse:min-h-9', cor)
   if (!href) return <span className={classe}>{children}</span>
   return (
     <Link href={href} scroll={false} aria-current={escolhido || undefined} title={titulo} className={cn(classe, escolhido ? SELECIONADA : 'hover:bg-rail hover:underline')}>
@@ -88,7 +88,7 @@ function LinhaDaGrade(props: {
   return (
     <tr className={cn('text-right', peso)}>
       <th scope="row" className={cn(ROTULO_FIXO, fundo, peso, borda, subtotal && 'text-brand-700')}>
-        <span className="flex flex-col items-start gap-x-2.5 gap-y-1 py-1.5 md:flex-row md:items-center">
+        <span className="flex flex-col items-start gap-x-2 gap-y-1 py-1 md:flex-row md:items-center">
           {linha.tipo === 'bloco' ? (
             <button type="button" onClick={aoAlternar} aria-expanded={aberto} className={BOTAO_DA_LINHA}>
               <span aria-hidden="true">{aberto ? '−' : '+'}</span>
@@ -98,7 +98,7 @@ function LinhaDaGrade(props: {
           ) : (
             <span className="hidden w-[5.75rem] shrink-0 md:block" />
           )}
-          <span className={cn(linha.bloco && 'pl-3 md:pl-4')}>{rotulo}</span>
+          <span className={cn(linha.bloco && 'pl-2 md:pl-3')}>{rotulo}</span>
         </span>
       </th>
       {meses.map((mes, i) => {
@@ -120,7 +120,7 @@ function LinhaDaGrade(props: {
           {numeroInteiro(linha.total)}
         </Valor>
       </td>
-      <td className={cn(PERCENTUAL, fundo, 'px-3 py-1', borda)}>{receitaLiquida ? formatarPercentual(linha.total / receitaLiquida) : '—'}</td>
+      <td className={cn(PERCENTUAL, fundo, 'px-2 py-1', borda)}>{receitaLiquida ? formatarPercentual(linha.total / receitaLiquida) : '—'}</td>
     </tr>
   )
 }
@@ -165,7 +165,7 @@ export function TabelaDre({
     <TabelaRolavel
       acoes={
         blocos.length > 0 && (
-          <button type="button" onClick={() => setAbertos(todosAbertos ? new Set() : new Set(blocos))} className={classeBotao('secundario')}>
+          <button type="button" onClick={() => setAbertos(todosAbertos ? new Set() : new Set(blocos))} className={classeBotao('secundario', undefined, 'pequeno')}>
             {todosAbertos ? 'Fechar todas as linhas' : 'Abrir todas as linhas'}
           </button>
         )
@@ -174,27 +174,27 @@ export function TabelaDre({
       <table className="w-full min-w-max border-separate border-spacing-0 text-sm">
         <thead className="text-xs text-subtle">
           <tr className="whitespace-nowrap">
-            <th scope="col" rowSpan={2} className={cn(ROTULO_FIXO, CABECALHO, 'py-3 align-bottom')}>
+            <th scope="col" rowSpan={2} className={cn(ROTULO_FIXO, CABECALHO, 'py-2 align-bottom')}>
               Linha da DRE
             </th>
             {meses.map((mes) => (
               <Fragment key={mes}>
                 <td rowSpan={2} className={cn(ESPACO, CABECALHO)} />
-                <th data-mes scope="col" rowSpan={2} className={cn('min-w-[6.5rem] px-3.5 py-3 text-right align-bottom', CABECALHO)}>
+                <th data-mes scope="col" rowSpan={2} className={cn('min-w-[5.75rem] px-1.5 py-1.5 text-right align-bottom', CABECALHO)}>
                   {formatarMes(mes)}
                 </th>
               </Fragment>
             ))}
             <td data-espaco-fixo rowSpan={2} className={cn(ESPACO_FIXO, CABECALHO)} />
-            <th scope="colgroup" colSpan={2} className={cn(FIXA, 'right-0 border-l-2 border-l-grade bg-painel px-3 pb-0.5 pt-3 text-right font-semibold text-ink')}>
+            <th scope="colgroup" colSpan={2} className={cn(FIXA, 'right-0 border-l-2 border-l-grade bg-painel px-2 pb-0.5 pt-2 text-right font-semibold text-ink')}>
               Período · {rotuloDoPeriodo}
             </th>
           </tr>
           <tr>
-            <th scope="col" className={cn(REALIZADO, CABECALHO, 'px-3.5 pb-3 pt-0.5 text-right align-bottom text-ink')}>
+            <th scope="col" className={cn(REALIZADO, CABECALHO, 'px-2.5 pb-2 pt-0.5 text-right align-bottom text-ink')}>
               Realizado
             </th>
-            <th scope="col" className={cn(PERCENTUAL, CABECALHO, 'px-2 pb-3 pt-0.5 text-right align-bottom leading-tight')}>
+            <th scope="col" className={cn(PERCENTUAL, CABECALHO, 'px-1.5 pb-2 pt-0.5 text-right align-bottom leading-tight')}>
               % da receita líquida
             </th>
           </tr>
@@ -210,7 +210,7 @@ export function TabelaDre({
                       type="button"
                       aria-expanded={!fechada}
                       onClick={() => setSecoesFechadas((atuais) => alternar(atuais, linha.id))}
-                      className="flex min-h-12 w-full items-center gap-2 text-left text-xs font-semibold text-subtle hover:text-brand-700"
+                      className="flex min-h-6 w-full items-center gap-1.5 text-left text-xs font-medium text-subtle hover:text-brand-700"
                     >
                       <span aria-hidden="true">{fechada ? '+' : '−'}</span>
                       {linha.nome}

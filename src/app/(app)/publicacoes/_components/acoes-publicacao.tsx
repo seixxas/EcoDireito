@@ -6,7 +6,6 @@ import { BotaoEnviar } from '@/components/ui/botao-enviar'
 import { Campo, Entrada, MensagemFormulario, Selecao, classeBotao } from '@/components/ui/form'
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { MOTIVOS_PARA_IGNORAR } from '@/domain/publicacoes'
-import { cn } from '@/lib/cn'
 import { juntar } from '@/lib/formatar'
 import { ignorarAto, lancarAto } from '../actions'
 
@@ -18,8 +17,8 @@ type Props = {
   oQue: string
   /** Títulos dos prazos que o lançamento abriria: a caixa de ignorar avisa que eles não serão abertos. */
   prazos: string[]
-  /** No Diário, a ação principal é cheia e os botões ficam em coluna. No Hoje, ficam em linha e sem destaque. */
-  emColuna?: boolean
+  /** No Diário, a ação principal é cheia. No Hoje, os botões são pequenos e sem destaque. */
+  destaque?: boolean
   /** Botão a mais entre o lançar e o ignorar. */
   children?: ReactNode
 }
@@ -39,35 +38,35 @@ function AvisoAoIgnorar({ prazos }: { prazos: string[] }) {
  * Ações do ato: lançar no processo (ou marcar como visto, se a série não vira etapa) ou ignorar com motivo.
  * Sem processo cadastrado, o caminho é cadastrar a partir do ato; o cadastro já lança.
  */
-export function AcoesPublicacao({ id, temProcesso, marcaEtapa, oQue, prazos, emColuna, children }: Props) {
+export function AcoesPublicacao({ id, temProcesso, marcaEtapa, oQue, prazos, destaque, children }: Props) {
   const [lancamento, lancar] = useActionState(lancarAto, {})
   const [ignorado, ignorar] = useActionState(ignorarAto, {})
   const [motivo, setMotivo] = useState('')
   const erroMotivo = ignorado.erros?.motivo ?? ignorado.erros?.outro
-  const principal = emColuna ? 'primario' : 'secundario'
-  const largura = emColuna ? 'xl:w-full' : undefined
+  const principal = destaque ? 'primario' : 'secundario'
+  const tamanho = destaque ? 'normal' : 'pequeno'
 
   return (
-    <div className={cn('flex flex-col gap-3', emColuna && 'w-full')}>
-      <div className={cn('flex flex-wrap gap-3', emColuna && 'xl:flex-col')}>
+    <div className="flex flex-col gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {temProcesso ? (
-          <form action={lancar} className={largura}>
+          <form action={lancar}>
             <input type="hidden" name="id" value={id} />
-            <BotaoEnviar variante={principal} className={largura}>
+            <BotaoEnviar variante={principal} tamanho={tamanho}>
               {marcaEtapa ? 'Lançar no projeto' : 'Marcar como visto'}
             </BotaoEnviar>
           </form>
         ) : (
-          <LinkRapido href={`/projetos/novo?ato=${encodeURIComponent(id)}`} className={classeBotao(principal, largura)}>
+          <LinkRapido href={`/projetos/novo?ato=${encodeURIComponent(id)}`} className={classeBotao(principal, undefined, tamanho)}>
             {marcaEtapa ? 'Cadastrar o projeto e lançar' : 'Cadastrar o projeto'}
           </LinkRapido>
         )}
         {children}
-        <form action={ignorar} className={largura}>
+        <form action={ignorar}>
           <input type="hidden" name="id" value={id} />
           <BotaoConfirmar
             variante="secundario"
-            className={largura}
+            tamanho={tamanho}
             titulo="Ignorar este ato do Diário Oficial?"
             oQue={oQue}
             sim="Sim, ignorar o ato"
@@ -76,7 +75,7 @@ export function AcoesPublicacao({ id, temProcesso, marcaEtapa, oQue, prazos, emC
                 <p>
                   <AvisoAoIgnorar prazos={prazos} />
                 </p>
-                <Campo rotulo="Por que ignorar?" className="mt-4">
+                <Campo rotulo="Por que ignorar?" className="mt-3">
                   <Selecao name="motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} required>
                     <option value="" disabled>
                       Escolha o motivo
@@ -90,7 +89,7 @@ export function AcoesPublicacao({ id, temProcesso, marcaEtapa, oQue, prazos, emC
                   </Selecao>
                 </Campo>
                 {motivo === 'outro' && (
-                  <Campo rotulo="Motivo" className="mt-4">
+                  <Campo rotulo="Motivo" className="mt-3">
                     <Entrada name="outro" defaultValue={ignorado.valores?.outro} placeholder="Escreva o motivo" required autoFocus />
                   </Campo>
                 )}

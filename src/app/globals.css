@@ -7,12 +7,12 @@
   --color-painel: #f4f8f5;
   --color-rail: #eef5ef;
   --color-apagado: #f3f4f3;
-  --color-line: #d5e2d8;
+  --color-line: #dbe6de;
   /* Borda de campo de formulário. */
-  --color-campo: #6e8f76;
+  --color-campo: #7d9a85;
   --color-ink: #15211b;
-  --color-muted: #2c3a32;
-  --color-subtle: #3d5244;
+  --color-muted: #47564c;
+  --color-subtle: #5f6f64;
 
   --color-brand-50: #eef6ef;
   --color-brand-100: #e3f0e5;
@@ -43,34 +43,25 @@
   /* Linha forte da grade da DRE. */
   --color-grade: #9bb7a1;
 
-  /* Letra grande de propósito: quem usa tem mais de 60 anos. Nada abaixo de 16 px. */
-  --text-2xs: 1rem;
-  --text-2xs--line-height: 1.4;
-  --text-xs: 1.0625rem;
+  /* Leitura: corpo em 15 px, miúdo em 13 px e título de página em 28 px. */
+  --text-2xs: 0.75rem;
+  --text-2xs--line-height: 1.35;
+  --text-xs: 0.8125rem;
   --text-xs--line-height: 1.4;
-  --text-sm: 1.125rem;
+  --text-sm: 0.875rem;
   --text-sm--line-height: 1.45;
-  --text-base: 1.1875rem;
+  --text-base: 0.9375rem;
   --text-base--line-height: 1.5;
-  --text-lg: 1.3125rem;
-  --text-lg--line-height: 1.35;
-  --text-xl: 1.625rem;
-  --text-xl--line-height: 1.25;
-  --text-2xl: 2.125rem;
-  --text-2xl--line-height: 1.15;
-  --text-3xl: 2.625rem;
-  --text-3xl--line-height: 1.1;
-  --text-4xl: 3.5rem;
-  --text-4xl--line-height: 1.05;
-
-  /* A fonte Atkinson só fica forte de verdade em 700 e 800. */
-  --font-weight-medium: 700;
-  --font-weight-semibold: 800;
-
-  --radius-sm: 0.375rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.875rem;
-  --radius-xl: 1.25rem;
+  --text-lg: 1rem;
+  --text-lg--line-height: 1.4;
+  --text-xl: 1.125rem;
+  --text-xl--line-height: 1.35;
+  --text-2xl: 1.375rem;
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 1.625rem;
+  --text-3xl--line-height: 1.2;
+  --text-4xl: 1.75rem;
+  --text-4xl--line-height: 1.15;
 }
 
 @theme inline {
@@ -92,8 +83,8 @@
   --color-line: #33423a;
   --color-campo: #7c9a85;
   --color-ink: #eef3ef;
-  --color-muted: #d3ddd6;
-  --color-subtle: #b7c4bb;
+  --color-muted: #b9c6bd;
+  --color-subtle: #9aa89e;
 
   --color-brand-50: #17281d;
   --color-brand-100: #1e3827;
@@ -136,7 +127,7 @@ body {
 
 /* Foco sempre visível: quem usa teclado precisa ver onde está. */
 :focus-visible {
-  outline: 3px solid var(--color-info);
+  outline: 2px solid var(--color-info);
   outline-offset: 2px;
 }
 
@@ -164,26 +155,28 @@ body {
 @layer components {
   /* Link dentro de texto ou de tabela: sublinhado para ficar claro que abre outra tela. */
   .link {
-    @apply font-medium text-brand-700 underline decoration-2 underline-offset-3 transition-colors hover:text-brand-900;
+    @apply font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 transition-colors hover:decoration-brand-700;
   }
 
-  /* Cada linha é uma faixa branca sobre o painel, com espaço entre elas. Vai dentro de `Card flush` ou de um bloco com `overflow-x-auto`. */
+  /* No toque, o link ganha altura para acertar com o dedo. */
+  @media (pointer: coarse) {
+    .link {
+      @apply inline-block py-1.5;
+    }
+  }
+
+  /* Linhas corridas com fio fino: cabe mais na tela sem rolar. Vai dentro de `Card flush` ou de um bloco com `overflow-x-auto`. */
   .tabela {
-    @apply w-full min-w-[52rem];
-    border-collapse: separate;
-    border-spacing: 0 0.5rem;
+    @apply w-full min-w-[46rem] text-sm;
   }
   .tabela th {
-    @apply whitespace-nowrap px-3.5 pb-0.5 pt-2 text-left text-xs font-semibold text-subtle;
+    @apply whitespace-nowrap border-b border-line px-3 py-2 text-left text-xs font-medium text-subtle;
   }
   .tabela td {
-    @apply bg-surface px-3.5 py-4 align-middle text-base;
+    @apply border-b border-line px-3 py-2 align-middle;
   }
-  .tabela td:first-child {
-    @apply rounded-l-[0.75rem];
-  }
-  .tabela td:last-child {
-    @apply rounded-r-[0.75rem];
+  .tabela tbody tr:last-child td {
+    @apply border-b-0;
   }
   .tabela tbody tr:hover td {
     @apply bg-brand-50;
@@ -192,18 +185,18 @@ body {
     @apply whitespace-nowrap text-right;
   }
   .tabela td.num {
-    @apply text-[1.25rem] font-semibold;
+    @apply font-medium;
   }
 
   /* Aviso de espera do LinkRapido. Só aparece depois de 200 ms, para não piscar quando a tela chega rápido. */
   .barra-de-espera {
-    @apply fixed inset-x-0 top-0 z-50 h-1.5 origin-left bg-accent;
+    @apply fixed inset-x-0 top-0 z-50 h-1 origin-left bg-accent;
     animation: barra-de-espera 8s cubic-bezier(0.1, 0.7, 0.2, 1) 200ms both;
   }
 
   /* Caixa de confirmação (`BotaoConfirmar`). */
   .dialogo {
-    @apply m-auto w-[calc(100%-2rem)] max-w-[38.75rem] rounded-xl bg-surface p-8 text-ink;
+    @apply m-auto w-[calc(100%-2rem)] max-w-[30rem] rounded-xl bg-surface p-5 text-ink;
   }
   .dialogo::backdrop {
     background: rgb(21 33 27 / 0.55);

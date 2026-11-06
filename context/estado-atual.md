@@ -1,6 +1,6 @@
 # Estado atual
 
-Atualizado em 2026-11-05. Os dados ficam no banco Neon (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login.
+Atualizado em 2026-11-06. Os dados ficam no banco Neon (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login.
 Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de demonstração.
 
 ## Pronto
@@ -32,7 +32,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 - Navegação "caixa única" (04/11): menu com Hoje, Propostas, Processos e Financeiro, busca geral (`/busca`, Ctrl+K), botão "Novo", atalhos fixados e abas no topo de cada área. Guia em `context/interface.md`. Falta o "Adiar" na lista Para fazer, que precisa de tabela nova.
 - Modo escuro (botão "Tema escuro" no pé do menu) e paginação de 10 itens (`src/lib/paginar.ts`).
 - Processos em 8 fases (Proposta antes da Documentação), cada uma com as suas etapas; o LAA fecha a fase Resposta, depois do Comunique-se. Processo novo nasce sem nº SEI. Veja `context/prazos.md`.
-- Visual Parque + Semáforo (05/11), para pessoas com mais de 60 anos: letra e botões grandes, tudo escrito, blocos coloridos pela urgência. Guia em `context/interface.md`.
+- Visual Parque + Semáforo compacto (06/11): tudo escrito, blocos coloridos pela urgência, letra de 15 px e botão de 36 px, com a altura das telas de volta à do visual anterior. Guia em `context/interface.md`.
 - Navegação rápida: telas guardadas só no navegador por 60 segundos e preparadas com o mouse em cima (`arquitetura.md`, "Velocidade da navegação").
 - Perfis (`src/lib/permissoes.ts`): sócia, financeiro, equipe, contador e cliente. O recorte do que cada um vê fica em `carregar()` (`src/data/base.ts`).
 - Domínio com testes (`npm test`); build de produção passando (`npm run build`).

@@ -10,7 +10,7 @@ export function FormularioRegra({ processos }: { processos: { id: string; nome: 
   const [estado, acao] = useActionState(criarRegra, {})
   const { valores = {}, erros = {} } = estado
   return (
-    <form action={acao} className="grid gap-3 sm:grid-cols-2">
+    <form action={acao} className="grid gap-2 sm:grid-cols-2">
       <Campo rotulo="Se a descrição tiver" erro={erros.contem} className="sm:col-span-2">
         <Entrada name="contem" defaultValue={valores.contem} placeholder="Ex.: viveiro mata nativa" required />
       </Campo>
@@ -27,7 +27,7 @@ export function FormularioRegra({ processos }: { processos: { id: string; nome: 
           ))}
         </Selecao>
       </Campo>
-      <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+      <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
         <BotaoEnviar variante="secundario">Salvar regra</BotaoEnviar>
         <MensagemFormulario estado={estado} />
       </div>

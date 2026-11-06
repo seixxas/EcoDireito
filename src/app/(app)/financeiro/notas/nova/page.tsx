@@ -15,7 +15,7 @@ export default async function PaginaNovaNota({ searchParams }: { searchParams: P
   const nomeDoCliente = (id: string) => clientes.find((c) => c.id === id)!.nome
 
   return (
-    <div className="max-w-[55rem]">
+    <div className="max-w-6xl">
       <PageHeader
         titulo="Registrar nota fiscal"
         voltar={{ href: '/financeiro', rotulo: 'Voltar para o Faturamento' }}
@@ -23,7 +23,7 @@ export default async function PaginaNovaNota({ searchParams }: { searchParams: P
       />
 
       {deParcela && (
-        <p className="mb-6 rounded-lg bg-warn-soft px-5 py-4 text-ink">
+        <p className="mb-4 rounded-lg bg-warn-soft px-3 py-3 text-ink">
           Faturando a parcela <strong>{deParcela.parcela.descricao.toLowerCase()}</strong> ({brl(deParcela.parcela.valor)}) de{' '}
           <strong>{deParcela.processo.empreendimento}</strong>, {nomeDoCliente(deParcela.processo.clienteId)}.
         </p>

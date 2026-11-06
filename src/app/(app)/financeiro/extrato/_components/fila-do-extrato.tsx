@@ -43,22 +43,22 @@ export function FilaDoExtrato({
   if (!linhas.length) return vazio ? <CaixaVazia titulo={vazio} /> : <CaixaVazia titulo="Nada a classificar." detalhe="Importe um extrato para começar." />
   return (
     <>
-      {editar && <p className="mb-3 text-muted">“Ignorar” tira a linha da fila sem lançar (ex.: transferência entre contas da empresa).</p>}
-      <ul className="rounded-xl bg-painel px-3.5 pb-1.5 pt-3">
+      {editar && <p className="mb-2 text-muted">“Ignorar” tira a linha da fila sem lançar (ex.: transferência entre contas da empresa).</p>}
+      <ul className="rounded-xl bg-painel px-2.5 pb-1 pt-2">
         {linhas.map((linha) => (
-          <li key={linha.id} className="mb-2 rounded-lg bg-surface px-5 py-4.5">
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+          <li key={linha.id} className="mb-1.5 rounded-lg bg-surface px-3 py-3">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <span className="whitespace-nowrap text-muted">{formatarData(linha.data)}</span>
               <span className="min-w-48 flex-1 font-medium text-ink">{linha.descricao}</span>
-              <span className={cn('whitespace-nowrap text-[1.25rem] font-semibold', linha.valor > 0 && 'text-ok')}>{brl(linha.valor)}</span>
+              <span className={cn('whitespace-nowrap text-sm font-semibold', linha.valor > 0 && 'text-ok')}>{brl(linha.valor)}</span>
             </div>
-            <div className="mt-2.5">
+            <div className="mt-2">
               <Situacao tom={linha.sugestao?.tom ?? 'neutral'} className="whitespace-normal!">
                 {linha.sugestao?.texto ?? 'Sem sugestão'}
               </Situacao>
             </div>
             {editar && (
-              <div className="mt-3.5 flex flex-wrap items-center gap-3">
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 {linha.sugestao && (
                   <form action={confirmarSugestao}>
                     <input type="hidden" name="linhaId" value={linha.id} />
@@ -88,7 +88,7 @@ function FormularioClassificacao({ linha, processos, notas }: { linha: LinhaDaFi
   const posicao = (nota: Opcao) => (linha.candidatas.includes(nota.id) ? linha.candidatas.indexOf(nota.id) : linha.candidatas.length)
 
   return (
-    <form action={acao} className="grid gap-5 rounded-lg bg-painel p-5 md:grid-cols-2">
+    <form action={acao} className="grid gap-3 rounded-lg bg-painel p-3 md:grid-cols-2">
       <input type="hidden" name="linhaId" value={linha.id} />
       {linha.valor > 0 && (
         <Campo rotulo="É o recebimento da nota" erro={erros.notaId} dica="Escolha a nota ou, se o crédito não for de nota, a conta." className="md:col-span-2">
@@ -118,9 +118,9 @@ function FormularioClassificacao({ linha, processos, notas }: { linha: LinhaDaFi
           ))}
         </Selecao>
       </Campo>
-      <div className="space-y-2 md:col-span-2">
-        <div className="flex flex-wrap items-center gap-3 text-ink">
-          <label className="flex min-h-12 items-center gap-3">
+      <div className="space-y-1.5 md:col-span-2">
+        <div className="flex flex-wrap items-center gap-2 text-ink">
+          <label className="flex min-h-8 items-center gap-2">
             <input type="checkbox" name="lembrar" defaultChecked={valores.lembrar === 'on'} className="size-6 shrink-0 accent-brand-700" />
             Daqui em diante, lançar nesta conta tudo que tiver
           </label>
@@ -128,7 +128,7 @@ function FormularioClassificacao({ linha, processos, notas }: { linha: LinhaDaFi
         </div>
         <MensagemFormulario estado={{ erro: erros.termo }} />
       </div>
-      <div className="flex flex-wrap items-center gap-3 md:col-span-2">
+      <div className="flex flex-wrap items-center gap-2 md:col-span-2">
         <BotaoEnviar>Lançar</BotaoEnviar>
         <MensagemFormulario estado={estado} />
       </div>

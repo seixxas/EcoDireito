@@ -32,7 +32,7 @@ const HORARIO = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo'
 
 const DIAS_DA_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 
-const LINK_SOLTO = 'link inline-flex min-h-12 items-center text-sm'
+const LINK_SOLTO = 'link text-sm'
 
 /** Item que abre outra tela: ele todo é o link, e o botão diz para onde leva. */
 function ItemQueAbre({ href, acao, perigo, lado, ...item }: { href: string; acao: string; perigo?: boolean; lado?: ReactNode; etiqueta: ReactNode; titulo: ReactNode; detalhe: ReactNode }) {
@@ -44,7 +44,7 @@ function ItemQueAbre({ href, acao, perigo, lado, ...item }: { href: string; acao
         fim={
           <>
             {lado}
-            <span className={perigo ? classeBotao('perigo', 'min-h-14 text-[1.25rem]') : classeBotao('secundario', 'group-hover:bg-brand-100')}>{acao}</span>
+            <span className={perigo ? classeBotao('perigo', undefined, 'pequeno') : classeBotao('secundario', 'group-hover:bg-brand-100', 'pequeno')}>{acao}</span>
           </>
         }
       />
@@ -64,19 +64,19 @@ function ItemPrazo({ prazo, dia }: { prazo: PrazoComProcesso; dia: DataISO }) {
       etiqueta={<SituacaoPrazo prazo={prazo} hoje={dia} />}
       titulo={prazo.regra.titulo}
       detalhe={vencido ? `${contexto} · ${formatarDiaEData(prazo.vencimento)}` : contexto}
-      lado={proximo && <span className="text-sm font-semibold text-brand-700">{formatarDiaEData(prazo.vencimento)}</span>}
+      lado={proximo && <span className="text-xs font-medium text-brand-700">{formatarDiaEData(prazo.vencimento)}</span>}
     />
   )
 }
 
 function Valor({ rotulo, valor, detalhe, tom = 'neutral', className }: { rotulo: string; valor: string; detalhe?: string; tom?: Tom; className?: string }) {
   return (
-    <div className={cn('flex flex-wrap items-baseline justify-between gap-x-3 py-2.5', className)}>
+    <div className={cn('flex flex-wrap items-baseline justify-between gap-x-2 py-1', className)}>
       <dt className={cn('text-sm', COR_DO_TEXTO[tom])}>
         {rotulo}
         {detalhe && <span className="block text-2xs text-muted">{detalhe}</span>}
       </dt>
-      <dd className={cn('ml-auto text-[1.25rem] font-semibold', COR_DO_TEXTO[tom])}>{valor}</dd>
+      <dd className={cn('ml-auto text-sm font-semibold', COR_DO_TEXTO[tom])}>{valor}</dd>
     </div>
   )
 }
@@ -139,15 +139,15 @@ export default async function Hoje() {
       <PageHeader
         titulo="Hoje"
         resumo={
-          <span className="text-[1.375rem] font-medium text-brand-700">
+          <span className="font-medium text-brand-700">
             {DIAS_DA_SEMANA[diaDaSemana(dia)]}, {formatarData(dia)}
           </span>
         }
         acoes={<AbasDoDia ativa="fazer" className="mb-0!" />}
       />
-      <p className="mb-8 max-w-[70ch] text-[1.25rem] text-muted">{pendencias.length ? `${juntar(pendencias)}.` : 'Nada pendente.'}</p>
+      <p className="mb-3 max-w-[90ch] text-muted">{pendencias.length ? `${juntar(pendencias)}.` : 'Nada pendente.'}</p>
 
-      <div className="grid grid-cols-1 gap-x-8 xl:grid-cols-[minmax(0,1fr)_23.75rem] xl:items-start">
+      <div className="grid grid-cols-1 gap-x-5 xl:grid-cols-[minmax(0,1fr)_19rem] xl:items-start">
         <div>
           {itensAtrasados + itensDeHoje + semana.length === 0 && <Vazio>Nenhum prazo, publicação ou cobrança pede atenção agora.</Vazio>}
 
@@ -163,7 +163,7 @@ export default async function Hoje() {
                   etiqueta={<Situacao tom="danger">{contar(atrasadas.length, 'nota atrasada', 'notas atrasadas')}</Situacao>}
                   titulo="Cobrar clientes"
                   detalhe={juntar(clientesAtrasados.length > 3 ? [...clientesAtrasados.slice(0, 3), `mais ${clientesAtrasados.length - 3}`] : clientesAtrasados)}
-                  lado={<span className="text-[1.25rem] font-semibold text-danger">{brl(geral.atrasado)}</span>}
+                  lado={<span className="text-sm font-semibold text-danger">{brl(geral.atrasado)}</span>}
                 />
               )}
             </Zona>
@@ -179,7 +179,7 @@ export default async function Hoje() {
                   key={ato.id}
                   etiqueta={<Situacao tom="info">Nova no Diário</Situacao>}
                   titulo={
-                    <LinkRapido href="/publicacoes" className="inline-flex min-h-12 items-center hover:text-brand-700">
+                    <LinkRapido href="/publicacoes" className="hover:text-brand-700 pointer-coarse:inline-block pointer-coarse:py-1.5">
                       {ato.serie}
                     </LinkRapido>
                   }
@@ -207,7 +207,7 @@ export default async function Hoje() {
                   etiqueta={<Situacao tom="ok">Pronta para faturar</Situacao>}
                   titulo={processo.empreendimento}
                   detalhe={`${parcela.descricao} · ${cliente.nome}`}
-                  lado={<span className="text-[1.25rem] font-semibold text-ink">{brl(parcela.valor)}</span>}
+                  lado={<span className="text-sm font-semibold text-ink">{brl(parcela.valor)}</span>}
                 />
               ))}
               {retornos.map(({ processo, cliente, situacao }) => (
@@ -244,10 +244,10 @@ export default async function Hoje() {
           )}
         </div>
 
-        <aside className="grid grid-cols-1 items-start gap-x-7 md:grid-cols-2 xl:grid-cols-1">
+        <aside className="grid grid-cols-1 items-start gap-x-4 md:grid-cols-2 xl:grid-cols-1">
           {verFinanceiro && (
             <Card
-              className="mb-7"
+              className="mb-4"
               titulo="Dinheiro"
               acao={
                 <LinkRapido href="/financeiro" className={LINK_SOLTO}>
@@ -255,20 +255,20 @@ export default async function Hoje() {
                 </LinkRapido>
               }
             >
-              <div className="rounded-lg bg-surface px-5 py-4.5">
+              <div className="rounded-md bg-surface px-3 py-2">
                 <p className="text-xs font-medium text-muted">Saldo em conta hoje</p>
-                <p className="mt-0.5 text-2xl font-semibold">{brl(caixa.saldoHoje)}</p>
-                <p className="mt-1 text-xs text-muted">Mais {brl(caixa.aplicado)} aplicados</p>
+                <p className="text-xl font-semibold">{brl(caixa.saldoHoje)}</p>
+                <p className="text-xs text-muted">Mais {brl(caixa.aplicado)} aplicados</p>
               </div>
 
-              <dl className="mt-4">
+              <dl className="mt-1.5">
                 <Valor rotulo="A receber" valor={brl(geral.aReceber)} className="border-b border-line" />
               </dl>
               {geral.aReceber > 0 && (
                 <div
                   role="img"
                   aria-label={`Do valor a receber, ${brl(aVencer)} estão a vencer e ${brl(geral.atrasado)} estão atrasados`}
-                  className="mb-1 mt-3.5 flex h-3.5 gap-0.75 overflow-hidden rounded-full"
+                  className="my-1.5 flex h-1.5 gap-0.5 overflow-hidden rounded-full"
                 >
                   <span className="bg-brand-500" style={{ flexGrow: aVencer }} />
                   <span className="bg-danger" style={{ flexGrow: geral.atrasado }} />
@@ -279,12 +279,12 @@ export default async function Hoje() {
                 <Valor rotulo="Atrasado" detalhe={contar(geral.quantidadeAtrasadas, 'nota', 'notas')} valor={brl(geral.atrasado)} tom={geral.atrasado > 0 ? 'danger' : 'neutral'} />
               </dl>
               {atrasadas.length > 0 && (
-                <LinkRapido href="/financeiro?aba=atrasadas" className={classeBotao('secundario', 'mt-3 w-full')}>
+                <LinkRapido href="/financeiro?aba=atrasadas" className={classeBotao('secundario', 'mt-1.5 w-full', 'pequeno')}>
                   Ver notas atrasadas
                 </LinkRapido>
               )}
 
-              <div className="mt-4 border-t border-line pt-2 text-sm">
+              <div className="mt-2 border-t border-line pt-1 text-xs">
                 <dl>
                   <Valor rotulo="Faturado em 30 dias" detalhe={contar(ultimos30.quantidade, 'nota', 'notas')} valor={brl(ultimos30.faturado)} />
                 </dl>
@@ -298,8 +298,8 @@ export default async function Hoje() {
             </Card>
           )}
 
-          <Zona tom="diario" titulo="Diário Oficial" className="pb-6!">
-            <p className="mb-4 text-sm">
+          <Zona tom="diario" titulo="Diário Oficial">
+            <p className="mb-2 px-1 text-xs">
               {edicao.erro ? (
                 <span className="font-medium text-warn">{edicao.erro}</span>
               ) : (
@@ -310,7 +310,7 @@ export default async function Hoje() {
                 </>
               )}
             </p>
-            <LinkRapido href="/publicacoes" className={classeBotao('diario-claro', 'w-full')}>
+            <LinkRapido href="/publicacoes" className={classeBotao('diario-claro', 'w-full', 'pequeno')}>
               Abrir o Diário Oficial
             </LinkRapido>
           </Zona>

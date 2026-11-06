@@ -24,8 +24,8 @@ export default async function PortalInicio() {
           {processos.map(({ processo }) => (
             <Linha key={processo.id} href={`/portal/${processo.id}`}>
               <span className="min-w-0 flex-1 basis-60">
-                <span className="block text-[1.25rem] font-semibold leading-snug">{processo.empreendimento}</span>
-                <span className="block text-sm text-muted">{processo.endereco}</span>
+                <span className="block text-sm font-semibold leading-snug">{processo.empreendimento}</span>
+                <span className="block text-xs text-muted">{processo.endereco}</span>
               </span>
             </Linha>
           ))}

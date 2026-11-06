@@ -26,7 +26,7 @@ const LISTRADO = 'bg-[repeating-linear-gradient(135deg,var(--color-accent)_0_3px
 
 /** No celular, cada conta vira um cartão, em vez de a tabela rolar para o lado. */
 const TABELA_EMPILHADA =
-  'tabela min-w-0 max-sm:block max-sm:[&_tbody]:block max-sm:[&_thead]:hidden max-sm:[&_tr]:mb-2 max-sm:[&_tr]:flex max-sm:[&_tr]:flex-wrap max-sm:[&_tr]:items-center max-sm:[&_tr]:rounded-xl max-sm:[&_tr]:bg-surface max-sm:[&_tr]:py-2 max-sm:[&_td]:py-1 max-sm:[&_td.num]:flex max-sm:[&_td.num]:w-full max-sm:[&_td.num]:items-baseline max-sm:[&_td.num]:justify-between max-sm:[&_td:first-child]:w-full max-sm:[&_td:last-child]:ml-auto max-sm:[&_td:empty]:hidden'
+  'tabela min-w-0 max-sm:block max-sm:[&_tbody]:block max-sm:[&_thead]:hidden max-sm:[&_tr]:mb-1.5 max-sm:[&_tr]:flex max-sm:[&_tr]:flex-wrap max-sm:[&_tr]:items-center max-sm:[&_tr]:rounded-xl max-sm:[&_tr]:bg-surface max-sm:[&_tr]:py-1.5 max-sm:[&_td]:py-1 max-sm:[&_td.num]:flex max-sm:[&_td.num]:w-full max-sm:[&_td.num]:items-baseline max-sm:[&_td.num]:justify-between max-sm:[&_td:first-child]:w-full max-sm:[&_td:last-child]:ml-auto max-sm:[&_td:empty]:hidden'
 
 /** Título da coluna, escrito dentro do cartão no celular. */
 function NoCartao({ children }: { children: ReactNode }) {
@@ -65,7 +65,7 @@ export default async function PaginaLucratividade({ params }: { params: Promise<
           </>
         }
       />
-      <AvisoDeSimulacao className="mb-6" />
+      <AvisoDeSimulacao className="mb-4" />
 
       <Resumo>
         <ItemResumo rotulo="Faturado" valor={brl(faturado)} detalhe={`${brl(recebido)} recebido`} />
@@ -79,23 +79,23 @@ export default async function PaginaLucratividade({ params }: { params: Promise<
         />
       </Resumo>
 
-      <Card titulo="Receita × custo" acao={<Margem margemPct={margemPct} situacao={situacao} />} className="mt-9">
-        <div className="space-y-4">
-          <div className="grid items-center gap-x-4 gap-y-1 sm:grid-cols-[6rem_1fr_11rem]">
+      <Card titulo="Receita × custo" acao={<Margem margemPct={margemPct} situacao={situacao} />} className="mt-5">
+        <div className="space-y-3">
+          <div className="grid items-center gap-x-3 gap-y-1 sm:grid-cols-[6rem_1fr_11rem]">
             <span>Receita</span>
             <div className="h-8 overflow-hidden rounded-md bg-surface">
               <div className="h-full rounded-md bg-brand-500" style={{ width: `${(faturado / escala) * 100}%` }} title={`Faturado: ${brl(faturado)}`} />
             </div>
-            <span className="text-right text-[1.25rem] font-semibold">{brl(faturado)}</span>
+            <span className="text-right text-sm font-semibold">{brl(faturado)}</span>
           </div>
-          <div className="grid items-center gap-x-4 gap-y-1 sm:grid-cols-[6rem_1fr_11rem]">
+          <div className="grid items-center gap-x-3 gap-y-1 sm:grid-cols-[6rem_1fr_11rem]">
             <span>Custo</span>
             <div className="flex h-8 overflow-hidden rounded-md bg-surface">
               {partes.map((p) => (
                 <div key={p.chave} className={cn('h-full', p.cor)} style={{ width: `${(p.valor / escala) * 100}%` }} title={`${p.nome}: ${brl(p.valor)}`} />
               ))}
             </div>
-            <span className="text-right text-[1.25rem] font-semibold">{brl(custoTotal)}</span>
+            <span className="text-right text-sm font-semibold">{brl(custoTotal)}</span>
           </div>
         </div>
       </Card>
@@ -115,7 +115,7 @@ export default async function PaginaLucratividade({ params }: { params: Promise<
               {partes.map((p) => (
                 <tr key={p.chave}>
                   <td>
-                    <span className={cn('mr-2.5 inline-block size-4 rounded-full align-[-0.125em]', p.cor)} />
+                    <span className={cn('mr-2 inline-block size-4 rounded-full align-[-0.125em]', p.cor)} />
                     {p.nome}
                   </td>
                   <td className="num">
@@ -165,7 +165,7 @@ export default async function PaginaLucratividade({ params }: { params: Promise<
                 <span className="hidden sm:inline">
                   <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
                 </span>
-                <span className="text-[1.25rem] font-semibold">{brl(nota.valor)}</span>
+                <span className="text-sm font-semibold">{brl(nota.valor)}</span>
               </Linha>
             ))}
           </Lista>

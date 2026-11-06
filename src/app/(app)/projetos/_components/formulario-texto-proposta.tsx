@@ -9,7 +9,7 @@ import { salvarTextoDaProposta } from '../../comercial/actions'
 export function FormularioTextoProposta({ proposta }: { proposta: Proposta }) {
   const [estado, acao] = useActionState(salvarTextoDaProposta, {})
   return (
-    <form action={acao} className="max-w-2xl space-y-5">
+    <form action={acao} className="max-w-2xl space-y-3">
       <input type="hidden" name="processoId" value={proposta.processoId} />
       <Campo rotulo="O que será feito" erro={estado.erros?.escopo}>
         <AreaTexto name="escopo" defaultValue={estado.valores?.escopo ?? proposta.escopo} rows={10} required />

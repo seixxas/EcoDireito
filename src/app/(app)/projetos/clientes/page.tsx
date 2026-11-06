@@ -41,34 +41,34 @@ export default async function PaginaClientes({ searchParams }: { searchParams: P
         resumo={`${contar(itens.length, 'cliente', 'clientes')}. O robô do Diário Oficial também procura pelo CNPJ de cada um.`}
         acoes={
           editar && (
-            <LinkRapido href="/projetos/clientes/novo" className={classeBotao('primario', 'min-h-14 text-[1.25rem]')}>
+            <LinkRapido href="/projetos/clientes/novo" className={classeBotao('primario')}>
               + Novo cliente
             </LinkRapido>
           )
         }
       />
-      <Busca valor={q} placeholder="Nome, CNPJ ou grupo" limpar={endereco()} className="mb-6" />
+      <Busca valor={q} placeholder="Nome, CNPJ ou grupo" limpar={endereco()} className="mb-4" />
       {paginado.total > 0 ? (
         <Lista className="@container">
-          <li aria-hidden className={cn('hidden gap-x-5 px-4 pb-1 pt-2 text-xs font-semibold text-subtle', COLUNAS)}>
+          <li aria-hidden className={cn('hidden gap-x-3 px-3 pb-1 pt-1.5 text-xs font-semibold text-subtle', COLUNAS)}>
             <span>Cliente</span>
             <span>Projetos</span>
           </li>
           {paginado.itens.map(({ cliente, processos }) => (
             <Linha key={cliente.id} className={cn('relative', COLUNAS, editar && 'hover:bg-brand-50')}>
               <div className="min-w-0 basis-full">
-                <p className="text-[1.25rem] font-semibold leading-snug text-ink">{cliente.nome}</p>
+                <p className="text-sm font-semibold leading-snug text-ink">{cliente.nome}</p>
                 <p className="mt-0.5 text-xs tabular-nums text-muted">
                   {cliente.documento}
                   {cliente.grupo && ` · ${cliente.grupo}`} · {contar(processos, 'projeto', 'projetos')}
                 </p>
               </div>
-              <ul className="min-w-0 basis-full space-y-3">
+              <ul className="min-w-0 basis-full space-y-2">
                 {projetos
                   .filter(({ processo }) => processo.clienteId === cliente.id)
                   .map(({ processo }) => (
                     <li key={processo.id}>
-                      <LinkRapido href={`/projetos/${processo.id}`} className="link relative z-10 inline-flex min-h-12 items-center text-base">
+                      <LinkRapido href={`/projetos/${processo.id}`} className="link relative z-10 inline-flex min-h-8 items-center text-base">
                         {processo.empreendimento}
                       </LinkRapido>
                     </li>

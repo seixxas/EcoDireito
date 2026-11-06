@@ -11,7 +11,7 @@ export function FormularioUsuario({ clientes }: { clientes: { id: string; nome: 
   const [papel, setPapel] = useState<Papel>('equipe')
 
   return (
-    <form action={acao} className="grid items-end gap-5 md:grid-cols-2">
+    <form action={acao} className="grid items-start gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <Campo rotulo="Nome" erro={estado.erros?.nome}>
         <Entrada name="nome" defaultValue={estado.valores?.nome} required />
       </Campo>
@@ -44,9 +44,9 @@ export function FormularioUsuario({ clientes }: { clientes: { id: string; nome: 
       <Campo rotulo="Senha inicial" erro={estado.erros?.senha} dica="Mínimo de 8 caracteres. Passe para a pessoa por um canal seguro.">
         <Entrada name="senha" type="password" autoComplete="new-password" required />
       </Campo>
-      <div className="col-span-full space-y-4">
+      <div className="col-span-full space-y-3">
         <MensagemFormulario estado={estado} />
-        <BotaoEnviar className="min-h-14! text-[1.25rem]!">Criar acesso</BotaoEnviar>
+        <BotaoEnviar>Criar acesso</BotaoEnviar>
       </div>
     </form>
   )

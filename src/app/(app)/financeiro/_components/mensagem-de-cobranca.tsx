@@ -18,13 +18,13 @@ export function MensagemDeCobranca({ texto }: { texto: string }) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <AreaTexto ref={campo} aria-label="Mensagem de cobrança" defaultValue={texto} rows={12} className="field-sizing-content" />
       <Botao type="button" onClick={copiar} className="w-full">
         Copiar mensagem
       </Botao>
       {aviso && (
-        <p role="status" className="text-sm text-muted">
+        <p role="status" className="text-xs text-muted">
           {aviso}
         </p>
       )}

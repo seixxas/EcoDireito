@@ -11,11 +11,11 @@ export function BuscaEdicao({ dia }: { dia: string }) {
   // O erro do campo de data diz mais que o "Confira os campos destacados".
   const mensagem = estado.erros?.data ? { erro: estado.erros.data } : estado
   return (
-    <form action={acao} className="flex max-w-md flex-wrap items-end gap-3">
+    <form action={acao} className="flex max-w-md flex-wrap items-end gap-2">
       <Campo rotulo="Data da edição" className="w-55">
         <Entrada type="date" name="data" defaultValue={estado.valores?.data ?? dia} max={dia} required />
       </Campo>
-      <BotaoEnviar variante="secundario" className="min-h-14">
+      <BotaoEnviar variante="secundario">
         Buscar no Diário
       </BotaoEnviar>
       {(mensagem.erro || mensagem.ok) && (

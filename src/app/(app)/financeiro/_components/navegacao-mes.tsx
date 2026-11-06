@@ -5,7 +5,7 @@ import { formatarMes } from '@/lib/formatar'
 /** Valor de `?mes=` para o histórico inteiro (útil com busca: "todas as notas do cliente X"). */
 export const TODOS_OS_MESES = 'todos'
 
-const MES_ATUAL = 'px-2 text-[1.5rem] font-semibold text-ink'
+const MES_ATUAL = 'px-1.5 text-xl font-semibold text-ink'
 
 /**
  * ← Mês anterior · out/26 · Próximo mês →: anda pelos meses do histórico. O mês vive na URL (`?mes=`), quem usa monta o link.
@@ -14,7 +14,7 @@ const MES_ATUAL = 'px-2 text-[1.5rem] font-semibold text-ink'
 export function NavegacaoMes({ mes, meses, href, todos }: { mes: string; meses: string[]; href: (mes: string) => string; todos?: boolean }) {
   if (mes === TODOS_OS_MESES) {
     return (
-      <nav aria-label="Mês" className="flex flex-wrap items-center gap-3">
+      <nav aria-label="Mês" className="flex flex-wrap items-center gap-2">
         <span className={MES_ATUAL}>Todos os meses</span>
         <LinkRapido href={href(meses.at(-1)!)} scroll={false} className={classeBotao('secundario')}>
           Ver por mês
@@ -30,11 +30,11 @@ export function NavegacaoMes({ mes, meses, href, todos }: { mes: string; meses: 
         {rotulo}
       </LinkRapido>
     ) : (
-      <span className="inline-flex min-h-13 items-center rounded-md border-2 border-line px-5 text-base font-medium text-subtle">{rotulo}</span>
+      <span className="inline-flex min-h-9 items-center rounded-md border border-line px-3 text-base font-medium text-subtle">{rotulo}</span>
     )
 
   return (
-    <nav aria-label="Mês" className="flex flex-wrap items-center gap-3">
+    <nav aria-label="Mês" className="flex flex-wrap items-center gap-2">
       {passo(meses[i - 1], '← Mês anterior')}
       <span className={MES_ATUAL}>{formatarMes(mes)}</span>
       {passo(meses[i + 1], 'Próximo mês →')}

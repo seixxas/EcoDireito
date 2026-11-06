@@ -12,8 +12,8 @@ export default async function PaginaNovaProposta({ searchParams }: { searchParam
   const [{ cliente }, clientes] = await Promise.all([searchParams, listarClientes()])
 
   return (
-    <div className="max-w-[55rem]">
-      <PageHeader titulo="Nova proposta" resumo="Preencha em 3 passos. A proposta fica “Em elaboração” até você enviar ao cliente." voltar={{ href: '/comercial', rotulo: 'Voltar para Propostas' }} />
+    <div className="max-w-6xl">
+      <PageHeader titulo="Nova proposta" resumo="Preencha os 3 passos. A proposta fica “Em elaboração” até você enviar ao cliente." voltar={{ href: '/comercial', rotulo: 'Voltar para Propostas' }} />
       <FormularioProposta clientes={clientes.map(({ cliente: c }) => ({ id: c.id, nome: c.nome }))} clienteId={cliente} />
     </div>
   )
