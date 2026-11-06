@@ -3,17 +3,20 @@ import { cn } from '@/lib/cn'
 import type { EstadoFormulario } from '@/lib/formulario'
 
 const VARIANTES = {
-  primario: 'bg-brand-700 text-on-brand hover:bg-brand-900',
-  secundario: 'border border-line bg-surface text-ink hover:bg-canvas',
-  perigo: 'border border-danger/30 bg-surface text-danger hover:bg-danger-soft',
+  primario: 'border-brand-700 bg-brand-700 text-on-brand hover:border-brand-900 hover:bg-brand-900',
+  secundario: 'border-brand-700 bg-surface text-brand-700 hover:bg-brand-50',
+  perigo: 'border-danger bg-danger text-on-danger hover:border-danger-forte hover:bg-danger-forte',
+  /** Ação do Diário Oficial, em cima de bloco azul. */
+  diario: 'border-info bg-info text-on-info hover:opacity-90',
+  'diario-claro': 'border-info bg-surface text-info hover:bg-info-soft',
 } as const
 
 export type VarianteBotao = keyof typeof VARIANTES
 
-/** Classes de botão, também para `<Link>`. */
+/** Classes de botão, também para `<Link>`. Altura mínima de 52 px: fácil de acertar com o mouse e no toque. */
 export function classeBotao(variante: VarianteBotao = 'primario', className?: string) {
   return cn(
-    'inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+    'inline-flex min-h-13 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border-2 px-5 text-base font-medium no-underline transition-colors disabled:cursor-not-allowed disabled:opacity-60',
     VARIANTES[variante],
     className,
   )
@@ -23,34 +26,58 @@ export function Botao({ variante, className, ...props }: ComponentProps<'button'
   return <button className={classeBotao(variante, className)} {...props} />
 }
 
-const CAMPO = 'w-full rounded-md border border-line bg-surface px-3 py-1.5 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100'
+const CAMPO = 'w-full rounded-md border-2 border-campo bg-surface px-4 text-base text-ink outline-none placeholder:text-subtle focus:border-brand-700 focus:ring-3 focus:ring-brand-300'
 
 export function Entrada({ className, ...props }: ComponentProps<'input'>) {
-  return <input className={cn(CAMPO, className)} {...props} />
+  return <input className={cn(CAMPO, 'min-h-14', className)} {...props} />
 }
 
 export function Selecao({ className, ...props }: ComponentProps<'select'>) {
-  return <select className={cn(CAMPO, className)} {...props} />
+  return <select className={cn(CAMPO, 'min-h-14', className)} {...props} />
 }
 
 export function AreaTexto({ className, ...props }: ComponentProps<'textarea'>) {
-  return <textarea className={cn(CAMPO, 'min-h-24', className)} {...props} />
+  return <textarea className={cn(CAMPO, 'min-h-32 py-3', className)} {...props} />
 }
 
-/** Rótulo + controle + erro do campo (vindo de `estado.erros[nome]`). */
+/** Erro em frase simples, junto do campo. */
+function ErroDoCampo({ children }: { children: ReactNode }) {
+  return (
+    <span className="mt-2.5 flex items-start gap-2.5 rounded-md bg-danger-soft px-4 py-3 text-sm font-medium text-danger-forte">
+      <b className="flex-none rounded-sm bg-danger px-2 text-2xs font-semibold leading-[1.6] text-on-danger">Confira</b>
+      {children}
+    </span>
+  )
+}
+
+/** Rótulo sempre visível + dica + controle + erro do campo (vindo de `estado.erros[nome]`). */
 export function Campo({ rotulo, erro, dica, className, children }: { rotulo: string; erro?: string; dica?: string; className?: string; children: ReactNode }) {
   return (
-    <label className={cn('block space-y-1', className)}>
-      <span className="text-sm font-medium text-ink">{rotulo}</span>
-      {children}
-      {erro ? <span className="block text-xs text-danger">{erro}</span> : dica && <span className="block text-xs text-subtle">{dica}</span>}
+    <label className={cn('block', erro && '[&_input]:border-3 [&_input]:border-danger [&_select]:border-3 [&_select]:border-danger [&_textarea]:border-3 [&_textarea]:border-danger', className)}>
+      <span className="block text-base font-semibold text-ink">{rotulo}</span>
+      {dica && <span className="mt-0.5 block text-xs text-muted">{dica}</span>}
+      <span className="mt-2 block">{children}</span>
+      {erro && <ErroDoCampo>{erro}</ErroDoCampo>}
     </label>
   )
 }
 
-/** Mensagem geral do formulário (erro ou sucesso). */
+/** Mensagem geral do formulário: o erro em vermelho, o que foi salvo em verde. Fica na tela até a pessoa sair ou agir. */
 export function MensagemFormulario({ estado }: { estado?: EstadoFormulario }) {
-  if (estado?.erro) return <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{estado.erro}</p>
-  if (estado?.ok) return <p className="rounded-md bg-ok-soft px-3 py-2 text-sm text-ok">{estado.ok}</p>
+  if (estado?.erro) {
+    return (
+      <p role="alert" className="flex items-start gap-2.5 rounded-md bg-danger-soft px-4 py-3 text-sm font-medium text-danger-forte">
+        <b className="flex-none rounded-sm bg-danger px-2 text-2xs font-semibold leading-[1.6] text-on-danger">Confira</b>
+        {estado.erro}
+      </p>
+    )
+  }
+  if (estado?.ok) {
+    return (
+      <p role="status" className="rounded-lg border-2 border-brand-700 bg-brand-100 px-5 py-4 text-base font-medium text-brand-700">
+        {estado.ok}
+      </p>
+    )
+  }
   return null
 }

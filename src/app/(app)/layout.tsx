@@ -20,7 +20,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <Suspense fallback={<MenuLateral />}>
         <MenuDoUsuario />
       </Suspense>
-      <main className="mx-auto w-full max-w-[120rem] min-w-0 px-4 py-6 lg:px-8 lg:py-8">
+      <main className="mx-auto w-full max-w-[120rem] min-w-0 px-4 pb-16 pt-6 lg:px-12 lg:pb-24 lg:pt-8">
         {/*
           Fronteira única, de propósito. Acima das páginas, ela só aparece ao abrir o site ou no F5: ao trocar de tela, o React mantém
           a tela atual até a nova ficar pronta. Uma fronteira por rota (loading.tsx) mostraria o esqueleto a cada clique, e o React segura

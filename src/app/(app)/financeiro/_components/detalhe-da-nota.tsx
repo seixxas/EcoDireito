@@ -15,7 +15,7 @@ import { MensagemDeCobranca } from './mensagem-de-cobranca'
 function Dado({ rotulo, children }: { rotulo: string; children: ReactNode }) {
   return (
     <div>
-      <dt className="text-sm text-muted">{rotulo}</dt>
+      <dt className="text-xs font-semibold text-subtle">{rotulo}</dt>
       <dd className="mt-0.5 text-ink">{children}</dd>
     </div>
   )
@@ -39,7 +39,7 @@ export function DetalheDaNota({ dados: { hoje: dia, nota, cliente, processo, par
   const recebimento = aberta && (
     <Card titulo={nota.recebimento ? 'Corrigir recebimento' : 'Registrar recebimento'}>
       {situacaoNota(nota, dia) === 'parcial' && (
-        <p className="mb-3 text-sm text-muted">
+        <p className="mb-4">
           Já entraram {brl(nota.recebimento!.valor)} em {formatarData(nota.recebimento!.data)} e faltam {brl(saldoAReceber(nota, dia))}. A nota guarda um recebimento só: para
           somar um novo pagamento, informe aqui o total recebido.
         </p>
@@ -50,7 +50,7 @@ export function DetalheDaNota({ dados: { hoje: dia, nota, cliente, processo, par
 
   return (
     <div className="@container">
-      <div className="grid grid-cols-1 gap-6 @3xl:grid-cols-3 @3xl:gap-8">
+      <div className="grid grid-cols-1 gap-6 @3xl:grid-cols-[minmax(0,1fr)_24rem] @3xl:gap-8">
         {mensagem && (
           <Card titulo="Cobrar">
             <MensagemDeCobranca texto={mensagem} />
@@ -58,17 +58,17 @@ export function DetalheDaNota({ dados: { hoje: dia, nota, cliente, processo, par
         )}
         {acao === 'receber' && recebimento}
 
-        <div className="@3xl:col-span-2">
-          <Secao titulo="Nota">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-4 @xl:grid-cols-3">
-              <div className="col-span-2 @xl:col-span-3">
+        <div className="min-w-0">
+          <Card titulo="Nota">
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-4 @sm:grid-cols-2 @xl:grid-cols-3">
+              <div className="@sm:col-span-2 @xl:col-span-3">
                 <Dado rotulo="Serviço">{nota.descricao}</Dado>
               </div>
               <Dado rotulo="Emissão">{formatarData(nota.emissao)}</Dado>
               <Dado rotulo="Previsão de pagamento">{formatarData(nota.previsao)}</Dado>
               <Dado rotulo="Projeto">
                 {processo ? (
-                  <LinkRapido href={`/projetos/${processo.id}`} className="link">
+                  <LinkRapido href={`/projetos/${processo.id}`} className="link inline-flex min-h-12 items-center">
                     {processo.empreendimento}
                   </LinkRapido>
                 ) : (
@@ -80,24 +80,24 @@ export function DetalheDaNota({ dados: { hoje: dia, nota, cliente, processo, par
               <Dado rotulo="ISS">{brl(nota.iss)}</Dado>
               <Dado rotulo="Retenção na fonte">{nota.retencao ? brl(nota.retencao) : '—'}</Dado>
               <Dado rotulo="Líquido a receber">
-                <span className="font-semibold">{brl(valorLiquido(nota))}</span>
+                <span className="text-[1.25rem] font-semibold">{brl(valorLiquido(nota))}</span>
               </Dado>
               <Dado rotulo="Recebido">{nota.recebimento ? `${brl(nota.recebimento.valor)} em ${formatarData(nota.recebimento.data)}` : '—'}</Dado>
             </dl>
-          </Secao>
+          </Card>
 
           {lancamentos.length > 0 && (
-            <Secao titulo="No caixa">
+            <Secao titulo="No caixa" className="mt-6!">
               <Lista>
                 {lancamentos.map((lancamento) => (
                   <Linha key={lancamento.id} href={`/financeiro/lancamentos/${lancamento.id}`}>
-                    <span className="w-24 text-muted">{formatarData(lancamento.data)}</span>
-                    <span className="min-w-0 flex-1">
+                    <span className="whitespace-nowrap text-muted">{formatarData(lancamento.data)}</span>
+                    <span className="min-w-48 flex-1">
                       {lancamento.descricao}
                       <span className="block text-sm text-muted">{nomeDaConta(lancamento.contaId)}</span>
                       {lancamento.observacao && <span className="block text-sm text-muted">Obs.: {lancamento.observacao}</span>}
                     </span>
-                    <span className="font-medium tabular-nums">{brl(lancamento.valor)}</span>
+                    <span className="text-[1.25rem] font-semibold">{brl(lancamento.valor)}</span>
                   </Linha>
                 ))}
               </Lista>
@@ -110,8 +110,8 @@ export function DetalheDaNota({ dados: { hoje: dia, nota, cliente, processo, par
             {acao !== 'receber' && recebimento}
             {!motivoParaNaoCancelar(nota) && (
               <Card titulo="Cancelar nota">
-                <p className="mb-3 text-sm text-muted">Quando a nota foi cancelada na Prefeitura. Ela continua na lista, riscada.</p>
-                <BotaoCancelarNota notaId={nota.id} numero={nota.numero} />
+                <p className="mb-4">Quando a nota foi cancelada na Prefeitura. Ela continua na lista, riscada.</p>
+                <BotaoCancelarNota notaId={nota.id} numero={nota.numero} resumo={`${cliente.nome} · ${brl(nota.valor)}`} />
               </Card>
             )}
           </div>

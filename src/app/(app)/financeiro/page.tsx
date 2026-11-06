@@ -1,8 +1,7 @@
-import { Plus } from 'lucide-react'
 import type { Metadata } from 'next'
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { SituacaoDaNota } from '@/components/financeiro/situacao-nota'
-import { Abas } from '@/components/ui/abas'
+import { Abas, type Aba } from '@/components/ui/abas'
 import { Busca } from '@/components/ui/busca'
 import { Card } from '@/components/ui/card'
 import { Vazio } from '@/components/ui/expansivel'
@@ -31,7 +30,7 @@ import { situacaoNota } from '@/domain/financeiro/notas'
 import { combina } from '@/lib/buscar'
 import { mesDe } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
-import { brl, formatarMes } from '@/lib/formatar'
+import { brl, contar, formatarMes } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { DetalheDaNota, type AcaoDaNota } from './_components/detalhe-da-nota'
@@ -42,6 +41,15 @@ import { TabelaAFaturar, TabelaEmAberto, TabelaRecebidas, TabelaTodas } from './
 export const metadata: Metadata = { title: 'Faturamento' }
 
 type Filtros = { aba?: string; mes?: string; q?: string; faixa?: string; ordem?: string; pagina?: string; nota?: string; acao?: string }
+
+const FUNDOS: Record<AbaDoCiclo, NonNullable<Aba['fundo']>> = {
+  'a-faturar': 'verde',
+  'a-vencer': 'verde',
+  hoje: 'amarelo',
+  atrasadas: 'vermelho',
+  recebidas: 'neutro',
+  todas: 'neutro',
+}
 
 const VAZIO: Record<AbaDoCiclo, string> = {
   'a-faturar': 'Nenhuma parcela para faturar',
@@ -109,6 +117,7 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
   const acao = filtros.acao === 'receber' || filtros.acao === 'cobrar' ? filtros.acao : undefined
   const tabela = { itens: paginaDeNotas.itens, dia, notaAberta: painel?.nota.id, linkDaNota }
   const periodo = todosOsMeses ? 'em todos os meses' : `em ${formatarMes(mes)}`
+  const contarItens = (id: AbaDoCiclo, n: number) => (id === 'a-faturar' ? contar(n, 'parcela', 'parcelas') : contar(n, 'nota', 'notas'))
 
   return (
     <>
@@ -117,29 +126,31 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
         resumo={fraseDoCiclo(quantidades, q)}
         acoes={
           editar && (
-            <LinkRapido href="/financeiro/notas/nova" className={classeBotao()}>
-              <Plus className="size-4" /> Registrar nota
+            <LinkRapido href="/financeiro/notas/nova" className={classeBotao('primario', 'min-h-14 text-[1.25rem]')}>
+              + Registrar nota
             </LinkRapido>
           )
         }
       />
 
+      <p className="mb-3 text-base font-semibold text-ink">Mostrar</p>
       <Abas
         ativa={aba}
         abas={(Object.keys(ABAS_DO_CICLO) as AbaDoCiclo[]).map((id) => ({
           valor: id,
           rotulo: ABAS_DO_CICLO[id],
           href: link({ aba: id }),
-          contagem: quantidades[id],
+          legenda: `${contarItens(id, quantidades[id])}${id === aba ? ' · selecionado' : ''}`,
           detalhe: brl(id === 'a-faturar' ? somar(parcelasBuscadas.map(({ parcela }) => parcela.valor)) : somar(grupos[id].map(({ nota }) => valorNaAba(id, nota, dia)))),
+          fundo: id === 'atrasadas' && !quantidades.atrasadas ? 'neutro' : FUNDOS[id],
           alerta: id === 'atrasadas' && quantidades.atrasadas > 0,
         }))}
       />
 
-      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <Busca
           valor={q}
-          placeholder="Buscar cliente, grupo, NF ou serviço"
+          placeholder="Cliente, grupo, NF ou serviço"
           manter={{
             aba,
             mes: abaUsaMes(aba) && mes !== atual ? mes : undefined,
@@ -149,15 +160,21 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
           limpar={link({ q: undefined })}
           className="min-w-60"
         />
-        {abaUsaMes(aba) && <NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m })} todos />}
-        <LinkRapido href="/financeiro/faturado-recebido" className="ml-auto text-sm text-muted underline decoration-line underline-offset-2 hover:text-ink">
-          Faturado × recebido
+        <LinkRapido href="/financeiro/faturado-recebido" className="link inline-flex min-h-12 items-center text-base">
+          Ver faturado × recebido
         </LinkRapido>
       </div>
 
+      {abaUsaMes(aba) && (
+        <div className="mb-6">
+          <NavegacaoMes mes={mes} meses={meses} href={(m) => link({ mes: m })} todos />
+        </div>
+      )}
+
       {aba === 'atrasadas' && (
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
           <SegmentedLinks
+            rotulo="Tempo de atraso"
             ativo={faixa?.id ?? 'todas'}
             opcoes={[
               { valor: 'todas', rotulo: 'Todas', href: link({ faixa: undefined }), contagem: quantidades.atrasadas },
@@ -170,14 +187,15 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
             ]}
           />
           <SegmentedLinks
+            rotulo="Ordenar por"
             ativo={ordem}
             opcoes={Object.entries(ORDENS_DAS_ATRASADAS).map(([valor, rotulo]) => ({ valor, rotulo, href: link({ ordem: valor }) }))}
           />
         </div>
       )}
 
-      <Card flush>
-        {aba === 'a-faturar' ? (
+      <Card flush titulo={`${ABAS_DO_CICLO[aba]}${faixa && aba === 'atrasadas' ? `, ${faixa.rotulo.toLowerCase()}` : ''} — ${contarItens(aba, paginado.total)}`}>
+        {paginado.total === 0 ? null : aba === 'a-faturar' ? (
           <TabelaAFaturar itens={paginaDeParcelas.itens} editar={editar} />
         ) : aba === 'recebidas' ? (
           <TabelaRecebidas {...tabela} />

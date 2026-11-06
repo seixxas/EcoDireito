@@ -1,7 +1,9 @@
-import { Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
+import { BotaoConfirmar } from '@/components/ui/botao-confirmar'
 import { Card } from '@/components/ui/card'
-import { Expansivel, Vazio } from '@/components/ui/expansivel'
+import { Vazio } from '@/components/ui/expansivel'
+import { classeBotao } from '@/components/ui/form'
+import { LinkRapido } from '@/components/ui/link-rapido'
 import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
@@ -16,6 +18,8 @@ import { FormularioUsuario } from './_components/formulario-usuario'
 
 export const metadata: Metadata = { title: 'Usuários' }
 
+const COLUNAS = 'xl:grid xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.2fr)_8rem] xl:gap-x-5'
+
 /** "edita prazos e financeiro e cuida dos acessos", em vez de uma tabela de permissões. */
 function oQuePode(papel: Papel) {
   if (papel === 'cliente') return 'vê só o portal dos próprios projetos'
@@ -28,55 +32,72 @@ function oQuePode(papel: Papel) {
   return juntar(partes)
 }
 
-export default async function PaginaUsuarios({ searchParams }: { searchParams: Promise<{ pagina?: string }> }) {
+export default async function PaginaUsuarios({ searchParams }: { searchParams: Promise<{ pagina?: string; novo?: string }> }) {
   const [eu, usuarios, { clientes }, busca] = await Promise.all([exigirArea('usuarios'), listarUsuarios(), carregar(), searchParams])
   const pagina = paginar(usuarios, busca.pagina)
+  const criando = busca.novo !== undefined
 
   return (
     <>
-      <PageHeader titulo="Usuários" resumo={`${contar(usuarios.length, 'pessoa tem', 'pessoas têm')} acesso. Cada perfil vê só a sua parte.`} />
+      <PageHeader
+        titulo="Usuários"
+        resumo={`${contar(usuarios.length, 'pessoa tem', 'pessoas têm')} acesso. Cada perfil vê só a sua parte.`}
+        acoes={
+          <LinkRapido href={criando ? '/usuarios' : '/usuarios?novo=1'} className={classeBotao(criando ? 'secundario' : 'primario', 'min-h-14! text-[1.25rem]!')}>
+            {criando ? 'Fechar' : '+ Novo usuário'}
+          </LinkRapido>
+        }
+      />
 
-      <Lista>
-        {pagina.itens.map((usuario) => (
-          <Linha key={usuario.id}>
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-700">
-              {usuario.nome.at(0)}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-medium text-ink">
-                {usuario.nome}
-                {usuario.id === eu.id && <span className="ml-2 text-xs font-normal text-subtle">você</span>}
-              </span>
-              <span className="block truncate text-xs text-muted">{usuario.email}</span>
-            </span>
-            <span className="hidden min-w-0 flex-1 sm:block">
-              <span className="block text-sm text-ink">
-                {PAPEIS[usuario.papel].nome}
-                {usuario.cliente && <span className="text-muted"> · {usuario.cliente}</span>}
-              </span>
-              <span className="block text-xs text-muted">{oQuePode(usuario.papel)}</span>
-            </span>
-            <span className="w-8 shrink-0">
-              {usuario.id !== eu.id && (
-                <form action={excluirUsuario}>
-                  <input type="hidden" name="id" value={usuario.id} />
-                  <button title="Remover acesso" className="rounded-md p-1.5 text-subtle hover:bg-danger-soft hover:text-danger">
-                    <Trash2 className="size-4" />
-                  </button>
-                </form>
-              )}
-            </span>
-          </Linha>
-        ))}
-      </Lista>
-      <Paginacao {...pagina} href={(n) => `/usuarios?pagina=${n}`} />
-      {usuarios.length === 0 && <Vazio>Sem banco configurado: os usuários aparecem aqui quando o Neon estiver ligado.</Vazio>}
-
-      <Expansivel resumo="Dar acesso a outra pessoa" className="mt-5">
-        <Card>
+      {criando && (
+        <Card titulo="Dar acesso a outra pessoa" className="mb-7">
           <FormularioUsuario clientes={clientes} />
         </Card>
-      </Expansivel>
+      )}
+
+      {usuarios.length > 0 && (
+        <Lista>
+          <li aria-hidden className={`hidden px-4 pb-1 pt-2 text-xs font-semibold text-subtle ${COLUNAS}`}>
+            <span>Nome</span>
+            <span>Perfil</span>
+            <span>E-mail</span>
+          </li>
+          {pagina.itens.map((usuario) => (
+            <Linha key={usuario.id} className={COLUNAS}>
+              <div className="flex min-w-0 flex-1 basis-72 flex-col gap-1.5 xl:contents">
+                <p className="min-w-0 text-[1.25rem] font-semibold leading-snug wrap-anywhere">
+                  {usuario.nome}
+                  {usuario.id === eu.id && <small className="ml-2 text-2xs font-medium text-brand-700">você</small>}
+                </p>
+                <div className="min-w-0">
+                  <p>
+                    {PAPEIS[usuario.papel].nome}
+                    {usuario.cliente && <span className="text-muted"> · {usuario.cliente}</span>}
+                  </p>
+                  <p className="text-xs text-muted">{oQuePode(usuario.papel)}</p>
+                </div>
+                <p className="min-w-0 text-subtle wrap-anywhere">{usuario.email}</p>
+              </div>
+              {usuario.id !== eu.id && (
+                <form action={excluirUsuario} className="xl:justify-self-end">
+                  <input type="hidden" name="id" value={usuario.id} />
+                  <BotaoConfirmar
+                    variante="secundario"
+                    titulo={`Remover o acesso de ${usuario.nome}?`}
+                    oQue={<span className="wrap-anywhere">{usuario.email}</span>}
+                    consequencia="A pessoa não vai mais conseguir entrar no sistema."
+                    sim="Sim, remover o acesso"
+                  >
+                    Remover
+                  </BotaoConfirmar>
+                </form>
+              )}
+            </Linha>
+          ))}
+        </Lista>
+      )}
+      <Paginacao {...pagina} href={(n) => `/usuarios?pagina=${n}`} />
+      {usuarios.length === 0 && <Vazio>Sem banco configurado: os usuários aparecem aqui quando o Neon estiver ligado.</Vazio>}
     </>
   )
 }

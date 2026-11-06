@@ -1,12 +1,10 @@
-import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
+import { BotaoConfirmar } from '@/components/ui/botao-confirmar'
 import { Card } from '@/components/ui/card'
-import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
-import { Secao } from '@/components/ui/secao'
 import { obterLancamento } from '@/data/financeiro'
 import { exigirArea } from '@/data/sessao'
 import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
@@ -23,7 +21,7 @@ export const metadata: Metadata = { title: 'Lançamento' }
 function Dado({ rotulo, children, className }: { rotulo: string; children: ReactNode; className?: string }) {
   return (
     <div className={className}>
-      <dt className="text-sm text-muted">{rotulo}</dt>
+      <dt className="text-xs font-semibold text-subtle">{rotulo}</dt>
       <dd className="mt-0.5 text-ink">{children}</dd>
     </div>
   )
@@ -41,21 +39,22 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
 
   return (
     <>
-      <LinkRapido href={voltar} className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
-        <ArrowLeft className="size-4" /> Lançamentos de {formatarMes(mes)}
-      </LinkRapido>
-      <PageHeader titulo={lancamento.descricao} resumo={`${brl(lancamento.valor)} em ${formatarData(lancamento.data)} · ${nomeDaConta(lancamento.contaId)}`} />
+      <PageHeader
+        titulo={lancamento.descricao}
+        voltar={{ href: voltar, rotulo: `Voltar para Lançamentos de ${formatarMes(mes)}` }}
+        resumo={`${brl(lancamento.valor)} em ${formatarData(lancamento.data)} · ${nomeDaConta(lancamento.contaId)}`}
+      />
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <Secao titulo="Lançamento">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-4 sm:grid-cols-3">
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="min-w-0">
+          <Card titulo="Lançamento">
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
               <Dado rotulo="Data">{formatarData(lancamento.data)}</Dado>
               <Dado rotulo="Valor">
                 <span className={cn('font-semibold', lancamento.valor > 0 && 'text-ok')}>{brl(lancamento.valor)}</span>
               </Dado>
               <Dado rotulo="Conta">{nomeDaConta(lancamento.contaId)}</Dado>
-              <Dado rotulo="Competência" className="col-span-2 sm:col-span-3">
+              <Dado rotulo="Competência" className="sm:col-span-full">
                 {textoDaCompetencia(lancamento) ? (
                   <span className="font-medium text-warn">{textoDaCompetencia(lancamento)}</span>
                 ) : (
@@ -63,11 +62,11 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
                     {formatarMes(lancamento.competencia)} <span className="text-sm text-muted">(o mês do pagamento)</span>
                   </>
                 )}
-                <span className="mt-1 block max-w-prose text-xs text-subtle">{EXPLICACAO_COMPETENCIA}</span>
+                <span className="mt-1 block max-w-prose text-sm text-muted">{EXPLICACAO_COMPETENCIA}</span>
               </Dado>
               <Dado rotulo="Projeto">
                 {processo ? (
-                  <LinkRapido href={`/projetos/${processo.id}`} className="link">
+                  <LinkRapido href={`/projetos/${processo.id}`} className="link inline-flex min-h-12 items-center">
                     {processo.empreendimento}
                   </LinkRapido>
                 ) : (
@@ -76,14 +75,14 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
               </Dado>
               <Dado rotulo="Nota fiscal">
                 {nota ? (
-                  <LinkRapido href={`/financeiro/notas/${nota.id}`} className="link">
+                  <LinkRapido href={`/financeiro/notas/${nota.id}`} className="link inline-flex min-h-12 items-center">
                     NF {nota.numero}
                   </LinkRapido>
                 ) : (
                   '—'
                 )}
               </Dado>
-              <Dado rotulo="No extrato do banco" className="col-span-2 sm:col-span-3">
+              <Dado rotulo="No extrato do banco" className="sm:col-span-full">
                 {linhaExtrato ? (
                   <>
                     {linhaExtrato.descricao}
@@ -95,28 +94,36 @@ export default async function PaginaLancamento({ params }: { params: Promise<{ i
                   <span className="text-muted">{nota ? 'Não veio de extrato: é o recebimento registrado na nota.' : 'Não veio de extrato: foi lançado à mão.'}</span>
                 )}
               </Dado>
-              <Dado rotulo="Observação" className="col-span-2 sm:col-span-3">
+              <Dado rotulo="Observação" className="sm:col-span-full">
                 {lancamento.observacao ? <span className="whitespace-pre-line">{lancamento.observacao}</span> : <span className="text-muted">—</span>}
               </Dado>
             </dl>
-          </Secao>
+          </Card>
         </div>
 
         {editar && (
           <div className="space-y-6">
             <Card titulo={nota ? 'Observação' : 'Editar'}>
-              {nota && <p className="mb-3 text-sm text-muted">Descrição, conta e valor vêm da NF {nota.numero} e mudam pelo recebimento da nota.</p>}
+              {nota && <p className="mb-4">Descrição, conta e valor vêm da NF {nota.numero} e mudam pelo recebimento da nota.</p>}
               <FormularioEdicao lancamento={lancamento} processos={processos.map((p) => ({ id: p.id, nome: p.empreendimento }))} soObservacao={Boolean(nota)} />
             </Card>
             {!lancamento.notaId && (
               <Card titulo="Apagar lançamento">
-                <p className="mb-3 text-sm text-muted">
+                <p className="mb-4">
                   {linhaExtrato ? 'A linha do extrato volta para a fila “a classificar”.' : 'Some do caixa e da DRE.'} Data e valor não se editam: apague e lance de novo.
                 </p>
                 <form action={excluirLancamento}>
                   <input type="hidden" name="id" value={lancamento.id} />
                   <input type="hidden" name="voltar" value={voltar} />
-                  <button className={classeBotao('perigo')}>Apagar</button>
+                  <BotaoConfirmar
+                    titulo="Apagar este lançamento?"
+                    oQue={`${lancamento.descricao} · ${brl(lancamento.valor)} · ${formatarData(lancamento.data)}`}
+                    consequencia={linhaExtrato ? 'A linha do extrato volta para a fila “a classificar”.' : 'Some do caixa e da DRE.'}
+                    sim="Sim, apagar o lançamento"
+                    className="w-full"
+                  >
+                    Apagar
+                  </BotaoConfirmar>
                 </form>
               </Card>
             )}

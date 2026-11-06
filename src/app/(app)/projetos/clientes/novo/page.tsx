@@ -1,14 +1,12 @@
 import type { Metadata } from 'next'
-import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
 import { exigirArea } from '@/data/sessao'
 import { caminhoInterno } from '@/lib/permissoes'
 import { FormularioCliente } from '../../_components/formulario-cliente'
-import { LinkVoltar } from '../../_components/link-voltar'
 
 export const metadata: Metadata = { title: 'Novo cliente' }
 
-/** De onde a pessoa veio, para a seta de voltar dizer para onde vai. */
+/** De onde a pessoa veio, para o link de voltar dizer para onde vai. */
 function rotuloDaVolta(voltar: string) {
   if (voltar.startsWith('/comercial/nova')) return 'Voltar para a proposta'
   if (voltar.startsWith('/projetos/novo')) return 'Voltar para o novo projeto'
@@ -22,12 +20,13 @@ export default async function PaginaNovoCliente({ searchParams }: { searchParams
   const voltar = pedido && caminhoInterno(pedido) ? pedido : undefined
 
   return (
-    <>
-      {voltar ? <LinkVoltar href={voltar}>{rotuloDaVolta(voltar)}</LinkVoltar> : <LinkVoltar href="/projetos/clientes">Clientes</LinkVoltar>}
-      <PageHeader titulo="Novo cliente" resumo={voltar ? 'Ao salvar, você volta para onde estava, com este cliente já escolhido.' : undefined} />
-      <Card>
-        <FormularioCliente voltar={voltar} />
-      </Card>
-    </>
+    <div className="max-w-[55rem]">
+      <PageHeader
+        voltar={voltar ? { href: voltar, rotulo: rotuloDaVolta(voltar) } : { href: '/projetos/clientes', rotulo: 'Voltar para Clientes' }}
+        titulo="Novo cliente"
+        resumo={voltar ? 'Ao salvar, você volta para onde estava, com este cliente já escolhido.' : undefined}
+      />
+      <FormularioCliente voltar={voltar} />
+    </div>
   )
 }

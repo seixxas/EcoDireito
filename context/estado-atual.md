@@ -1,6 +1,6 @@
 # Estado atual
 
-Atualizado em 2026-11-04. Os dados ficam no banco Neon (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login.
+Atualizado em 2026-11-05. Os dados ficam no banco Neon (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login.
 Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de demonstração.
 
 ## Pronto
@@ -12,13 +12,13 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/prazos` | Prazos | Prazos em aberto por período (vencidos, esta semana, próximas semanas, mais adiante), cálculo recolhido; `?filtro=orgao` e `?filtro=cumpridos`; busca (`?q=`) e filtro por responsável; 10 por página |
 | `/projetos` | Processos | Lista com fase e próximo prazo; busca (`?q=`) e filtro por fase (`?fase=`); cadastrar processo (`/projetos/novo`) |
 | `/projetos/[id]` | Processo | Barra das 8 fases clicável (`?aba=etapas&fase=`) e abas: Proposta (documento para imprimir; enviada, aprovada, recusada), Etapas (checklist da fase, "Marcar como feita" com observação), Prazos, Linha do tempo (apagar evento) e Cobrança (parcelas, "Emitir nota"); editar em `/projetos/[id]/editar` |
-| `/comercial` | Comercial | Funil de propostas (em elaboração, enviadas, aprovadas, recusadas) com valor em aberto, conversão e quem pede retorno; "Nova proposta" em `/comercial/nova` (o "Cliente novo" volta para a proposta com o cliente escolhido) |
+| `/comercial` | Comercial | Funil de propostas (em elaboração, enviadas, aprovadas, recusadas) com valor em aberto, conversão e quem pede retorno; "Nova proposta" em `/comercial/nova`, em 3 passos só na tela (um formulário só; "Cadastrar novo cliente" volta para a proposta com o cliente escolhido) |
 | `/comercial/prospeccao` | Prospecção | Em desenvolvimento: prévia com oportunidades de exemplo (alvarás novos, SPEs de grupos clientes, terrenos com vegetação) |
 | `/projetos/clientes` | Clientes | Lista com busca por nome, CNPJ e grupo; cadastro e edição de clientes |
-| `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; busca no texto, empresa e nº SEI; separa atos de processos acompanhados e de clientes sem processo, diz por que cada ato está ali; "Lançar no processo" marca a etapa, "Cadastrar o processo e lançar" cria o processo e já lança, "Ignorar" pede motivo; abas Para revisar, Lançados e Ignorados |
+| `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; busca no texto, empresa e nº SEI; separa atos de processos acompanhados e de clientes sem processo, diz por que cada ato está ali; "Lançar no processo" marca a etapa, "Cadastrar o processo e lançar" cria o processo e já lança, "Ignorar" pergunta antes e pede motivo; abas Para revisar, Lançados e Ignorados |
 | `/financeiro` | Faturamento | Abas do ciclo (`?aba=`): A faturar, A vencer, Vencem hoje, Atrasadas (faixas e ordem), Recebidas e Todas (com seletor de mês), cada uma com quantidade e valor; busca, botões na linha e painel lateral da nota (`?nota=`, `&acao=receber`, `&acao=cobrar`). `/financeiro/receber` redireciona para a aba Atrasadas |
 | `/financeiro/lucratividade` | Lucratividade por projeto | Simulação com busca, filtro de margem e paginação; detalhe em `/[processoId]` |
-| `/financeiro/faturado-recebido` | Faturado × recebido | Gráfico por mês, com link discreto no Faturamento |
+| `/financeiro/faturado-recebido` | Faturado × recebido | Gráfico por mês e tabela com os mesmos números, com link no Faturamento |
 | `/financeiro/dre` | DRE | Grade no modelo da planilha: realizado por mês, contas e período (com % da receita líquida) travados; blocos que abrem, caixa ou competência, período (completo, meses fechados, trimestre), lançamentos abaixo da tabela e "Exportar para Excel" |
 | `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas (clicar numa semana mostra dia a dia, `?semana=`) e realizado por mês |
 | `/financeiro/notas/nova` | Registrar nota | Nota avulsa ou a partir de parcela liberada (`?parcela=`) |
@@ -26,13 +26,13 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 | `/financeiro/lancamentos` | Lançamentos | Lista por mês (ou todos) com busca e filtro de conta; lançamento manual; `/[id]` edita descrição, conta, competência, processo e observação |
 | `/financeiro/contratos` | Contratos | Parcelas por processo; `/[processoId]` inclui, edita e apaga |
 | `/financeiro/extrato` | Extrato bancário | Importa OFX/CSV; fila a classificar com sugestão (já lançado, recebimento de nota, regra); regras |
-| `/usuarios` | Usuários | Sócias criam e removem acessos (equipe, contador, cliente). O Comercial aparece para sócias, financeiro e equipe; não para contador e cliente |
+| `/usuarios` | Usuários | Sócias criam acessos (`?novo=1` abre o formulário) e removem, com confirmação (equipe, contador, cliente). O Comercial aparece para sócias, financeiro e equipe; não para contador e cliente |
 | `/portal` e `/portal/[id]` | Portal do cliente | O cliente entra e vê só os próprios processos |
 
 - Navegação "caixa única" (04/11): menu com Hoje, Propostas, Processos e Financeiro, busca geral (`/busca`, Ctrl+K), botão "Novo", atalhos fixados e abas no topo de cada área. Guia em `context/interface.md`. Falta o "Adiar" na lista Para fazer, que precisa de tabela nova.
-- Modo escuro (botão lua/sol no pé do menu), menu verde e paginação de 10 itens (`src/lib/paginar.ts`).
+- Modo escuro (botão "Tema escuro" no pé do menu) e paginação de 10 itens (`src/lib/paginar.ts`).
 - Processos em 8 fases (Proposta antes da Documentação), cada uma com as suas etapas; o LAA fecha a fase Resposta, depois do Comunique-se. Processo novo nasce sem nº SEI. Veja `context/prazos.md`.
-- Redesign no ar desde 03/11 (guia em `context/interface.md`): Hoje, prazos, processo em abas, Diário, financeiro, portal, login e usuários.
+- Visual Parque + Semáforo (05/11), para pessoas com mais de 60 anos: letra e botões grandes, tudo escrito, blocos coloridos pela urgência. Guia em `context/interface.md`.
 - Navegação rápida: telas guardadas só no navegador por 60 segundos e preparadas com o mouse em cima (`arquitetura.md`, "Velocidade da navegação").
 - Perfis (`src/lib/permissoes.ts`): sócia, financeiro, equipe, contador e cliente. O recorte do que cada um vê fica em `carregar()` (`src/data/base.ts`).
 - Domínio com testes (`npm test`); build de produção passando (`npm run build`).

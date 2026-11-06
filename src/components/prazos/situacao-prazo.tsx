@@ -14,10 +14,9 @@ export function descreverSituacao(prazo: Prazo, hoje: DataISO): { rotulo: string
   if (situacao === 'vencido') {
     return doOrgao ? { rotulo: `SVMA atrasada ${dias(-faltam)}`, tom: 'warn' } : { rotulo: `Venceu há ${dias(-faltam)}`, tom: 'danger' }
   }
-  if (situacao === 'hoje') return doOrgao ? { rotulo: 'Previsto para hoje', tom: 'info' } : { rotulo: 'Vence hoje', tom: 'danger' }
+  if (situacao === 'hoje') return doOrgao ? { rotulo: 'Previsto para hoje', tom: 'info' } : { rotulo: 'Vence hoje', tom: 'warn' }
   const quando = faltam === 1 ? 'amanhã' : `em ${dias(faltam)}`
-  if (doOrgao) return { rotulo: `Previsto ${quando}`, tom: 'info' }
-  return { rotulo: `Vence ${quando}`, tom: situacao === 'proximo' ? 'warn' : 'ok' }
+  return doOrgao ? { rotulo: `Previsto ${quando}`, tom: 'info' } : { rotulo: `Vence ${quando}`, tom: 'brand' }
 }
 
 export function SituacaoPrazo({ prazo, hoje }: { prazo: Prazo; hoje: DataISO }) {

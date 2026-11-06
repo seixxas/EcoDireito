@@ -1,13 +1,14 @@
-import { ExternalLink, Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { notFound } from 'next/navigation'
 import { BotaoFixar } from '@/components/layout/fixados'
 import { LinhaPrazo } from '@/components/prazos/linha-prazo'
 import { descreverSituacao } from '@/components/prazos/situacao-prazo'
+import { TrilhaDeFases } from '@/components/processos/trilha-de-fases'
 import { Abas } from '@/components/ui/abas'
 import { Badge, type Tom } from '@/components/ui/badge'
-import { BotaoEnviar } from '@/components/ui/botao-enviar'
+import { BotaoConfirmar } from '@/components/ui/botao-confirmar'
+import { Card } from '@/components/ui/card'
 import { Expansivel, Vazio } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
 import { Linha, Lista } from '@/components/ui/lista'
@@ -15,19 +16,18 @@ import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
 import { Secao } from '@/components/ui/secao'
 import { Situacao } from '@/components/ui/situacao'
+import { Zona } from '@/components/ui/zona'
 import { hoje } from '@/data/hoje'
 import { obterProcesso } from '@/data/processos'
 import { exigirArea } from '@/data/sessao'
 import type { SituacaoParcela } from '@/domain/financeiro/parcelas'
 import { estaAberto, proximoPrazo } from '@/domain/prazos'
 import { EVENTOS, FASES, situacaoDaFase } from '@/domain/processos'
-import { cn } from '@/lib/cn'
 import { brl, formatarData } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { EtapasDaFase } from '../_components/etapas-da-fase'
 import { PropostaDoProcesso } from '../_components/proposta-do-processo'
-import { LinkVoltar } from '../_components/link-voltar'
 import { apagarEvento } from '../actions'
 
 export const metadata: Metadata = { title: 'Projeto' }
@@ -38,6 +38,8 @@ const PARCELA: Record<SituacaoParcela, { rotulo: string; tom: Tom }> = {
   faturada: { rotulo: 'Faturada', tom: 'info' },
   recebida: { rotulo: 'Recebida', tom: 'ok' },
 }
+
+const ESTADO_NA_TRILHA = { concluida: 'feita', atual: 'atual', futura: 'futura' } as const
 
 export default async function PaginaProcesso({
   params,
@@ -64,34 +66,42 @@ export default async function PaginaProcesso({
   // Enquanto o processo está na Proposta, ela é a aba que abre primeiro.
   const padrao = proposta && processo.faseAtual === 1 ? 'proposta' : 'etapas'
   const abas = [
-    ...(proposta ? [{ valor: 'proposta', rotulo: 'Proposta' }] : []),
     { valor: 'etapas', rotulo: 'Etapas' },
+    ...(proposta ? [{ valor: 'proposta', rotulo: 'Proposta' }] : []),
     { valor: 'prazos', rotulo: 'Prazos', contagem: abertos.length },
     { valor: 'linha-do-tempo', rotulo: 'Linha do tempo', contagem: eventos.total },
     ...(pode(usuario.papel, 'financeiro') ? [{ valor: 'cobranca', rotulo: 'Cobrança', contagem: parcelas.length }] : []),
   ].map((a) => ({ ...a, href: a.valor === padrao ? `/projetos/${id}` : `/projetos/${id}?aba=${a.valor}` }))
   const aba = abas.find((a) => a.valor === pedida)?.valor ?? padrao
 
-  const dadosDoProcesso = [
-    cliente.nome,
-    processo.endereco,
-    processo.numeroSei ? `SEI ${processo.numeroSei}` : 'Sem nº SEI (ainda não aberto na SVMA)',
-    processo.numeroSimproc && `SIMPROC ${processo.numeroSimproc}`,
-    processo.numeroTca && `TCA ${processo.numeroTca}`,
-    processo.servico === 'manejo' ? 'Manejo' : 'Licenciamento',
-    processo.responsavel && `Responsável: ${processo.responsavel}`,
-  ].filter(Boolean)
+  const ficha = [
+    ['Cliente', cliente.nome],
+    ['Endereço', processo.endereco],
+    ['Processo SEI', processo.numeroSei || 'Sem nº SEI (ainda não aberto na SVMA)'],
+    ['SIMPROC', processo.numeroSimproc],
+    ['TCA', processo.numeroTca],
+    ['Serviço', processo.servico === 'manejo' ? 'Manejo' : 'Licenciamento'],
+    ['Responsável', processo.responsavel],
+  ].filter(([, valor]) => valor)
 
   return (
     <>
       <div className="print:hidden">
-        {processo.faseAtual === 1 || recusada ? <LinkVoltar href="/comercial">Comercial</LinkVoltar> : <LinkVoltar href="/projetos">Projetos</LinkVoltar>}
         <PageHeader
+          voltar={processo.faseAtual === 1 || recusada ? { href: '/comercial', rotulo: 'Voltar para Propostas' } : { href: '/projetos', rotulo: 'Voltar para Projetos' }}
           titulo={processo.empreendimento}
           resumo={
-            recusada
-              ? `Proposta recusada em ${formatarData(situacaoProposta.recusadaEm!)}. Não aparece na lista de projetos; fica no Comercial.`
-              : `Fase ${fase.numero} de ${FASES.length}, ${fase.nome}. ${proximo ? `Próximo prazo: ${proximo.regra.titulo} (${descreverSituacao(proximo, dia).rotulo.toLowerCase()}).` : 'Nenhum prazo em aberto.'}`
+            <>
+              {recusada && <p className="mb-3">Proposta recusada em {formatarData(situacaoProposta.recusadaEm!)}. Não aparece na lista de projetos; fica em Propostas.</p>}
+              <dl className="mt-3.5 flex flex-wrap gap-x-12 gap-y-2">
+                {ficha.map(([rotulo, valor]) => (
+                  <div key={rotulo} className="min-w-0">
+                    <dt className="text-2xs font-semibold text-subtle">{rotulo}</dt>
+                    <dd className="text-base text-ink">{valor}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
           }
           acoes={
             <>
@@ -102,44 +112,32 @@ export default async function PaginaProcesso({
                 </LinkRapido>
               )}
               <LinkRapido href={`/portal/${processo.id}`} target="_blank" className={classeBotao('secundario')}>
-                Ver como o cliente vê <ExternalLink className="size-4" />
+                Ver como o cliente vê
               </LinkRapido>
             </>
           }
         />
 
-        <p className="-mt-3 mb-5 text-sm text-muted">{dadosDoProcesso.join(' · ')}</p>
+        <Zona
+          tom="proximos"
+          titulo={`Fase ${fase.numero} de ${FASES.length} — ${fase.nome}`}
+          detalhe={!recusada && (proximo ? `Próximo prazo: ${proximo.regra.titulo} (${descreverSituacao(proximo, dia).rotulo.toLowerCase()}).` : 'Nenhum prazo em aberto.')}
+          className="pb-5.5!"
+        >
+          <TrilhaDeFases
+            fases={FASES.map((f) => ({
+              numero: f.numero,
+              nome: f.nome,
+              estado: ESTADO_NA_TRILHA[situacaoDaFase(processo, f.numero, dia)],
+              href: `/projetos/${id}?aba=etapas&fase=${f.numero}`,
+              dica: `Ver as etapas: ${f.descricao}`,
+              selecionada: aba === 'etapas' && f.numero === faseVista,
+            }))}
+          />
+          <p className="mt-4 text-sm text-muted">Clique numa fase para ver as etapas dela.</p>
+        </Zona>
 
-        <ol className="mb-1 grid grid-cols-8 gap-1" aria-label="Fases do projeto">
-          {FASES.map((f) => {
-            const situacao = situacaoDaFase(processo, f.numero, dia)
-            const vista = aba === 'etapas' && f.numero === faseVista
-            return (
-              <li key={f.numero}>
-                <LinkRapido
-                  href={`/projetos/${id}?aba=etapas&fase=${f.numero}`}
-                  scroll={false}
-                  title={`Ver as etapas: ${f.descricao}`}
-                  aria-current={vista ? 'step' : undefined}
-                  className={cn('group block rounded-md px-1 pb-1.5 pt-1 transition-colors hover:bg-brand-50', vista && 'bg-brand-50')}
-                >
-                  <span className={cn('block h-1.5 rounded-full', situacao === 'concluida' ? 'bg-ok' : situacao === 'atual' ? 'bg-accent' : 'bg-line')} />
-                  <span
-                    className={cn(
-                      'mt-1.5 block text-xs leading-tight group-hover:text-brand-700',
-                      vista ? 'font-semibold text-brand-700' : f.numero === fase.numero ? 'font-medium text-ink' : 'hidden text-subtle sm:block',
-                    )}
-                  >
-                    {f.numero}. {f.nome}
-                  </span>
-                </LinkRapido>
-              </li>
-            )
-          })}
-        </ol>
-        <p className="mb-5 px-1 text-xs text-subtle">Clique numa fase para ver as etapas dela.</p>
-
-        <Abas abas={abas} ativa={aba} />
+        <Abas abas={abas} ativa={aba} className="w-fit max-w-full" />
       </div>
 
       {aba === 'proposta' && proposta && (
@@ -159,12 +157,17 @@ export default async function PaginaProcesso({
 
       {aba === 'prazos' && (
         <>
-          <Lista>
-            {abertos.map((prazo) => (
-              <LinhaPrazo key={prazo.id} prazo={prazo} hoje={dia} />
-            ))}
-          </Lista>
-          {abertos.length === 0 && <Vazio>Nenhum prazo em aberto.</Vazio>}
+          <Zona tom="proximos" titulo="Prazos em aberto">
+            {abertos.length > 0 ? (
+              <ul>
+                {abertos.map((prazo) => (
+                  <LinhaPrazo key={prazo.id} prazo={prazo} hoje={dia} />
+                ))}
+              </ul>
+            ) : (
+              <Vazio>Nenhum prazo em aberto.</Vazio>
+            )}
+          </Zona>
           {cumpridos.length > 0 && (
             <Secao titulo="Cumpridos">
               <Expansivel resumo={cumpridos.length === 1 ? 'Mostrar o prazo cumprido' : `Mostrar os ${cumpridos.length} prazos cumpridos`}>
@@ -182,7 +185,7 @@ export default async function PaginaProcesso({
       {aba === 'linha-do-tempo' && (
         <>
           {editar && (
-            <p className="mb-3 text-sm text-muted">
+            <p className="mb-4 max-w-[84ch] text-base text-muted">
               Para lançar um evento, marque a etapa na{' '}
               <LinkRapido href={`/projetos/${id}?aba=etapas&fase=${fase.numero}`} className="link">
                 fase {fase.nome}
@@ -190,106 +193,114 @@ export default async function PaginaProcesso({
               (ou em outra fase, clicando nela na barra acima).
             </p>
           )}
-          <Lista>
-            {eventos.itens.map((evento) => {
-              const info = EVENTOS[evento.tipo]
-              const seguinte = FASES.find((f) => f.numero === info.fase + 1)
-              return (
-              <Linha key={evento.id} className="group">
-                <span className="w-24 shrink-0 tabular-nums text-muted">{formatarData(evento.data)}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-ink">{info.nome}</span>
-                  {evento.observacao && <span className="block whitespace-pre-line text-sm text-muted">{evento.observacao}</span>}
-                  {info.fecha && evento.data <= dia && (
-                    <span className="block text-xs text-ok">{seguinte ? `Fechou a fase ${FASES[info.fase - 1].nome}; o projeto passou para ${seguinte.nome}` : 'Encerrou o projeto'}</span>
-                  )}
-                </span>
-                <span className="hidden w-44 shrink-0 truncate text-xs text-subtle md:block">
-                  Fase {info.fase} · {FASES[info.fase - 1].nome}
-                </span>
-                {evento.data > dia && <Situacao tom="warn">planejado</Situacao>}
-                <Badge>{evento.origem === 'diario' ? 'Diário Oficial' : 'Equipe'}</Badge>
-                {editar && (
-                  <details className="relative opacity-0 focus-within:opacity-100 group-hover:opacity-100 open:opacity-100">
-                    <summary className="cursor-pointer list-none rounded p-1 text-subtle hover:text-danger [&::-webkit-details-marker]:hidden" title="Apagar evento" aria-label="Apagar evento">
-                      <Trash2 className="size-4" />
-                    </summary>
-                    <form action={apagarEvento.bind(null, evento.id)} className="absolute right-0 z-10 mt-1 w-60 rounded-lg border border-line bg-surface p-3 shadow-sm">
-                      <p className="mb-2 text-xs text-muted">
-                        Os prazos gerados por ele somem, e os que ele cumpriu voltam a ficar em aberto.
-                        {evento.origem === 'diario' && ' O ato volta para a caixa de entrada do Diário Oficial.'}
-                        {info.fecha && ' A fase não volta sozinha: se precisar, corrija em Editar.'}
+          {eventos.total > 0 ? (
+            <Lista className="@container">
+              {eventos.itens.map((evento) => {
+                const info = EVENTOS[evento.tipo]
+                const seguinte = FASES.find((f) => f.numero === info.fase + 1)
+                return (
+                  <Linha key={evento.id} className="@[52rem]:flex-nowrap">
+                    <span className="w-30 shrink-0 text-base font-semibold text-ink">{formatarData(evento.data)}</span>
+                    <div className="order-1 min-w-0 basis-full @[52rem]:order-none @[52rem]:flex-1 @[52rem]:basis-0">
+                      <p className="text-lg font-semibold text-ink">{info.nome}</p>
+                      <p className="text-sm text-muted">
+                        Fase {info.fase} · {FASES[info.fase - 1].nome}
                       </p>
-                      <BotaoEnviar variante="perigo" className="w-full">
-                        Apagar evento
-                      </BotaoEnviar>
-                    </form>
-                  </details>
-                )}
-              </Linha>
-              )
-            })}
-          </Lista>
-          {eventos.total === 0 && <Vazio>Nenhum evento ainda.</Vazio>}
+                      {evento.observacao && <p className="mt-1 whitespace-pre-line text-sm text-muted">{evento.observacao}</p>}
+                      {info.fecha && evento.data <= dia && (
+                        <p className="mt-1 text-sm font-medium text-ok">{seguinte ? `Fechou a fase ${FASES[info.fase - 1].nome}; o projeto passou para ${seguinte.nome}` : 'Encerrou o projeto'}</p>
+                      )}
+                    </div>
+                    <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+                      {evento.data > dia && <Situacao tom="warn">Planejado</Situacao>}
+                      <Badge>{evento.origem === 'diario' ? 'Diário Oficial' : 'Equipe'}</Badge>
+                    </div>
+                    {editar && (
+                      <form action={apagarEvento.bind(null, evento.id)} className="order-2 @[52rem]:order-none">
+                        <BotaoConfirmar
+                          variante="secundario"
+                          titulo="Apagar este evento?"
+                          oQue={`${info.nome} · ${formatarData(evento.data)}`}
+                          consequencia={
+                            <>
+                              Os prazos gerados por ele somem, e os que ele cumpriu voltam a ficar em aberto.
+                              {evento.origem === 'diario' && ' O ato volta para a caixa de entrada do Diário Oficial.'}
+                              {info.fecha && ' A fase não volta sozinha: se precisar, corrija em Editar.'}
+                            </>
+                          }
+                          sim="Sim, apagar o evento"
+                        >
+                          Apagar evento
+                        </BotaoConfirmar>
+                      </form>
+                    )}
+                  </Linha>
+                )
+              })}
+            </Lista>
+          ) : (
+            <Vazio>Nenhum evento ainda.</Vazio>
+          )}
           <Paginacao {...eventos} href={(n) => `/projetos/${id}?aba=linha-do-tempo${n > 1 ? `&pagina=${n}` : ''}`} />
         </>
       )}
 
       {aba === 'cobranca' && (
-        <Secao
+        <Card
           titulo="Contrato"
+          flush={parcelas.length > 0}
           acao={
             editarFinanceiro && (
-              <LinkRapido href={`/financeiro/contratos/${processo.id}`} className="link text-sm font-medium">
+              <LinkRapido href={`/financeiro/contratos/${processo.id}`} className={classeBotao('secundario')}>
                 Editar contrato
               </LinkRapido>
             )
           }
         >
           {parcelas.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="tabela">
-                <thead>
-                  <tr>
-                    <th>Parcela</th>
-                    <th className="num">Valor</th>
-                    <th>Libera quando</th>
-                    <th>Situação</th>
-                    <th>Nota fiscal</th>
+            <table className="tabela">
+              <thead>
+                <tr>
+                  <th>Parcela</th>
+                  <th className="num">Valor</th>
+                  <th>Libera quando</th>
+                  <th>Situação</th>
+                  <th>Nota fiscal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {parcelas.map(({ parcela, situacao, nota, liberadaEm }) => (
+                  <tr key={parcela.id}>
+                    <td className="font-medium">{parcela.descricao}</td>
+                    <td className="num">{brl(parcela.valor)}</td>
+                    <td className="text-muted">
+                      {EVENTOS[parcela.gatilho].nome}
+                      {liberadaEm && <span className="block text-xs">aconteceu em {formatarData(liberadaEm)}</span>}
+                    </td>
+                    <td>
+                      <Situacao tom={PARCELA[situacao].tom} className="whitespace-nowrap">
+                        {PARCELA[situacao].rotulo}
+                      </Situacao>
+                    </td>
+                    <td className="text-muted">
+                      {nota ? (
+                        `NF ${nota.numero} · ${formatarData(nota.emissao)}`
+                      ) : situacao === 'liberada' && editarFinanceiro ? (
+                        <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('secundario')}>
+                          Emitir nota
+                        </LinkRapido>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {parcelas.map(({ parcela, situacao, nota, liberadaEm }) => (
-                    <tr key={parcela.id}>
-                      <td className="font-medium">{parcela.descricao}</td>
-                      <td className="num">{brl(parcela.valor)}</td>
-                      <td className="text-muted">
-                        {EVENTOS[parcela.gatilho].nome}
-                        {liberadaEm && <span className="block text-xs text-subtle">aconteceu em {formatarData(liberadaEm)}</span>}
-                      </td>
-                      <td>
-                        <Situacao tom={PARCELA[situacao].tom}>{PARCELA[situacao].rotulo}</Situacao>
-                      </td>
-                      <td className="text-muted">
-                        {nota ? (
-                          `NF ${nota.numero} · ${formatarData(nota.emissao)}`
-                        ) : situacao === 'liberada' && editarFinanceiro ? (
-                          <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="link font-medium">
-                            Emitir nota
-                          </LinkRapido>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           ) : (
             <Vazio>Nenhum contrato cadastrado para este projeto.</Vazio>
           )}
-        </Secao>
+        </Card>
       )}
     </>
   )

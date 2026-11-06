@@ -1,10 +1,8 @@
 'use client'
 
-import { Star, X } from 'lucide-react'
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { useSyncExternalStore } from 'react'
 import { classeBotao } from '@/components/ui/form'
-import { cn } from '@/lib/cn'
 
 type Fixado = { href: string; rotulo: string }
 
@@ -59,7 +57,7 @@ export function BotaoFixar({ href, rotulo }: Fixado) {
       onClick={() => gravar(fixado ? fixados.filter((item) => item.href !== href) : [...fixados, { href, rotulo }])}
       className={classeBotao('secundario')}
     >
-      <Star className={cn('size-4', fixado && 'fill-accent text-accent')} /> {fixado ? 'Fixado' : 'Fixar'}
+      {fixado ? 'Fixado' : 'Fixar'}
     </button>
   )
 }
@@ -69,20 +67,15 @@ export function ListaFixados() {
   if (fixados.length === 0) return null
   return (
     <div>
-      <p className="mb-1 px-2 text-xs text-nav-muted">Fixados</p>
-      <ul className="flex flex-col gap-px">
+      <p className="mb-2 px-1.5 text-xs font-semibold text-subtle">Fixados</p>
+      <ul className="flex flex-col gap-2">
         {fixados.map(({ href, rotulo }) => (
-          <li key={href} className="group/fixado flex items-center rounded-md hover:bg-white/6">
-            <LinkRapido href={href} className="min-w-0 flex-1 truncate px-2 py-1 text-sm text-nav-ink/85 hover:text-white">
-              {rotulo}
+          <li key={href} className="flex items-stretch gap-1.5">
+            <LinkRapido href={href} className="flex min-h-12 min-w-0 flex-1 items-center rounded-md bg-surface px-3 text-sm font-medium text-brand-700 hover:bg-brand-100">
+              <span className="truncate">{rotulo}</span>
             </LinkRapido>
-            <button
-              type="button"
-              title="Tirar dos fixados"
-              onClick={() => gravar(fixados.filter((item) => item.href !== href))}
-              className="mr-1 rounded p-0.5 text-nav-muted opacity-0 hover:text-white focus:opacity-100 group-hover/fixado:opacity-100"
-            >
-              <X className="size-3.5" />
+            <button type="button" title="Tirar dos fixados" onClick={() => gravar(fixados.filter((item) => item.href !== href))} className={classeBotao('secundario', 'min-h-12 px-2.5 text-sm')}>
+              Tirar
             </button>
           </li>
         ))}

@@ -19,7 +19,7 @@ export function MensagemDeCobranca({ texto }: { texto: string }) {
 
   return (
     <div className="space-y-3">
-      <AreaTexto ref={campo} aria-label="Mensagem de cobrança" defaultValue={texto} rows={12} />
+      <AreaTexto ref={campo} aria-label="Mensagem de cobrança" defaultValue={texto} rows={12} className="field-sizing-content" />
       <Botao type="button" onClick={copiar} className="w-full">
         Copiar mensagem
       </Botao>

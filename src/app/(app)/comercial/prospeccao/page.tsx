@@ -1,11 +1,10 @@
-import { Construction } from 'lucide-react'
 import type { Metadata } from 'next'
 import { Badge } from '@/components/ui/badge'
-import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
 import { ItemResumo, Resumo } from '@/components/ui/resumo'
 import { Secao } from '@/components/ui/secao'
 import { Situacao } from '@/components/ui/situacao'
+import { Item, Zona } from '@/components/ui/zona'
 import { exigirArea } from '@/data/sessao'
 import { AbasDoComercial } from '../_components/abas-do-comercial'
 
@@ -50,10 +49,10 @@ const OPORTUNIDADES: Oportunidade[] = [
 ]
 
 const FONTES = [
-  ['Diário Oficial', 'o robô que já lê o Diário passa a separar também os alvarás de obras novas e os pedidos de manejo de outras empresas.'],
+  ['Diário Oficial', 'O robô que já lê o Diário passa a separar também os alvarás de obras novas e os pedidos de manejo de outras empresas.'],
   ['Cadastro de empresas', 'SPE nova aberta por um grupo que já é cliente (mesma raiz de CNPJ ou mesmo grupo): a chance de fechar é maior.'],
-  ['Mapa da Prefeitura (GeoSampa)', 'mostra se o terreno tem vegetação, área de preservação ou manancial, ou seja, se vai precisar de licenciamento ou manejo.'],
-  ['Lançamentos imobiliários', 'empreendimentos anunciados pelas incorporadoras, antes mesmo do alvará.'],
+  ['Mapa da Prefeitura (GeoSampa)', 'Mostra se o terreno tem vegetação, área de preservação ou manancial, ou seja, se vai precisar de licenciamento ou manejo.'],
+  ['Lançamentos imobiliários', 'Empreendimentos anunciados pelas incorporadoras, antes mesmo do alvará.'],
 ]
 
 const IDEIAS = [
@@ -72,59 +71,61 @@ export default async function PaginaProspeccao() {
       <AbasDoComercial ativa="prospeccao" />
       <PageHeader titulo="Prospecção" resumo="Encontrar projetos e empresas que vão precisar de licenciamento ou manejo, antes de elas procurarem alguém." />
 
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-accent/40 bg-warn-soft px-4 py-3">
-        <Construction className="mt-0.5 size-5 shrink-0 text-warn" />
-        <p className="text-sm text-ink">
-          <strong className="font-semibold">Em desenvolvimento.</strong> Esta tela mostra a ideia com oportunidades de exemplo. Ainda não busca nada e os números
-          abaixo não são reais.
-        </p>
-      </div>
+      <p className="mb-6 rounded-lg bg-info-soft px-5.5 py-4.5">
+        <strong className="font-semibold text-info">Em desenvolvimento.</strong> Esta tela mostra a ideia com oportunidades de exemplo. Ainda não busca nada e os números abaixo não são reais.
+      </p>
 
-      <Resumo className="mb-8">
+      <Resumo className="mb-9">
         <ItemResumo rotulo="Oportunidades novas" valor="12" detalhe="nos últimos 30 dias" />
-        <ItemResumo rotulo="De grupos que já são clientes" valor="3" detalhe="chance maior de fechar" tom="ok" />
+        <ItemResumo rotulo="De grupos que já são clientes" valor="3" detalhe="chance maior de fechar" />
         <ItemResumo rotulo="Terreno com vegetação" valor="5" detalhe="vão precisar de manejo" />
         <ItemResumo rotulo="Viraram proposta" valor="1" detalhe="neste mês" />
       </Resumo>
 
-      <Secao titulo="Oportunidades da semana">
-        <Lista>
-          {OPORTUNIDADES.map((o) => (
-            <Linha key={o.obra} className="flex-wrap gap-y-1 sm:flex-nowrap">
-              <span className="min-w-0 basis-full sm:basis-auto sm:flex-1">
-                <span className="block font-medium text-ink">{o.obra}</span>
-                <span className="block truncate text-xs text-muted">
-                  {o.empresa} · {o.origem}, {o.quando}
+      <Zona tom="proximos" titulo="Oportunidades da semana">
+        {OPORTUNIDADES.map((o) => (
+          <Item
+            key={o.obra}
+            titulo={o.obra}
+            detalhe={
+              <>
+                {o.empresa} · {o.origem}, {o.quando}
+                <span className="mt-2 flex flex-wrap gap-2">
+                  {o.sinais.map((sinal) => (
+                    <Badge key={sinal} className="bg-brand-100! text-ink!">
+                      {sinal}
+                    </Badge>
+                  ))}
                 </span>
-              </span>
-              <span className="flex flex-wrap gap-1 sm:w-64 sm:justify-end">
-                {o.sinais.map((sinal) => (
-                  <Badge key={sinal}>{sinal}</Badge>
-                ))}
-              </span>
-              <span className="w-28 shrink-0 text-right">
-                <Situacao tom={o.chance === 'alta' ? 'ok' : 'warn'}>{o.chance === 'alta' ? 'Chance alta' : 'Chance média'}</Situacao>
-              </span>
-            </Linha>
-          ))}
-        </Lista>
-        <p className="mt-2 text-xs text-subtle">Na versão pronta, cada linha terá o botão “Criar proposta”.</p>
-      </Secao>
+              </>
+            }
+            fim={
+              <Situacao tom={o.chance === 'alta' ? 'ok' : 'brand'} className="whitespace-nowrap px-3.5! py-1.5! text-sm!">
+                {o.chance === 'alta' ? 'Chance alta' : 'Chance média'}
+              </Situacao>
+            }
+          />
+        ))}
+        <p className="mb-2 mt-1 text-sm text-muted">Na versão pronta, cada linha terá o botão “Criar proposta”.</p>
+      </Zona>
 
-      <Secao titulo="De onde vêm as oportunidades">
-        <ul className="space-y-1.5 text-sm text-ink">
+      <Secao titulo="De onde vêm as oportunidades" className="mt-10">
+        <dl>
           {FONTES.map(([fonte, como]) => (
-            <li key={fonte}>
-              <strong className="font-medium">{fonte}:</strong> <span className="text-muted">{como}</span>
-            </li>
+            <div key={fonte} className="border-b border-line py-3.5">
+              <dt className="font-semibold">{fonte}</dt>
+              <dd className="mt-0.5">{como}</dd>
+            </div>
           ))}
-        </ul>
+        </dl>
       </Secao>
 
-      <Secao titulo="O que esta área vai fazer">
-        <ul className="list-disc space-y-1.5 pl-5 text-sm text-ink marker:text-subtle">
+      <Secao titulo="O que esta área vai fazer" className="mt-10">
+        <ul>
           {IDEIAS.map((ideia) => (
-            <li key={ideia}>{ideia}</li>
+            <li key={ideia} className="border-b border-line py-3.5">
+              {ideia}
+            </li>
           ))}
         </ul>
       </Secao>

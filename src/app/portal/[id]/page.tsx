@@ -1,8 +1,7 @@
-import { Check } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { TrilhaDeFases } from '@/components/processos/trilha-de-fases'
 import type { Tom } from '@/components/ui/badge'
-import { Secao } from '@/components/ui/secao'
 import { Situacao } from '@/components/ui/situacao'
 import { hoje } from '@/data/hoje'
 import { obterProcesso } from '@/data/processos'
@@ -10,10 +9,9 @@ import { exigirUsuario } from '@/data/sessao'
 import { pode } from '@/lib/permissoes'
 import { proximoPrazo } from '@/domain/prazos'
 import { conclusaoDaFase, FASES, type NumeroFase } from '@/domain/processos'
-import { cn } from '@/lib/cn'
 import { diasEntre } from '@/lib/datas'
 import { formatarData } from '@/lib/formatar'
-import { TopoDoPortal } from '../_components/topo'
+import { PaginaDoPortal } from '../_components/topo'
 
 export const metadata: Metadata = { title: 'Acompanhamento do projeto' }
 
@@ -41,75 +39,55 @@ export default async function Portal({ params }: { params: Promise<{ id: string 
   }
 
   return (
-    <>
-      <TopoDoPortal comSair={usuario.papel === 'cliente'} />
-      <main className="mx-auto max-w-6xl px-5 py-10">
-        <p className="text-sm text-muted">Acompanhamento do licenciamento ambiental</p>
-        <h1 className="mt-1 font-display text-[1.75rem] font-semibold leading-tight text-ink">{processo.empreendimento}</h1>
-        <p className="text-muted">{processo.endereco}</p>
+    <PaginaDoPortal comSair={usuario.papel === 'cliente'}>
+      <p className="font-medium text-brand-700">Seu projeto</p>
+      <h1 className="mt-1 text-3xl font-semibold lg:text-4xl">{processo.empreendimento}</h1>
+      <p className="mt-2 text-muted">{processo.endereco}</p>
 
-        <div className="mt-6 rounded-lg border border-line bg-surface p-5">
-          <p className="text-sm text-muted">
-            Fase {fase.numero} de {FASES.length}
-          </p>
-          <p className="text-lg font-semibold text-ink">{fase.nome}</p>
-          <div className="mt-3 flex gap-1">
-            {FASES.map((f) => (
-              <span
-                key={f.numero}
-                className={cn('h-1.5 flex-1 rounded-full', f.numero < fase.numero ? 'bg-ok' : f.numero === fase.numero ? 'bg-accent' : 'bg-line')}
-              />
-            ))}
-          </div>
-          {proximo && conta && (
-            <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
-              <p>
-                <span className="text-muted">Próximo prazo: </span>
-                <span className="font-medium text-ink">{proximo.regra.titulo}</span>
-              </p>
-              <p className="flex items-center gap-3">
-                <span className="tabular-nums text-ink">{formatarData(proximo.vencimento)}</span>
-                <Situacao tom={conta.tom}>{conta.texto}</Situacao>
-              </p>
-            </div>
-          )}
-        </div>
-
-        <Secao titulo="As etapas do projeto">
-          <ol>
-            {FASES.map((f, i) => {
+      <section className="mt-10 rounded-xl bg-brand-50 p-5 sm:p-7">
+        <p className="text-base font-semibold text-subtle">Fase atual</p>
+        <h2 className="mt-0.5 text-[1.75rem] font-semibold leading-tight text-brand-700 sm:text-[2.25rem]">
+          {fase.numero} de {FASES.length} — {fase.nome}
+        </h2>
+        <p className="mt-2">{fase.descricao}</p>
+        <div className="mt-6">
+          <TrilhaDeFases
+            fases={FASES.map((f) => {
               const estado = f.numero < fase.numero ? 'feita' : f.numero === fase.numero ? 'atual' : 'futura'
-              return (
-                <li key={f.numero} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <span
-                      className={cn(
-                        'flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
-                        estado === 'feita' && 'bg-ok text-on-brand',
-                        estado === 'atual' && 'bg-brand-700 text-on-brand ring-4 ring-brand-100',
-                        estado === 'futura' && 'bg-surface text-subtle ring-1 ring-line',
-                      )}
-                    >
-                      {estado === 'feita' ? <Check className="size-4" /> : f.numero}
-                    </span>
-                    {i < FASES.length - 1 && <span className={cn('my-1 w-px flex-1', estado === 'feita' ? 'bg-ok' : 'bg-line')} />}
-                  </div>
-                  <div className="pb-5 pt-0.5">
-                    <p className={cn('font-medium', estado === 'futura' ? 'text-muted' : 'text-ink')}>{f.nome}</p>
-                    {estado === 'atual' ? (
-                      <p className="mt-0.5 text-sm text-muted">{f.descricao}</p>
-                    ) : (
-                      <p className="text-xs text-subtle">{estado === 'feita' ? concluida(f.numero) : 'A iniciar'}</p>
-                    )}
-                  </div>
-                </li>
-              )
+              return { numero: f.numero, nome: f.nome, estado, legenda: estado === 'feita' ? concluida(f.numero) : undefined }
             })}
-          </ol>
-        </Secao>
+          />
+        </div>
+      </section>
 
-        <p className="mt-8 text-xs text-subtle">Eco Direito Ambiental · sistema desenvolvido pela Awer</p>
-      </main>
-    </>
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+        {proximo && conta && (
+          <section className="rounded-xl bg-painel px-5 py-6.5 sm:px-7">
+            <p className="text-base font-semibold text-subtle">Próximo prazo</p>
+            <p className="mt-1 text-[2.5rem] font-semibold leading-tight">{formatarData(proximo.vencimento)}</p>
+            <Situacao tom={conta.tom} className="mt-1 text-base!">
+              {conta.texto}
+            </Situacao>
+            <p className="mt-3">{proximo.regra.titulo}</p>
+          </section>
+        )}
+        <section className="rounded-xl bg-painel px-5 py-6.5 sm:px-7">
+          <p className="text-base font-semibold text-subtle">Quem cuida do seu projeto</p>
+          <p className="mt-1 text-[2rem] font-semibold leading-tight">{processo.responsavel}</p>
+          <p className="mt-1 font-medium text-muted">Eco Direito</p>
+        </section>
+      </div>
+
+      {processo.numeroSei && (
+        <dl className="mt-8">
+          <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-b border-line py-4">
+            <dt className="font-medium">Processo na Prefeitura</dt>
+            <dd>SEI {processo.numeroSei}</dd>
+          </div>
+        </dl>
+      )}
+
+      <p className="mt-8 text-xs text-subtle">Eco Direito Ambiental · sistema desenvolvido pela Awer</p>
+    </PaginaDoPortal>
   )
 }

@@ -1,11 +1,11 @@
-import { Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
 import { Abas } from '@/components/ui/abas'
 import type { Tom } from '@/components/ui/badge'
+import { BotaoConfirmar } from '@/components/ui/botao-confirmar'
 import { BotaoEnviar } from '@/components/ui/botao-enviar'
 import { Busca } from '@/components/ui/busca'
 import { Card } from '@/components/ui/card'
-import { Expansivel, Vazio } from '@/components/ui/expansivel'
+import { Expansivel } from '@/components/ui/expansivel'
 import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
@@ -19,6 +19,7 @@ import { brl, contar, formatarData } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { confirmarTodas, devolverLinha, excluirRegra } from './actions'
+import { CaixaVazia } from './_components/caixa-vazia'
 import { FilaDoExtrato } from './_components/fila-do-extrato'
 import { FormularioImportacao } from './_components/formulario-importacao'
 import { FormularioRegra } from './_components/formulario-regra'
@@ -92,12 +93,13 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
       />
 
       {editar && (
-        <Card className="mb-6">
+        <Card titulo="Importar extrato" className="mb-9">
           <FormularioImportacao />
         </Card>
       )}
 
       <Abas
+        className="w-fit max-w-full"
         ativa={aba}
         abas={[
           { valor: 'fila', rotulo: 'A classificar', href: link({ aba: 'fila' }), contagem: pendentes.length },
@@ -108,10 +110,10 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
 
       <Busca
         valor={q}
-        placeholder={aba === 'regras' ? 'Buscar trecho, conta ou projeto' : 'Buscar descrição, valor, NF ou cliente'}
+        placeholder={aba === 'regras' ? 'Trecho, conta ou projeto' : 'Descrição, valor, NF ou cliente'}
         manter={{ aba: aba === 'fila' ? undefined : aba }}
         limpar={link({ q: undefined })}
-        className="mb-3"
+        className="mb-6"
       />
 
       {aba === 'fila' && (
@@ -136,7 +138,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
       {aba === 'regras' && (
         <>
           {editar && (
-            <Expansivel resumo="Nova regra" className="mb-4">
+            <Expansivel resumo="Nova regra" className="mb-6">
               <Card>
                 <FormularioRegra processos={opcoesDeProcesso} />
               </Card>
@@ -146,7 +148,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
             <Lista>
               {regrasPaginadas.itens.map((regra) => (
                 <Linha key={regra.id}>
-                  <span className="min-w-0 flex-1">
+                  <span className="min-w-48 flex-1">
                     Descrição com “{regra.contem}”
                     {regra.processoId && <span className="block text-sm text-muted">{processos.find((p) => p.id === regra.processoId)?.empreendimento}</span>}
                   </span>
@@ -154,16 +156,22 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
                   {editar && (
                     <form action={excluirRegra}>
                       <input type="hidden" name="id" value={regra.id} />
-                      <button title="Apagar regra" className="rounded-md p-1.5 text-subtle hover:bg-danger-soft hover:text-danger">
-                        <Trash2 className="size-4" />
-                      </button>
+                      <BotaoConfirmar
+                        titulo="Apagar esta regra?"
+                        oQue={`Descrição com “${regra.contem}” · ${nomeDaConta(regra.contaId)}`}
+                        consequencia="As próximas linhas com esse trecho não vão mais trazer esta sugestão."
+                        sim="Sim, apagar a regra"
+                        variante="secundario"
+                      >
+                        Apagar regra
+                      </BotaoConfirmar>
                     </form>
                   )}
                 </Linha>
               ))}
             </Lista>
           ) : (
-            <Vazio>{q ? `Nenhuma regra com “${q}”.` : "Nenhuma regra ainda. Ao classificar uma linha, marque “daqui em diante” para criar uma."}</Vazio>
+            <CaixaVazia titulo={q ? `Nenhuma regra com “${q}”.` : 'Nenhuma regra ainda.'} detalhe={q ? undefined : 'Ao classificar uma linha, marque “daqui em diante” para criar uma.'} />
           )}
           <Paginacao {...regrasPaginadas} href={linkDaPagina} />
         </>
@@ -175,13 +183,13 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
             <Lista>
               {ignoradasPaginadas.itens.map((linha) => (
                 <Linha key={linha.id}>
-                  <span className="w-24 text-muted">{formatarData(linha.data)}</span>
-                  <span className="min-w-0 flex-1">{linha.descricao}</span>
-                  <span className="tabular-nums">{brl(linha.valor)}</span>
+                  <span className="whitespace-nowrap text-muted">{formatarData(linha.data)}</span>
+                  <span className="min-w-48 flex-1">{linha.descricao}</span>
+                  <span className="whitespace-nowrap text-[1.25rem] font-semibold">{brl(linha.valor)}</span>
                   {editar && (
                     <form action={devolverLinha}>
                       <input type="hidden" name="linhaId" value={linha.id} />
-                      <button className="link whitespace-nowrap text-sm">Voltar para a fila</button>
+                      <BotaoEnviar variante="secundario">Voltar para a fila</BotaoEnviar>
                     </form>
                   )}
                 </Linha>
@@ -190,7 +198,7 @@ export default async function PaginaExtrato({ searchParams }: { searchParams: Pr
             <Paginacao {...ignoradasPaginadas} href={linkDaPagina} />
           </>
         ) : (
-          <Vazio>{q ? `Nenhuma linha ignorada com “${q}”.` : "Nenhuma linha ignorada."}</Vazio>
+          <CaixaVazia titulo={q ? `Nenhuma linha ignorada com “${q}”.` : 'Nenhuma linha ignorada.'} />
         ))}
     </>
   )

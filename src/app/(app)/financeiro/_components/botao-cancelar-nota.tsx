@@ -1,25 +1,19 @@
 'use client'
 
 import { useActionState } from 'react'
-import { BotaoEnviar } from '@/components/ui/botao-enviar'
+import { BotaoConfirmar } from '@/components/ui/botao-confirmar'
 import { MensagemFormulario } from '@/components/ui/form'
 import { cancelarNota } from '../notas/actions'
 
-export function BotaoCancelarNota({ notaId, numero }: { notaId: string; numero: number }) {
+export function BotaoCancelarNota({ notaId, numero, resumo }: { notaId: string; numero: number; resumo: string }) {
   const [estado, acao] = useActionState(cancelarNota, {})
   return (
-    <form
-      action={acao}
-      onSubmit={(evento) => {
-        if (!confirm(`Cancelar a NF ${numero}? Ela sai do faturamento e da DRE.`)) evento.preventDefault()
-      }}
-      className="space-y-3"
-    >
+    <form action={acao} className="space-y-3">
       <input type="hidden" name="notaId" value={notaId} />
       <MensagemFormulario estado={estado} />
-      <BotaoEnviar variante="perigo" className="w-full">
+      <BotaoConfirmar titulo={`Cancelar a NF ${numero}?`} oQue={resumo} consequencia="Ela sai do faturamento e da DRE." sim="Sim, cancelar a nota" className="w-full">
         Cancelar nota
-      </BotaoEnviar>
+      </BotaoConfirmar>
     </form>
   )
 }

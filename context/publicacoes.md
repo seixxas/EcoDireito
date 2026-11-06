@@ -11,7 +11,7 @@ Abas: Para revisar (`nova`), Lançados (`confirmada`) e Ignorados (`descartada`)
 - **Por que o ato está ali**, em cada linha: "Achado pelo nº SEI do processo X." / "Achado pelo nº SIMPROC do processo X, escrito no texto do ato." / "Achado pelo CNPJ do cliente, escrito no texto do ato. O processo deste ato (SEI ...) ainda não está cadastrado."
 - **O que lançar faz**: "Ao lançar: marca a etapa “X” e abre o prazo “Y” até ...". Série que não vira etapa: "Este tipo de ato não marca etapa: marcar como visto registra só que ele é nosso."
 - **Botões** (só quem edita prazos):
-  - Com processo: "Lançar no processo" (ou "Marcar como visto", se a série não vira etapa) e "Ignorar".
+  - Com processo: "Lançar no projeto" (ou "Marcar como visto", se a série não vira etapa) e "Ignorar", que pergunta antes e pede o motivo numa caixa (`BotaoConfirmar`).
   - Sem processo: "Cadastrar o processo e lançar" (ou "Cadastrar o processo") e "Ignorar".
 - **Lançar**: o ato vira o evento (`eventoDoAto`; data do ato, origem `diario`). Evento, fase do processo e status do ato vão num único `db.batch` (transação). O evento tem id fixo `diario-<id do ato>`: dois lançamentos ao mesmo tempo gravam um só. Série sem evento só fica `confirmada` (aparece como "Visto").
 - **Cadastrar o processo e lançar**: abre `/projetos/novo?ato=<id>` com cliente, nº SEI e fase preenchidos. Ao salvar, `salvarProcesso` chama `lancarNoProcessoNovo` e volta para `/publicacoes?lancado=<id do ato>`, que mostra "Processo cadastrado e ato lançado. Abrir o processo". Só lança se o nº SEI do processo for o do ato (é por ele que a caixa liga os dois depois); com outro SEI, o processo é criado e o ato continua para revisar, com aviso.

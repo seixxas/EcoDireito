@@ -1,8 +1,8 @@
-import { ArrowLeft, Trash2 } from 'lucide-react'
 import type { Metadata } from 'next'
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { notFound } from 'next/navigation'
 import type { Tom } from '@/components/ui/badge'
+import { BotaoConfirmar } from '@/components/ui/botao-confirmar'
 import { Card } from '@/components/ui/card'
 import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
@@ -32,10 +32,8 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
 
   return (
     <>
-      <LinkRapido href="/financeiro/contratos" className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
-        <ArrowLeft className="size-4" /> Contratos
-      </LinkRapido>
       <PageHeader
+        voltar={{ href: '/financeiro/contratos', rotulo: 'Contratos' }}
         titulo={processo.empreendimento}
         resumo={`${cliente.nome} · contrato de ${brl(somar(parcelas.map((p) => p.parcela.valor)))}`}
         acoes={
@@ -45,40 +43,53 @@ export default async function PaginaContrato({ params }: { params: Promise<{ pro
         }
       />
 
-      <Card titulo="Parcelas" className="mb-6" flush>
-        <ul className="divide-y divide-line">
-          {parcelas.map(({ parcela, situacao, nota, liberadaEm }) => (
-            <li key={parcela.id} className="flex flex-col gap-3 px-4 py-4 lg:flex-row lg:items-start">
-              <FormularioParcela processoId={processo.id} parcela={parcela} />
-              <div className="flex items-center gap-3 lg:w-64 lg:justify-end lg:pt-8">
-                <Situacao tom={SITUACAO[situacao].tom}>{SITUACAO[situacao].rotulo}</Situacao>
-                {situacao === 'liberada' && (
-                  <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className="link text-sm font-medium" title={`Liberada em ${formatarData(liberadaEm!)}`}>
-                    Registrar nota
-                  </LinkRapido>
-                )}
-                {nota ? (
-                  <LinkRapido href={`/financeiro/notas/${nota.id}`} className="link text-sm">
-                    NF {nota.numero}
-                  </LinkRapido>
-                ) : (
-                  <form action={excluirParcela}>
-                    <input type="hidden" name="id" value={parcela.id} />
-                    <button title="Apagar parcela" className="rounded-md p-1.5 text-subtle hover:bg-danger-soft hover:text-danger">
-                      <Trash2 className="size-4" />
-                    </button>
-                  </form>
-                )}
-              </div>
-            </li>
-          ))}
-          {parcelas.length === 0 && <li className="px-4 py-8 text-center text-muted">Este projeto ainda não tem parcelas.</li>}
-        </ul>
+      <Card titulo="Parcelas" className="mb-6">
+        {parcelas.length ? (
+          <ul>
+            {parcelas.map(({ parcela, situacao, nota, liberadaEm }) => (
+              <li key={parcela.id} className="mb-3 rounded-lg bg-surface px-5 py-4.5">
+                <div className="mb-3.5 flex flex-wrap items-center gap-x-4 gap-y-2.5">
+                  <Situacao tom={SITUACAO[situacao].tom}>{SITUACAO[situacao].rotulo}</Situacao>
+                  {situacao === 'liberada' && (
+                    <>
+                      <span className="text-xs text-muted">Liberada em {formatarData(liberadaEm!)}</span>
+                      <LinkRapido href={`/financeiro/notas/nova?parcela=${parcela.id}`} className={classeBotao('primario')}>
+                        Registrar nota
+                      </LinkRapido>
+                    </>
+                  )}
+                  {nota ? (
+                    <LinkRapido href={`/financeiro/notas/${nota.id}`} className="link inline-flex min-h-12 items-center">
+                      NF {nota.numero}
+                    </LinkRapido>
+                  ) : (
+                    <form action={excluirParcela} className="ml-auto">
+                      <input type="hidden" name="id" value={parcela.id} />
+                      <BotaoConfirmar
+                        titulo="Apagar esta parcela?"
+                        oQue={`${parcela.descricao} · ${brl(parcela.valor)}`}
+                        consequencia="A parcela sai do contrato. Não dá para desfazer."
+                        sim="Sim, apagar a parcela"
+                        variante="secundario"
+                        className="border-danger! text-danger! hover:bg-danger-soft!"
+                      >
+                        Apagar parcela
+                      </BotaoConfirmar>
+                    </form>
+                  )}
+                </div>
+                <FormularioParcela processoId={processo.id} parcela={parcela} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="py-6 text-center text-lg text-muted">Este projeto ainda não tem parcelas.</p>
+        )}
       </Card>
 
       <Card titulo="Nova parcela">
         <FormularioParcela processoId={processo.id} />
-        <p className="mt-3 text-xs text-subtle">Licenciamento costuma ter 3 parcelas (aceite da proposta, LAA e TCA); manejo, 50% na entrada e 50% no fim do corte.</p>
+        <p className="mt-3 text-xs text-muted">Licenciamento costuma ter 3 parcelas (aceite da proposta, LAA e TCA); manejo, 50% na entrada e 50% no fim do corte.</p>
       </Card>
     </>
   )
