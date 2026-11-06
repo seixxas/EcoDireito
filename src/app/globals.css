@@ -40,7 +40,7 @@
   /* Texto sobre fundo de marca (botão principal). */
   --color-on-brand: #ffffff;
 
-  /* Linha forte da grade da DRE: borda dos blocos de cada mês. */
+  /* Linha forte da grade da DRE. */
   --color-grade: #9bb7a1;
 
   /* Letra grande de propósito: quem usa tem mais de 60 anos. Nada abaixo de 16 px. */

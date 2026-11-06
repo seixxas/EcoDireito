@@ -17,7 +17,6 @@ export type SelecaoDre = { linha: string; mes?: string }
 const LINHA = 'border-b border-b-line'
 const LINHA_FORTE = 'border-y-2 border-y-brand-700'
 const CABECALHO = 'border-b-2 border-b-grade bg-painel font-semibold'
-const BORDA_DO_MES = 'border-x border-x-grade'
 const ESPACO = 'w-3 min-w-3 p-0'
 
 /**
@@ -56,7 +55,7 @@ function GradeVazia({ meses }: { meses: string[] }) {
       {meses.map((mes) => (
         <Fragment key={mes}>
           <td className={cn(ESPACO, 'bg-surface')} />
-          <td className={cn('bg-surface', BORDA_DO_MES, LINHA)} />
+          <td className={cn('bg-surface', LINHA)} />
         </Fragment>
       ))}
       <td className={cn(ESPACO_FIXO, 'bg-surface')} />
@@ -107,7 +106,7 @@ function LinhaDaGrade(props: {
         return (
           <Fragment key={mes}>
             <td className={cn(ESPACO, fundo, total && LINHA_FORTE)} />
-            <td className={cn('p-1', fundo, BORDA_DO_MES, borda)}>
+            <td className={cn('p-1', fundo, borda)}>
               <Valor href={valor ? href(mes) : undefined} escolhido={escolhido(mes)} cor={corDoValor(valor)} titulo={`Ver o que forma ${formatarMes(mes)}`}>
                 {numeroInteiro(valor)}
               </Valor>
@@ -181,7 +180,7 @@ export function TabelaDre({
             {meses.map((mes) => (
               <Fragment key={mes}>
                 <td rowSpan={2} className={cn(ESPACO, CABECALHO)} />
-                <th data-mes scope="col" rowSpan={2} className={cn('min-w-[6.5rem] px-3.5 py-3 text-right align-bottom', BORDA_DO_MES, CABECALHO)}>
+                <th data-mes scope="col" rowSpan={2} className={cn('min-w-[6.5rem] px-3.5 py-3 text-right align-bottom', CABECALHO)}>
                   {formatarMes(mes)}
                 </th>
               </Fragment>

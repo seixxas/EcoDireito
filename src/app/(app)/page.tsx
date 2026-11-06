@@ -179,7 +179,7 @@ export default async function Hoje() {
                   key={ato.id}
                   etiqueta={<Situacao tom="info">Nova no Diário</Situacao>}
                   titulo={
-                    <LinkRapido href="/publicacoes" className="hover:text-brand-700">
+                    <LinkRapido href="/publicacoes" className="inline-flex min-h-12 items-center hover:text-brand-700">
                       {ato.serie}
                     </LinkRapido>
                   }
