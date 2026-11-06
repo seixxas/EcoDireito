@@ -10,7 +10,9 @@ export type FaseDaTrilha = {
   legenda?: ReactNode
   /** Com endereço, a fase vira link (a aba Etapas abre nela). */
   href?: string
-  /** A fase aberta na tela, quando não é a atual. */
+  /** O que a fase é, ao parar o mouse em cima do link. */
+  dica?: string
+  /** A fase aberta na tela. */
   selecionada?: boolean
 }
 
@@ -31,7 +33,7 @@ function Fase({ numero, nome, estado, legenda, selecionada }: FaseDaTrilha) {
         <span className="sr-only">{numero}. </span>
         {nome}
       </span>
-      <span className={cn('self-start text-2xs font-medium leading-snug text-subtle', estado === 'atual' && !legenda && 'rounded-sm bg-brand-700 px-2 py-px text-on-brand')}>{legenda ?? LEGENDA[estado]}</span>
+      <span className={cn('self-start text-2xs font-medium leading-snug', estado === 'atual' && !legenda ? 'rounded-sm bg-brand-700 px-2 py-px text-on-brand' : 'text-subtle')}>{legenda ?? LEGENDA[estado]}</span>
     </>
   )
 }
@@ -44,7 +46,13 @@ export function TrilhaDeFases({ fases }: { fases: FaseDaTrilha[] }) {
         {fases.map((fase) => (
           <li key={fase.numero} className="min-w-0">
             {fase.href ? (
-              <LinkRapido href={fase.href} scroll={false} aria-current={fase.selecionada ? 'true' : undefined} className="flex min-h-12 flex-col gap-2 rounded-md hover:bg-brand-100">
+              <LinkRapido
+                href={fase.href}
+                scroll={false}
+                title={fase.dica}
+                aria-current={fase.selecionada ? 'true' : undefined}
+                className={cn('flex min-h-12 flex-col gap-2 rounded-md hover:bg-brand-100', fase.selecionada && 'bg-brand-100 outline-6 outline-brand-100')}
+              >
                 <Fase {...fase} />
               </LinkRapido>
             ) : (

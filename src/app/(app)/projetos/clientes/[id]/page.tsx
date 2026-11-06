@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
 import { obterCliente } from '@/data/processos'
 import { exigirArea } from '@/data/sessao'
 import { FormularioCliente } from '../../_components/formulario-cliente'
-import { LinkVoltar } from '../../_components/link-voltar'
 
 export const metadata: Metadata = { title: 'Editar cliente' }
 
@@ -16,12 +14,9 @@ export default async function PaginaEditarCliente({ params }: { params: Promise<
   if (!cliente) notFound()
 
   return (
-    <>
-      <LinkVoltar href="/projetos/clientes">Clientes</LinkVoltar>
-      <PageHeader titulo={cliente.nome} />
-      <Card>
-        <FormularioCliente cliente={cliente} />
-      </Card>
-    </>
+    <div className="max-w-[55rem]">
+      <PageHeader voltar={{ href: '/projetos/clientes', rotulo: 'Voltar para Clientes' }} titulo={cliente.nome} />
+      <FormularioCliente cliente={cliente} />
+    </div>
   )
 }
