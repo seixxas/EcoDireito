@@ -1,16 +1,15 @@
-import { ExternalLink } from 'lucide-react'
 import type { Metadata } from 'next'
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { AbasDoDia } from '@/components/layout/abas-do-dia'
 import { Badge } from '@/components/ui/badge'
 import { Busca } from '@/components/ui/busca'
-import { Expansivel, Vazio } from '@/components/ui/expansivel'
-import { Linha, Lista } from '@/components/ui/lista'
+import { Vazio } from '@/components/ui/expansivel'
+import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
-import { Secao } from '@/components/ui/secao'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
 import { Situacao } from '@/components/ui/situacao'
+import { Item, Zona, type TomZona } from '@/components/ui/zona'
 import { hoje } from '@/data/hoje'
 import { listarPublicacoes, type PublicacaoNaCaixa } from '@/data/publicacoes'
 import { exigirArea } from '@/data/sessao'
@@ -87,21 +86,30 @@ function AoLancar({ evento, prazosSugeridos, processo, dia }: PublicacaoNaCaixa 
   )
 }
 
-/** Aviso depois de cadastrar um processo a partir de um ato (`?lancado=<id do ato>`). Ponto + texto, como `Situacao`, mas quebrando linha. */
+/** Aviso depois de cadastrar um processo a partir de um ato (`?lancado=<id do ato>`). */
 function AvisoDoCadastro({ item }: { item: PublicacaoNaCaixa }) {
   const lancado = item.ato.status !== 'nova'
   return (
-    <p className={cn('-mt-3 mb-5 flex items-start gap-1.5 text-sm', lancado ? 'text-ok' : 'text-warn')}>
-      <span className={cn('mt-1.5 size-2 shrink-0 rounded-full', lancado ? 'bg-ok' : 'bg-accent')} />
-      <span>
-        {lancado ? `Projeto cadastrado e ato ${item.evento ? 'lançado' : 'registrado como visto'}. ` : 'Projeto cadastrado com outro nº SEI: o ato não foi lançado e continua aqui para revisar.'}
-        {lancado && item.processo && (
-          <LinkRapido href={`/projetos/${item.processo.id}`} className="link">
-            Abrir o projeto
-          </LinkRapido>
-        )}
-      </span>
-    </p>
+    <div className={cn('mb-6 rounded-lg border-2 px-5 py-4 text-base font-medium', lancado ? 'border-brand-700 bg-brand-100 text-brand-700' : 'border-warn bg-warn-soft text-warn')}>
+      <p>{lancado ? `Projeto cadastrado e ato ${item.evento ? 'lançado' : 'registrado como visto'}.` : 'Projeto cadastrado com outro nº SEI: o ato não foi lançado e continua aqui para revisar.'}</p>
+      {lancado && item.processo && (
+        <LinkRapido href={`/projetos/${item.processo.id}`} className={classeBotao('secundario', 'mt-3')}>
+          Abrir o projeto
+        </LinkRapido>
+      )}
+    </div>
+  )
+}
+
+/** O botão fica com os outros, à direita, mas o texto abre embaixo do ato, onde há largura. */
+function VerOTexto() {
+  return (
+    <details className="group/texto xl:w-full">
+      <summary className={classeBotao('secundario', 'w-full list-none [&::-webkit-details-marker]:hidden')}>
+        <span className="group-open/texto:hidden">Ver o texto do ato</span>
+        <span className="hidden group-open/texto:inline">Esconder o texto do ato</span>
+      </summary>
+    </details>
   )
 }
 
@@ -125,64 +133,83 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
   const paraRevisar = novas ? `${contar(novas, 'ato', 'atos')} para revisar` : 'nada para revisar'
 
   const linha = (item: PublicacaoNaCaixa) => {
-    const { ato, evento, cliente, processo } = item
+    const { ato, evento, cliente, processo, prazosSugeridos } = item
+    const data = formatarDataNaLista(ato.data, dia)
     return (
-      // No celular a data vai para a linha de detalhes e as ações descem para baixo do texto.
-      <Linha key={ato.id} className="flex-wrap items-start gap-y-2 sm:flex-nowrap">
-        <span className="hidden w-24 shrink-0 tabular-nums text-muted sm:block">{formatarDataNaLista(ato.data, dia)}</span>
-        <div className="min-w-0 basis-full sm:basis-auto sm:flex-1">
-          <p className="flex flex-wrap items-baseline gap-x-2">
-            <Badge>{ato.serie}</Badge>
-            <span className="font-medium text-ink">{cliente.nome}</span>
-          </p>
-          <p className="mt-1 text-sm text-muted">
-            <PorQue {...item} />
-          </p>
-          {ato.status === 'nova' && (
-            <p className="mt-0.5 text-sm text-muted">
-              <AoLancar {...item} dia={dia} />
-            </p>
-          )}
-          {ato.status === 'confirmada' && evento && <p className="mt-0.5 text-sm text-muted">Marcou a etapa “{EVENTOS[evento].nome}”.</p>}
-          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-3 text-xs text-muted">
-            <span className="tabular-nums sm:hidden">{formatarDataNaLista(ato.data, dia)}</span>
-            <span>{ato.unidade}</span>
-            {ato.link && (
-              <a href={ato.link} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1">
-                Abrir no Diário <ExternalLink className="size-3" />
-              </a>
-            )}
-            <Expansivel resumo={<span className="text-xs">texto do ato</span>} className="open:basis-full">
-              <p className="max-h-72 overflow-y-auto whitespace-pre-line rounded-md bg-rail p-3 text-sm leading-relaxed text-muted">{ato.texto}</p>
-            </Expansivel>
+      <Item
+        key={ato.id}
+        className="group/ato items-start! md:grid-cols-1! xl:grid-cols-[minmax(0,1fr)_18.75rem]!"
+        etiqueta={
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <Badge tom="info">{ato.serie}</Badge>
+            <span className="text-sm font-semibold text-muted">{data}</span>
+            {ato.status === 'confirmada' && (evento ? <Situacao tom="ok">Lançado</Situacao> : <Situacao>Visto</Situacao>)}
+            {ato.status === 'descartada' && <Situacao>Ignorado</Situacao>}
           </div>
-        </div>
-        <div className="shrink-0">
-          {ato.status === 'confirmada' && (evento ? <Situacao tom="ok">Lançado</Situacao> : <Situacao>Visto</Situacao>)}
-          {ato.status === 'descartada' && (
-            <>
-              <Situacao>Ignorado</Situacao>
-              <p className="max-w-56 text-xs text-muted">{ato.motivo}</p>
-            </>
-          )}
-          {ato.status === 'nova' &&
-            (editar ? (
-              <AcoesPublicacao id={ato.id} temProcesso={Boolean(processo)} marcaEtapa={Boolean(evento)} />
-            ) : (
-              <Situacao tom="warn">Esperando revisão</Situacao>
-            ))}
-        </div>
-      </Linha>
+        }
+        titulo={cliente.nome}
+        detalhe={
+          <div className="mt-1.5 space-y-1.5">
+            <p>
+              <PorQue {...item} />
+            </p>
+            {ato.status === 'nova' && (
+              <p>
+                <AoLancar {...item} dia={dia} />
+              </p>
+            )}
+            {ato.status === 'confirmada' && evento && <p>Marcou a etapa “{EVENTOS[evento].nome}”.</p>}
+            {ato.status === 'descartada' && ato.motivo && <p className="font-medium text-ink">Motivo: {ato.motivo}</p>}
+            <div className="flex flex-wrap items-center gap-x-4 pt-0.5 text-xs">
+              <span>{ato.unidade}</span>
+              {ato.link && (
+                <a href={ato.link} target="_blank" rel="noopener noreferrer" className="link inline-flex min-h-12 items-center">
+                  Abrir no Diário
+                </a>
+              )}
+            </div>
+            <p className="mt-3! hidden max-h-72 overflow-y-auto whitespace-pre-line rounded-md bg-rail p-3 text-sm leading-relaxed group-has-[details[open]]/ato:block">{ato.texto}</p>
+          </div>
+        }
+        fim={
+          ato.status === 'nova' && editar ? (
+            <AcoesPublicacao
+              id={ato.id}
+              temProcesso={Boolean(processo)}
+              marcaEtapa={Boolean(evento)}
+              oQue={`${ato.serie} · ${cliente.nome} · ${data}`}
+              prazos={prazosSugeridos.map((prazo) => prazo.titulo)}
+              emColuna
+            >
+              <VerOTexto />
+            </AcoesPublicacao>
+          ) : (
+            <div className="flex w-full flex-wrap items-center gap-3 xl:flex-col xl:items-stretch">
+              {ato.status === 'nova' && (
+                <Situacao tom="warn" className="self-start">
+                  Esperando revisão
+                </Situacao>
+              )}
+              <VerOTexto />
+            </div>
+          )
+        }
+      />
     )
   }
 
-  const grupos =
+  const grupos: { titulo: string; tom: TomZona; itens: PublicacaoNaCaixa[]; total: number }[] =
     aba === 'nova'
       ? [
-          { titulo: 'De projetos que já acompanhamos', itens: lista.itens.filter((item) => item.processo) },
-          { titulo: 'De clientes, mas o projeto ainda não está cadastrado', itens: lista.itens.filter((item) => !item.processo) },
+          { titulo: 'De projetos que já acompanhamos', tom: 'diario', itens: lista.itens.filter((item) => item.processo), total: daAba.filter((item) => item.processo).length },
+          {
+            titulo: 'De clientes, mas o projeto ainda não está cadastrado',
+            tom: 'neutra',
+            itens: lista.itens.filter((item) => !item.processo),
+            total: daAba.filter((item) => !item.processo).length,
+          },
         ]
-      : [{ titulo: undefined, itens: lista.itens }]
+      : [{ titulo: ABAS[aba], tom: aba === 'confirmada' ? 'proximos' : 'apagada', itens: lista.itens, total: lista.total }]
 
   return (
     <>
@@ -199,7 +226,7 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
       )}
       {cadastrado && <AvisoDoCadastro item={cadastrado} />}
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className={cn('flex flex-wrap items-end justify-between gap-6', aba === 'nova' ? 'mb-6' : 'mb-8')}>
         <SegmentedLinks
           ativo={aba}
           opcoes={Object.entries(ABAS).map(([valor, rotulo]) => ({
@@ -218,22 +245,19 @@ export default async function PaginaPublicacoes({ searchParams }: { searchParams
         />
       </div>
       {aba === 'nova' && (
-        <p className="mb-6 text-sm text-muted">
-          O robô lê o Diário Oficial e traz os atos que parecem ser dos nossos clientes. Para cada um, decida: lançar no projeto (marca a etapa e conta o
-          prazo) ou ignorar.
+        <p className="mb-8 rounded-lg bg-painel px-5 py-4 text-base">
+          O robô lê o Diário Oficial e traz os atos que parecem ser dos nossos clientes. Para cada um, decida: <b className="font-semibold">lançar no projeto</b> (marca a etapa e conta o prazo) ou{' '}
+          <b className="font-semibold">ignorar</b>.
         </p>
       )}
 
       {grupos.map(
         (grupo) =>
-          grupo.itens.length > 0 &&
-          (grupo.titulo ? (
-            <Secao key={grupo.titulo} titulo={grupo.titulo}>
-              <Lista>{grupo.itens.map(linha)}</Lista>
-            </Secao>
-          ) : (
-            <Lista key="lista">{grupo.itens.map(linha)}</Lista>
-          )),
+          grupo.itens.length > 0 && (
+            <Zona key={grupo.titulo} tom={grupo.tom} titulo={grupo.titulo} detalhe={contar(grupo.total, 'ato', 'atos')}>
+              {grupo.itens.map(linha)}
+            </Zona>
+          ),
       )}
       {lista.total === 0 && <Vazio>{q ? 'Nenhum ato com essa busca.' : 'Nada aqui.'}</Vazio>}
       <Paginacao {...lista} href={(n) => endereco(aba, q, n)} />

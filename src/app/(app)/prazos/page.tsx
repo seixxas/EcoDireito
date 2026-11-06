@@ -3,11 +3,10 @@ import { AbasDoDia } from '@/components/layout/abas-do-dia'
 import { LinhaPrazo } from '@/components/prazos/linha-prazo'
 import { Busca } from '@/components/ui/busca'
 import { Vazio } from '@/components/ui/expansivel'
-import { Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
 import { Paginacao } from '@/components/ui/paginacao'
-import { Secao } from '@/components/ui/secao'
 import { SegmentedLinks } from '@/components/ui/segmented-links'
+import { Zona, type TomZona } from '@/components/ui/zona'
 import { hoje } from '@/data/hoje'
 import { listarPrazos, type PrazoComProcesso } from '@/data/processos'
 import { PERIODOS, estaAberto, periodoDoPrazo, type Periodo } from '@/domain/prazos'
@@ -21,6 +20,12 @@ export const metadata: Metadata = { title: 'Prazos' }
 const VISTAS = { nossos: 'Nossos prazos', orgao: 'Aguardando a SVMA', cumpridos: 'Cumpridos' } as const
 type Vista = keyof typeof VISTAS
 type Filtros = { vista: Vista; responsavel?: string; q?: string; pagina?: number }
+
+const TONS: Record<Periodo, TomZona> = { vencidos: 'atraso', semana: 'hoje', proximas: 'proximos', adiante: 'neutra' }
+/** Atraso do órgão não é culpa da Eco Direito: amarelo de atenção, não vermelho. */
+const TONS_DO_ORGAO: Record<Periodo, TomZona> = { vencidos: 'hoje', semana: 'neutra', proximas: 'neutra', adiante: 'neutra' }
+
+const contarPrazos = (n: number) => contar(n, 'prazo', 'prazos')
 
 function frase(vencidos: number, semana: number) {
   const atrasados = vencidos ? contar(vencidos, 'prazo vencido', 'prazos vencidos') : 'Nenhum prazo vencido'
@@ -78,8 +83,9 @@ export default async function PaginaPrazos({
         titulo="Prazos"
         resumo={frase(periodosNossos.filter((p) => p === 'vencidos').length, periodosNossos.filter((p) => p === 'semana').length)}
       />
-      <div className="mb-6 space-y-3">
+      <div className="mb-9 flex flex-wrap items-end gap-x-6 gap-y-5">
         <SegmentedLinks
+          rotulo="Quais prazos"
           ativo={vista}
           opcoes={Object.entries(VISTAS).map(([valor, rotulo]) => ({
             valor,
@@ -88,45 +94,51 @@ export default async function PaginaPrazos({
             contagem: listas[valor as Vista].length,
           }))}
         />
-        <div className="flex flex-wrap items-center gap-3">
-          <Busca
-            valor={q}
-            placeholder="Empresa, empreendimento ou prazo"
-            manter={{ filtro: vista === 'nossos' ? undefined : vista, responsavel }}
-            limpar={endereco({ ...filtros, q: undefined })}
-            className="min-w-60"
+        {responsaveis.length > 1 && (
+          <SegmentedLinks
+            rotulo="Responsável"
+            ativo={responsavel ?? 'todos'}
+            opcoes={[
+              { valor: 'todos', rotulo: 'Todos', href: endereco({ ...filtros, responsavel: undefined }), contagem: daVista.length },
+              ...responsaveis.map((r) => ({
+                valor: r,
+                rotulo: r.split(' ')[0],
+                href: endereco({ ...filtros, responsavel: r }),
+                contagem: daVista.filter((p) => p.processo.responsavel === r).length,
+              })),
+            ]}
           />
-          {responsaveis.length > 1 && (
-            <SegmentedLinks
-              ativo={responsavel ?? 'todos'}
-              opcoes={[
-                { valor: 'todos', rotulo: 'Todos', href: endereco({ ...filtros, responsavel: undefined }), contagem: daVista.length },
-                ...responsaveis.map((r) => ({
-                  valor: r,
-                  rotulo: r.split(' ')[0],
-                  href: endereco({ ...filtros, responsavel: r }),
-                  contagem: daVista.filter((p) => p.processo.responsavel === r).length,
-                })),
-              ]}
-            />
-          )}
-        </div>
+        )}
+        <Busca
+          valor={q}
+          placeholder="Empresa, empreendimento ou prazo"
+          manter={{ filtro: vista === 'nossos' ? undefined : vista, responsavel }}
+          limpar={endereco({ ...filtros, q: undefined })}
+          className="min-w-60"
+        />
       </div>
 
-      {vista === 'cumpridos' ? (
-        <Lista>{paginado.itens.map(linha)}</Lista>
-      ) : (
-        // A página corta a lista em ordem de vencimento; os blocos agrupam só o que está nela.
-        (Object.keys(PERIODOS) as Periodo[]).map((periodo) => {
-          const doPeriodo = paginado.itens.filter((p) => periodoDoPrazo(p.vencimento, dia) === periodo)
-          if (doPeriodo.length === 0) return null
-          return (
-            <Secao key={periodo} titulo={vista === 'orgao' && periodo === 'vencidos' ? 'Atrasados' : PERIODOS[periodo]}>
-              <Lista>{doPeriodo.map(linha)}</Lista>
-            </Secao>
+      {vista === 'cumpridos'
+        ? paginado.total > 0 && (
+            <Zona tom="neutra" titulo="Cumpridos" detalhe={contarPrazos(paginado.total)}>
+              <ul>{paginado.itens.map(linha)}</ul>
+            </Zona>
           )
-        })
-      )}
+        : // A página corta a lista em ordem de vencimento; os blocos agrupam só o que está nela.
+          (Object.keys(PERIODOS) as Periodo[]).map((periodo) => {
+            const doPeriodo = paginado.itens.filter((p) => periodoDoPrazo(p.vencimento, dia) === periodo)
+            if (doPeriodo.length === 0) return null
+            return (
+              <Zona
+                key={periodo}
+                tom={(vista === 'orgao' ? TONS_DO_ORGAO : TONS)[periodo]}
+                titulo={vista === 'orgao' && periodo === 'vencidos' ? 'Atrasados' : PERIODOS[periodo]}
+                detalhe={contarPrazos(listas[vista].filter((p) => periodoDoPrazo(p.vencimento, dia) === periodo).length)}
+              >
+                <ul>{doPeriodo.map(linha)}</ul>
+              </Zona>
+            )
+          })}
       {paginado.total === 0 && <Vazio>{q || responsavel ? 'Nenhum prazo com esse filtro.' : 'Nenhum prazo aqui.'}</Vazio>}
       <Paginacao {...paginado} href={(n) => endereco({ ...filtros, pagina: n })} />
     </>

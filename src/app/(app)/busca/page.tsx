@@ -4,9 +4,9 @@ import type { ReactNode } from 'react'
 import { SituacaoDaNota } from '@/components/financeiro/situacao-nota'
 import { Busca } from '@/components/ui/busca'
 import { Vazio } from '@/components/ui/expansivel'
-import { Linha, Lista } from '@/components/ui/lista'
+import { Linha } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
-import { Secao } from '@/components/ui/secao'
+import { Zona } from '@/components/ui/zona'
 import { buscarTudo } from '@/data/busca'
 import { hoje } from '@/data/hoje'
 import { situacaoNota } from '@/domain/financeiro/notas'
@@ -20,18 +20,18 @@ const POR_GRUPO = 5
 function Grupo({ titulo, total, verTodos, children }: { titulo: string; total: number; verTodos: string; children: ReactNode }) {
   if (total === 0) return null
   return (
-    <Secao
-      titulo={`${titulo} · ${total}`}
+    <Zona
+      titulo={`${titulo} (${total})`}
       acao={
         total > POR_GRUPO && (
-          <LinkRapido href={verTodos} className="link text-sm">
+          <LinkRapido href={verTodos} className="link inline-flex min-h-12 items-center text-sm">
             Ver todos
           </LinkRapido>
         )
       }
     >
-      <Lista>{children}</Lista>
-    </Secao>
+      <ul>{children}</ul>
+    </Zona>
   )
 }
 
@@ -54,19 +54,19 @@ export default async function PaginaBusca({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader titulo="Busca" resumo={total ? `${contar(total, 'resultado', 'resultados')} para “${q}”.` : `Nada encontrado para “${q}”.`} />
-      <Busca valor={q} placeholder="Cliente, projeto, nº SEI ou nº da NF" limpar="/busca" className="mb-6" />
+      <Busca valor={q} placeholder="Cliente, projeto, nº SEI ou nº da NF" limpar="/busca" className="mb-7" />
       {total === 0 && <Vazio>Confira a grafia ou procure só pelo começo do nome.</Vazio>}
 
       <Grupo titulo="Projetos" total={processos.length} verTodos={`/projetos?q=${emTexto}`}>
         {processos.slice(0, POR_GRUPO).map(({ processo, cliente, recusada }) => (
           <Linha key={processo.id} href={`/projetos/${processo.id}`}>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-medium text-ink">{processo.empreendimento}</span>
-              <span className="block truncate text-xs text-muted">
+            <span className="min-w-0 flex-[1_1_18rem]">
+              <span className="block text-lg font-semibold text-ink">{processo.empreendimento}</span>
+              <span className="block text-sm text-muted">
                 {cliente.nome} · {processo.numeroSei ? `SEI ${processo.numeroSei}` : 'sem nº SEI'}
               </span>
             </span>
-            <span className="hidden shrink-0 text-sm text-muted sm:block">{recusada ? 'Proposta recusada' : `Fase ${processo.faseAtual} · ${FASES[processo.faseAtual - 1].nome}`}</span>
+            <span className="text-sm font-medium text-muted">{recusada ? 'Proposta recusada' : `Fase ${processo.faseAtual} · ${FASES[processo.faseAtual - 1].nome}`}</span>
           </Linha>
         ))}
       </Grupo>
@@ -74,9 +74,9 @@ export default async function PaginaBusca({ searchParams }: { searchParams: Prom
       <Grupo titulo="Clientes" total={clientes.length} verTodos={`/projetos/clientes?q=${emTexto}`}>
         {clientes.slice(0, POR_GRUPO).map((cliente) => (
           <Linha key={cliente.id} href={`/projetos/clientes/${cliente.id}`}>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-medium text-ink">{cliente.nome}</span>
-              <span className="block truncate text-xs text-muted">
+            <span className="min-w-0 flex-[1_1_18rem]">
+              <span className="block text-lg font-semibold text-ink">{cliente.nome}</span>
+              <span className="block text-sm text-muted">
                 {cliente.documento}
                 {cliente.grupo && ` · ${cliente.grupo}`}
               </span>
@@ -88,17 +88,16 @@ export default async function PaginaBusca({ searchParams }: { searchParams: Prom
       <Grupo titulo="Notas" total={notas.length} verTodos={`/financeiro?aba=todas&mes=todos&q=${emTexto}`}>
         {notas.slice(0, POR_GRUPO).map(({ nota, cliente }) => (
           <Linha key={nota.id} href={`/financeiro/notas/${nota.id}`}>
-            <span className="w-16 shrink-0 tabular-nums text-muted">NF {nota.numero}</span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-ink">{cliente.nome}</span>
-              <span className="block truncate text-xs text-muted">
+            <span className="min-w-0 flex-[1_1_18rem]">
+              <span className="block text-lg font-semibold text-ink">
+                NF {nota.numero} · {cliente.nome}
+              </span>
+              <span className="block text-sm text-muted">
                 {nota.descricao} · {formatarData(nota.emissao)}
               </span>
             </span>
-            <span className="hidden shrink-0 tabular-nums text-ink sm:block">{brl(nota.valor)}</span>
-            <span className="hidden w-32 shrink-0 md:block">
-              <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
-            </span>
+            <span className="text-[1.25rem] font-semibold text-ink">{brl(nota.valor)}</span>
+            <SituacaoDaNota situacao={situacaoNota(nota, dia)} />
           </Linha>
         ))}
       </Grupo>
