@@ -1,8 +1,8 @@
 'use client'
 
-import { Plus } from 'lucide-react'
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { useRef } from 'react'
+import { classeBotao } from '@/components/ui/form'
 import { pode, type Area, type Papel } from '@/lib/permissoes'
 
 const OPCOES: { href: string; rotulo: string; area: Area }[] = [
@@ -27,10 +27,8 @@ export function BotaoNovo({ papel }: { papel: Papel }) {
         if (!evento.currentTarget.contains(evento.relatedTarget)) evento.currentTarget.open = false
       }}
     >
-      <summary className="flex h-9 cursor-pointer list-none items-center justify-center gap-1.5 rounded-md bg-white/12 px-3 text-sm font-medium text-white transition-colors hover:bg-white/18 [&::-webkit-details-marker]:hidden">
-        <Plus className="size-4" /> Novo
-      </summary>
-      <ul className="absolute left-0 z-20 mt-1 min-w-full rounded-lg border border-line bg-surface p-1 shadow-sm">
+      <summary className={classeBotao('primario', 'w-full list-none [&::-webkit-details-marker]:hidden')}>+ Novo</summary>
+      <ul className="absolute left-0 z-20 mt-2 min-w-full rounded-lg border-2 border-brand-700 bg-surface p-2 shadow-lg">
         {opcoes.map(({ href, rotulo }) => (
           <li key={href}>
             <LinkRapido
@@ -38,7 +36,7 @@ export function BotaoNovo({ papel }: { papel: Papel }) {
               onClick={() => {
                 if (menu.current) menu.current.open = false
               }}
-              className="block whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm text-ink hover:bg-brand-50"
+              className="flex min-h-13 items-center whitespace-nowrap rounded-md px-3 text-base font-medium text-brand-700 hover:bg-brand-100"
             >
               {rotulo}
             </LinkRapido>

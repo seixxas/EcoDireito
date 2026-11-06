@@ -9,7 +9,7 @@ export default async function PaginaLogin({ searchParams }: { searchParams: Prom
   const { voltar } = await searchParams
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-canvas px-4">
-      <BotaoTema comRotulo className="absolute right-4 top-4 text-sm text-muted hover:text-ink" />
+      <BotaoTema className="absolute right-4 top-4" />
       <div className="w-full max-w-sm">
         <div className="mb-10 flex items-center gap-2">
           <span className="flex size-8 items-center justify-center rounded-md bg-brand-700 text-on-brand">

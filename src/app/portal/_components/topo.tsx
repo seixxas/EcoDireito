@@ -14,7 +14,7 @@ export function TopoDoPortal({ comSair }: { comSair: boolean }) {
           <span className="font-display text-lg font-semibold text-ink">Eco Direito</span>
         </span>
         <div className="flex items-center gap-3">
-          <BotaoTema className="text-muted hover:text-ink" />
+          <BotaoTema />
           {comSair && (
             <form action={sair}>
               <button className="flex items-center gap-1.5 text-sm text-muted hover:text-ink">

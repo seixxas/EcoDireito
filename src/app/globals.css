@@ -1,89 +1,122 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #efede6;
-  --color-rail: #e7e4da;
+  /* Fundos: página branca, blocos em verde bem claro e itens brancos dentro deles. */
+  --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-line: #dcd8cd;
-  --color-ink: #1d2420;
-  --color-muted: #545c56;
-  --color-subtle: #7b8179;
+  --color-painel: #f4f8f5;
+  --color-rail: #eef5ef;
+  --color-apagado: #f3f4f3;
+  --color-line: #d5e2d8;
+  /* Borda de campo de formulário. */
+  --color-campo: #6e8f76;
+  --color-ink: #15211b;
+  --color-muted: #2c3a32;
+  --color-subtle: #3d5244;
 
-  --color-brand-50: #eaf3ed;
-  --color-brand-100: #d3e6da;
-  --color-brand-300: #8fbf9f;
-  --color-brand-500: #2e7d4f;
-  --color-brand-700: #1f4e2c;
-  --color-brand-900: #14301e;
+  --color-brand-50: #eef6ef;
+  --color-brand-100: #e3f0e5;
+  --color-brand-300: #9bb7a1;
+  --color-brand-500: #2e7d32;
+  --color-brand-700: #1b5e20;
+  --color-brand-900: #14451a;
 
-  --color-accent: #e9a23b;
-  --color-ok: #127a55;
-  --color-ok-soft: #e6f5ee;
-  --color-warn: #8a5a0a;
-  --color-warn-soft: #fdf3e0;
-  --color-danger: #b42318;
-  --color-danger-soft: #fdecea;
-  --color-info: #2c4260;
-  --color-info-soft: #e4eaf2;
+  /* Semáforo: vermelho atrasado, amarelo hoje, verde em dia, azul Diário Oficial. */
+  --color-accent: #ffc84a;
+  --color-on-accent: #2b1f00;
+  --color-ok: #1b5e20;
+  --color-ok-soft: #e3f0e5;
+  --color-warn: #6b4100;
+  --color-warn-soft: #fff6dd;
+  --color-danger: #a4161a;
+  --color-danger-forte: #7f1014;
+  --color-danger-soft: #fdedec;
+  --color-on-danger: #ffffff;
+  --color-info: #0a2f66;
+  --color-info-soft: #eef3fa;
+  --color-info-tag: #dce8f7;
+  --color-on-info: #ffffff;
 
-  /* Texto sobre fundo de marca (botão principal, ícone da logo). */
+  /* Texto sobre fundo de marca (botão principal). */
   --color-on-brand: #ffffff;
 
-  /* Menu lateral: verde escuro nos dois modos. */
-  --color-nav: #14301e;
-  --color-nav-ink: #d3e6da;
-  --color-nav-muted: #8fbf9f;
-  --color-nav-danger: #f7a399;
-
   /* Linha forte da grade da DRE: borda dos blocos de cada mês. */
-  --color-grade: #8c9289;
+  --color-grade: #9bb7a1;
 
-  /* Leitura: texto corrido em 15 px e miúdo em 13 px. */
-  --text-sm: 0.9375rem;
-  --text-sm--line-height: 1.5;
-  --text-xs: 0.8125rem;
+  /* Letra grande de propósito: quem usa tem mais de 60 anos. Nada abaixo de 16 px. */
+  --text-2xs: 1rem;
+  --text-2xs--line-height: 1.4;
+  --text-xs: 1.0625rem;
   --text-xs--line-height: 1.4;
+  --text-sm: 1.125rem;
+  --text-sm--line-height: 1.45;
+  --text-base: 1.1875rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.3125rem;
+  --text-lg--line-height: 1.35;
+  --text-xl: 1.625rem;
+  --text-xl--line-height: 1.25;
+  --text-2xl: 2.125rem;
+  --text-2xl--line-height: 1.15;
+  --text-3xl: 2.625rem;
+  --text-3xl--line-height: 1.1;
+  --text-4xl: 3.5rem;
+  --text-4xl--line-height: 1.05;
+
+  /* A fonte Atkinson só fica forte de verdade em 700 e 800. */
+  --font-weight-medium: 700;
+  --font-weight-semibold: 800;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
 }
 
 @theme inline {
-  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-bricolage), var(--font-plex), sans-serif;
+  --font-sans: var(--font-atkinson), Verdana, ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Modo escuro: `data-theme="dark"` no <html>, posto pelo script do layout raiz e pelo BotaoTema.
-   As cores são as mesmas variáveis, trocadas aqui; a escala da marca inverte (700 = verde claro, para texto). */
+   As cores são as mesmas variáveis, trocadas aqui; a escala da marca inverte (700 = verde claro, para texto e botão). */
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --color-canvas: #131715;
-  --color-rail: #1f2522;
-  --color-surface: #1b201d;
-  --color-line: #2c3430;
-  --color-ink: #e6eae5;
-  --color-muted: #a4ada6;
-  --color-subtle: #7a837c;
+  --color-canvas: #121815;
+  --color-surface: #1c241f;
+  --color-painel: #161d19;
+  --color-rail: #1a231d;
+  --color-apagado: #1c211e;
+  --color-line: #33423a;
+  --color-campo: #7c9a85;
+  --color-ink: #eef3ef;
+  --color-muted: #d3ddd6;
+  --color-subtle: #b7c4bb;
 
-  --color-brand-50: #17271d;
-  --color-brand-100: #1f3a29;
-  --color-brand-300: #3d7352;
-  --color-brand-500: #4fae73;
-  --color-brand-700: #86d1a0;
-  --color-brand-900: #c4ead0;
+  --color-brand-50: #17281d;
+  --color-brand-100: #1e3827;
+  --color-brand-300: #4c7a5a;
+  --color-brand-500: #6cc084;
+  --color-brand-700: #93dba8;
+  --color-brand-900: #c7eed3;
 
-  --color-ok: #57c793;
-  --color-ok-soft: #14291f;
-  --color-warn: #f0b85f;
-  --color-warn-soft: #2e2412;
-  --color-danger: #f47c70;
-  --color-danger-soft: #351a17;
-  --color-info: #a9c1e0;
-  --color-info-soft: #1c2533;
+  --color-ok: #93dba8;
+  --color-ok-soft: #1a3324;
+  --color-warn: #ffd77a;
+  --color-warn-soft: #33280f;
+  --color-danger: #ff9a90;
+  --color-danger-forte: #ffc1ba;
+  --color-danger-soft: #3a1a18;
+  --color-on-danger: #2a0d0b;
+  --color-info: #b5d0f5;
+  --color-info-soft: #18253a;
+  --color-info-tag: #20324e;
+  --color-on-info: #0c1c33;
 
   --color-on-brand: #0f2016;
-  --color-nav: #0f2016;
-  --color-grade: #68716b;
+  --color-grade: #4c7a5a;
 }
 
 /* Monitor grande: tudo cresce junto, porque as medidas estão em rem. */
@@ -96,7 +129,15 @@
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
-  font-size: 0.9375rem;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Foco sempre visível: quem usa teclado precisa ver onde está. */
+:focus-visible {
+  outline: 3px solid var(--color-info);
+  outline-offset: 2px;
 }
 
 /* Impressão (proposta em PDF): papel branco e texto escuro, mesmo no modo escuro. */
@@ -106,7 +147,7 @@ body {
   }
   body {
     background: #fff;
-    color: #1d2420;
+    color: #15211b;
   }
 }
 
@@ -122,42 +163,53 @@ body {
 @layer components {
   /* Link dentro de texto ou de tabela: sublinhado para ficar claro que abre outra tela. */
   .link {
-    @apply font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 transition-colors hover:decoration-brand-700;
+    @apply font-medium text-brand-700 underline decoration-2 underline-offset-3 transition-colors hover:text-brand-900;
   }
+
+  /* Cada linha é uma faixa branca sobre o painel, com espaço entre elas. Vai dentro de `Card flush` ou de um bloco com `overflow-x-auto`. */
   .tabela {
-    @apply w-full text-sm;
+    @apply w-full min-w-[52rem];
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
   }
   .tabela th {
-    @apply whitespace-nowrap border-b border-line px-3 py-2 text-left text-xs font-medium text-muted;
+    @apply whitespace-nowrap px-3.5 pb-0.5 pt-2 text-left text-xs font-semibold text-subtle;
   }
   .tabela td {
-    @apply border-b border-line px-3 py-2.5 align-top;
+    @apply bg-surface px-3.5 py-4 align-middle text-base;
   }
-  .tabela th:first-child,
   .tabela td:first-child {
-    @apply pl-4;
+    @apply rounded-l-[0.75rem];
   }
-  .tabela th:last-child,
   .tabela td:last-child {
-    @apply pr-4;
+    @apply rounded-r-[0.75rem];
   }
-  .tabela tbody tr:last-child td {
-    @apply border-b-0;
-  }
-  .tabela tbody tr:hover {
-    @apply bg-canvas/60;
+  .tabela tbody tr:hover td {
+    @apply bg-brand-50;
   }
   .tabela .num {
-    @apply whitespace-nowrap text-right tabular-nums;
+    @apply whitespace-nowrap text-right;
   }
+  .tabela td.num {
+    @apply text-[1.25rem] font-semibold;
+  }
+
   /* Aviso de espera do LinkRapido. Só aparece depois de 200 ms, para não piscar quando a tela chega rápido. */
   .barra-de-espera {
-    @apply fixed inset-x-0 top-0 z-50 h-0.5 origin-left bg-accent;
+    @apply fixed inset-x-0 top-0 z-50 h-1.5 origin-left bg-accent;
     animation: barra-de-espera 8s cubic-bezier(0.1, 0.7, 0.2, 1) 200ms both;
   }
-  /* Barra de rolagem da grade da DRE, no topo da tabela. */
+
+  /* Barra de rolagem da grade da DRE. */
   .rolagem-fina {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-muted) var(--color-rail);
+    scrollbar-color: var(--color-campo) var(--color-rail);
+  }
+
+  /* Caixa de confirmação (`BotaoConfirmar`). */
+  .dialogo {
+    @apply m-auto w-[calc(100%-2rem)] max-w-[38.75rem] rounded-xl bg-surface p-8 text-ink;
+  }
+  .dialogo::backdrop {
+    background: rgb(21 33 27 / 0.55);
   }
 }

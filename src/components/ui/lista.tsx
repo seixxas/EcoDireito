@@ -1,25 +1,25 @@
-import { ChevronRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
+import { classeBotao } from './form'
 import { LinkRapido } from './link-rapido'
 
-/** Lista de linhas numa caixa com borda. */
+/** Lista de itens brancos dentro de um bloco verde bem claro. */
 export function Lista({ className, children }: { className?: string; children: ReactNode }) {
-  return <ul className={cn('divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface', className)}>{children}</ul>
+  return <ul className={cn('rounded-xl bg-painel px-3.5 pb-1.5 pt-3', className)}>{children}</ul>
 }
 
-/** Uma linha da lista. Com `href`, a linha inteira vira link: muda de cor ao passar o mouse e mostra a setinha. */
-export function Linha({ href, className, children }: { href?: string; className?: string; children: ReactNode }) {
+/** Um item da lista. Com `href`, o item inteiro abre a tela e mostra o botão à direita (`acao`, "Abrir" se não disser outro). */
+export function Linha({ href, acao = 'Abrir', className, children }: { href?: string; acao?: string; className?: string; children: ReactNode }) {
   const conteudo = (
-    <div className={cn('flex items-center gap-4 px-4 py-3', className)}>
+    <div className={cn('flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg bg-surface px-4 py-4 transition-colors', href && 'group-hover:bg-brand-50', className)}>
       {children}
-      {href && <ChevronRight className="size-4 shrink-0 text-subtle transition-colors group-hover:text-brand-700" />}
+      {href && <span className={classeBotao('secundario', 'ml-auto shrink-0 group-hover:bg-brand-100')}>{acao}</span>}
     </div>
   )
   return (
-    <li>
+    <li className="mb-2">
       {href ? (
-        <LinkRapido href={href} className="group block transition-colors hover:bg-brand-50">
+        <LinkRapido href={href} className="group block">
           {conteudo}
         </LinkRapido>
       ) : (

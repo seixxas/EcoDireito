@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { Bricolage_Grotesque, IBM_Plex_Sans } from 'next/font/google'
+import { Atkinson_Hyperlegible_Next } from 'next/font/google'
 import type { ReactNode } from 'react'
 import './globals.css'
 
-const plex = IBM_Plex_Sans({ variable: '--font-plex', subsets: ['latin'], weight: ['400', '500', '600', '700'] })
-const bricolage = Bricolage_Grotesque({ variable: '--font-bricolage', subsets: ['latin'] })
+/** Fonte feita para quem enxerga pouco: letras e números difíceis de confundir. */
+const atkinson = Atkinson_Hyperlegible_Next({ variable: '--font-atkinson', subsets: ['latin', 'latin-ext'], weight: ['400', '500', '700', '800'] })
 
 export const metadata: Metadata = {
   title: { default: 'Eco Direito', template: '%s · Eco Direito' },
@@ -16,7 +16,7 @@ const TEMA_SALVO = `(function(){try{var t=localStorage.getItem("tema");if(t)docu
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" data-theme="light" className={`${plex.variable} ${bricolage.variable} antialiased`} suppressHydrationWarning>
+    <html lang="pt-BR" data-theme="light" className={`${atkinson.variable} antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: TEMA_SALVO }} />
       </head>

@@ -1,10 +1,9 @@
 'use client'
 
-import { Search } from 'lucide-react'
 import Form from 'next/form'
 import { useEffect, useRef } from 'react'
 
-/** Busca de toda a plataforma (cliente, processo, nota), sempre à vista. Ctrl+K leva o cursor para ela. */
+/** Busca de toda a plataforma (cliente, projeto, nota), sempre à vista. Parada, tem cara de botão; ao clicar, vira campo. Ctrl+K leva o cursor para ela. */
 export function BuscaGeral() {
   const campo = useRef<HTMLInputElement>(null)
 
@@ -20,8 +19,7 @@ export function BuscaGeral() {
   }, [])
 
   return (
-    <Form action="/busca" role="search" className="relative">
-      <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-nav-muted" />
+    <Form action="/busca" role="search">
       <input
         ref={campo}
         type="search"
@@ -29,7 +27,7 @@ export function BuscaGeral() {
         placeholder="Buscar"
         aria-label="Buscar cliente, projeto ou nota"
         title="Cliente, projeto, nº SEI ou nº da NF (Ctrl+K)"
-        className="h-9 w-full rounded-md border border-white/15 bg-white/8 pl-8 pr-2 text-sm text-white outline-none placeholder:text-nav-muted focus:border-white/40"
+        className="min-h-13 w-full cursor-pointer rounded-md border-2 border-brand-700 bg-surface px-4 text-center text-base font-medium text-ink outline-none transition-colors placeholder:text-brand-700 placeholder:opacity-100 hover:bg-brand-50 focus:cursor-text focus:bg-surface focus:text-left focus:ring-3 focus:ring-brand-300 focus:placeholder:text-subtle"
       />
     </Form>
   )

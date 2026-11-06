@@ -1,4 +1,3 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 import type { Pagina } from '@/lib/paginar'
@@ -14,12 +13,12 @@ function numeros(pagina: number, total: number) {
   return lista
 }
 
-const BOTAO = 'inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-md border px-2 text-sm transition-colors'
+const BOTAO = 'inline-flex min-h-13 min-w-13 items-center justify-center rounded-md border-2 px-3 text-base font-medium transition-colors'
 
 function Passo({ href, children }: { href?: string; children: ReactNode }) {
   if (!href) return <span className={cn(BOTAO, 'border-line text-subtle')}>{children}</span>
   return (
-    <LinkRapido href={href} scroll={false} className={cn(BOTAO, 'border-line bg-surface text-ink hover:border-brand-300 hover:bg-brand-50')}>
+    <LinkRapido href={href} scroll={false} className={cn(BOTAO, 'border-brand-700 bg-surface text-brand-700 hover:bg-brand-50')}>
       {children}
     </LinkRapido>
   )
@@ -29,22 +28,19 @@ function Passo({ href, children }: { href?: string; children: ReactNode }) {
 export function Paginacao({ pagina, totalPaginas, total, inicio, fim, href }: Omit<Pagina<unknown>, 'itens'> & { href: (pagina: number) => string }) {
   if (totalPaginas <= 1) return null
   return (
-    <nav aria-label="Páginas" className="mt-3 flex flex-wrap items-center justify-between gap-3">
-      <p className="text-sm text-muted">
+    <nav aria-label="Páginas" className="mt-4 flex flex-wrap items-center justify-between gap-3">
+      <p className="text-base text-muted">
         {inicio}–{fim} de {total}
       </p>
-      <div className="flex items-center gap-1">
-        <Passo href={pagina > 1 ? href(pagina - 1) : undefined}>
-          <ChevronLeft className="size-4" />
-          <span className="max-sm:hidden">Anterior</span>
-        </Passo>
+      <div className="flex flex-wrap items-center gap-2">
+        <Passo href={pagina > 1 ? href(pagina - 1) : undefined}>← Anterior</Passo>
         {numeros(pagina, totalPaginas).map((n, i) =>
           n === null ? (
             <span key={`r${i}`} className="px-1 text-subtle">
               …
             </span>
           ) : n === pagina ? (
-            <span key={n} aria-current="page" className={cn(BOTAO, 'border-brand-700 bg-brand-700 font-medium text-on-brand')}>
+            <span key={n} aria-current="page" className={cn(BOTAO, 'border-brand-700 bg-brand-700 text-on-brand')}>
               {n}
             </span>
           ) : (
@@ -53,10 +49,7 @@ export function Paginacao({ pagina, totalPaginas, total, inicio, fim, href }: Om
             </Passo>
           ),
         )}
-        <Passo href={pagina < totalPaginas ? href(pagina + 1) : undefined}>
-          <span className="max-sm:hidden">Próxima</span>
-          <ChevronRight className="size-4" />
-        </Passo>
+        <Passo href={pagina < totalPaginas ? href(pagina + 1) : undefined}>Próxima →</Passo>
       </div>
     </nav>
   )
