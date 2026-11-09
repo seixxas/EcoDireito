@@ -60,7 +60,7 @@ function AbasEmQuadros({ abas, ativa, className }: { abas: Aba[]; ativa: string;
             aria-current={ligada ? 'page' : undefined}
             className={cn(
               'block rounded-lg px-3 py-1.5 transition-colors',
-              ligada ? 'bg-brand-700 text-on-brand' : cn(FUNDOS[aba.fundo ?? 'neutro'], 'text-ink hover:ring-1 hover:ring-brand-700'),
+              ligada ? 'copa text-white' : cn(FUNDOS[aba.fundo ?? 'neutro'], 'text-ink transition hover:-translate-y-px hover:shadow-[0_6px_14px_-10px_rgb(18_61_23/0.5)] motion-reduce:hover:translate-y-0'),
             )}
           >
             <span className="flex flex-wrap items-baseline justify-between gap-x-2">
