@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, isNull, max, sql } from 'drizzle-orm'
-import type { BatchItem } from 'drizzle-orm/batch'
-import { db, exigirBanco, schema, temBanco } from '@/db'
+import type { ClientSession } from 'mongodb'
+import { db, emTransacao, exigirBanco, exigirVinculo, temBanco } from '@/db'
+import type { ExtratoLinhaDoc } from '@/db/documentos'
 import { inicioDaSemana, mesDe, somarDias, somarMeses, type DataISO } from '@/lib/datas'
 import { reais, somar, type Centavos } from '@/lib/dinheiro'
 import { palavrasDe, sugerirParaTodas, type Regra, type Sugestao } from '@/domain/financeiro/classificacao'
@@ -150,8 +150,8 @@ async function linhaDoLancamento(id: string) {
   // Leitura direta no banco, fora de carregar(): a guarda tem de estar aqui.
   await exigirArea('financeiro')
   if (!temBanco) return undefined
-  const [linha] = await db.select().from(schema.extratoLinhas).where(eq(schema.extratoLinhas.lancamentoId, id)).limit(1)
-  return linha
+  const linha = await db.extratoLinhas.findOne({ lancamentoId: id })
+  return linha ? linhaDoBanco(linha) : undefined
 }
 
 export async function obterLancamento(id: string) {
@@ -182,30 +182,27 @@ export async function listarContratos() {
   }))
 }
 
-export async function gravarNota(nota: Omit<NotaFiscal, 'recebimento' | 'cancelada'>) {
+export async function gravarNota({ id, numero, emissao, clienteId, processoId, parcelaId, descricao, valor, iss, retencao, previsao }: Omit<NotaFiscal, 'recebimento' | 'cancelada'>) {
   exigirBanco()
-  await db.insert(schema.notasFiscais).values(nota)
+  await Promise.all([exigirVinculo(db.clientes, clienteId), exigirVinculo(db.processos, processoId), exigirVinculo(db.parcelas, parcelaId)])
+  await db.notasFiscais.insertOne({ _id: id, numero, emissao, clienteId, processoId, parcelaId, descricao, valor, iss, retencao, previsao, cancelada: false, criadoEm: new Date() })
 }
 
 export async function gravarCancelamento(notaId: string) {
   exigirBanco()
-  await db.update(schema.notasFiscais).set({ cancelada: true }).where(eq(schema.notasFiscais.id, notaId))
+  await db.notasFiscais.updateOne({ _id: notaId }, { $set: { cancelada: true } })
 }
 
-type Comando = BatchItem<'pg'>
+/** Uma gravação dentro da transação de `executar`. */
+type Comando = (session: ClientSession) => Promise<unknown>
 
 /**
  * Um recebimento por nota. Corrigir atualiza o lançamento de receita que já existe, em vez de trocar por outro:
  * assim ele continua ligado à linha do extrato que o conciliou.
  */
 async function comandosDoRecebimento(nota: NotaFiscal, cliente: Cliente, recebimento: { data: DataISO; valor: Centavos }, linhaExtratoId?: string) {
-  const { notasFiscais, lancamentos } = schema
-  const [anterior] = await db
-    .select({ id: lancamentos.id })
-    .from(lancamentos)
-    .where(and(eq(lancamentos.notaId, nota.id), eq(lancamentos.contaId, 'receita_servicos')))
-    .limit(1)
-  const lancamentoId = anterior?.id ?? crypto.randomUUID()
+  const anterior = await db.lancamentos.findOne({ notaId: nota.id, contaId: 'receita_servicos' }, { projection: { _id: 1 } })
+  const lancamentoId = anterior?._id ?? crypto.randomUUID()
   const receita = {
     data: recebimento.data,
     competencia: mesDe(recebimento.data),
@@ -216,34 +213,37 @@ async function comandosDoRecebimento(nota: NotaFiscal, cliente: Cliente, recebim
     notaId: nota.id,
   }
   const comandos: Comando[] = [
-    db.update(notasFiscais).set({ recebimentoData: recebimento.data, recebimentoValor: recebimento.valor }).where(eq(notasFiscais.id, nota.id)),
-    anterior ? db.update(lancamentos).set(receita).where(eq(lancamentos.id, lancamentoId)) : db.insert(lancamentos).values({ id: lancamentoId, ...receita }),
+    (session) => db.notasFiscais.updateOne({ _id: nota.id }, { $set: { recebimentoData: recebimento.data, recebimentoValor: recebimento.valor } }, { session }),
+    (session) =>
+      anterior
+        ? db.lancamentos.updateOne({ _id: lancamentoId }, { $set: receita }, { session })
+        : db.lancamentos.insertOne({ _id: lancamentoId, ...receita, criadoEm: new Date() }, { session }),
   ]
   return linhaExtratoId ? [...comandos, comandoDeVinculo(linhaExtratoId, lancamentoId)] : comandos
 }
 
-/** Código do Postgres para divisão por zero: é o sinal de "linha já lançada" em comandoDeVinculo. */
-const LINHA_JA_LANCADA = '22012'
+/** Sinal de "linha já lançada" em comandoDeVinculo: desfaz a transação inteira. */
+class LinhaJaLancada extends Error {}
 
 /**
  * Liga a linha do extrato ao lançamento só se ela ainda estiver livre. Se outra confirmação chegou antes
- * (clique duplo, duas abas), a divisão por zero derruba o lote inteiro (o batch do Neon é uma transação) e nada é gravado em dobro.
+ * (clique duplo, duas abas), o erro desfaz a transação inteira e nada é gravado em dobro.
  */
-function comandoDeVinculo(linhaExtratoId: string, lancamentoId: string) {
-  return db.execute(sql`
-    with ligada as (
-      update extrato_linhas set lancamento_id = ${lancamentoId}
-      where id = ${linhaExtratoId} and lancamento_id is null
-      returning 1
-    )
-    select 1 / (select count(*) from ligada)::int
-  `)
+function comandoDeVinculo(linhaExtratoId: string, lancamentoId: string): Comando {
+  return async (session) => {
+    const { matchedCount } = await db.extratoLinhas.updateOne({ _id: linhaExtratoId, lancamentoId: null }, { $set: { lancamentoId } }, { session })
+    if (!matchedCount) throw new LinhaJaLancada()
+  }
 }
 
-function comandosDoLancamento(linha: LinhaDoExtrato, conta: { contaId: ContaId; processoId?: string }): Comando[] {
+function comandosDoLancamento(linha: LinhaDoExtrato, { contaId, processoId }: { contaId: ContaId; processoId?: string }): Comando[] {
   const lancamentoId = crypto.randomUUID()
   return [
-    db.insert(schema.lancamentos).values({ id: lancamentoId, data: linha.data, competencia: mesDe(linha.data), descricao: linha.descricao, valor: linha.valor, ...conta }),
+    (session) =>
+      db.lancamentos.insertOne(
+        { _id: lancamentoId, data: linha.data, competencia: mesDe(linha.data), descricao: linha.descricao, valor: linha.valor, contaId, processoId, criadoEm: new Date() },
+        { session },
+      ),
     comandoDeVinculo(linha.id, lancamentoId),
   ]
 }
@@ -252,11 +252,12 @@ function comandosDoLancamento(linha: LinhaDoExtrato, conta: { contaId: ContaId; 
 async function executar(comandos: Comando[]) {
   if (!comandos.length) return true
   try {
-    await db.batch(comandos as [Comando, ...Comando[]])
+    await emTransacao(async (session) => {
+      for (const comando of comandos) await comando(session)
+    })
     return true
   } catch (erro) {
-    const { code, cause } = erro as { code?: string; cause?: { code?: string } }
-    if ((code ?? cause?.code) === LINHA_JA_LANCADA) return false
+    if (erro instanceof LinhaJaLancada) return false
     throw erro
   }
 }
@@ -266,51 +267,60 @@ export async function gravarRecebimento(nota: NotaFiscal, cliente: Cliente, rece
   await executar(await comandosDoRecebimento(nota, cliente, recebimento))
 }
 
-export async function gravarLancamento(lancamento: Omit<Lancamento, 'id'>) {
+export async function gravarLancamento({ data, competencia, descricao, contaId, valor, processoId, notaId, observacao }: Omit<Lancamento, 'id'>) {
   exigirBanco()
-  await db.insert(schema.lancamentos).values({ id: crypto.randomUUID(), ...lancamento })
+  await Promise.all([exigirVinculo(db.processos, processoId), exigirVinculo(db.notasFiscais, notaId)])
+  await db.lancamentos.insertOne({ _id: crypto.randomUUID(), data, competencia, descricao, contaId, valor, processoId, notaId, observacao, criadoEm: new Date() })
 }
 
 /** Grava o que `alteracoesDoLancamento` deixou mudar. Campo ausente fica como está; vazio vira null. */
 export async function alterarLancamento(id: string, alteracoes: Partial<EdicaoLancamento>) {
   exigirBanco()
   const { processoId, observacao, ...resto } = alteracoes
-  await db
-    .update(schema.lancamentos)
-    .set({ ...resto, observacao: observacao ?? null, ...('processoId' in alteracoes && { processoId: processoId ?? null }) })
-    .where(eq(schema.lancamentos.id, id))
+  await exigirVinculo(db.processos, processoId)
+  await db.lancamentos.updateOne({ _id: id }, { $set: { ...resto, observacao: observacao ?? null, ...('processoId' in alteracoes && { processoId: processoId ?? null }) } })
 }
 
-/** O lançamento de receita de uma nota muda pela nota (registrando o recebimento de novo), não por aqui. */
+/** O lançamento de receita de uma nota muda pela nota (registrando o recebimento de novo), não por aqui. A linha do extrato ligada a ele volta para a fila. */
 export async function apagarLancamento(id: string) {
   exigirBanco()
-  await db.delete(schema.lancamentos).where(and(eq(schema.lancamentos.id, id), isNull(schema.lancamentos.notaId)))
+  await emTransacao(async (session) => {
+    const { deletedCount } = await db.lancamentos.deleteOne({ _id: id, notaId: null }, { session })
+    if (deletedCount) await db.extratoLinhas.updateMany({ lancamentoId: id }, { $set: { lancamentoId: null } }, { session })
+  })
 }
 
 type DadosParcela = Pick<Parcela, 'descricao' | 'valor' | 'gatilho'>
 
-export async function alterarParcela(id: string, dados: DadosParcela) {
+export async function alterarParcela(id: string, { descricao, valor, gatilho }: DadosParcela) {
   exigirBanco()
-  await db.update(schema.parcelas).set(dados).where(eq(schema.parcelas.id, id))
+  await db.parcelas.updateOne({ _id: id }, { $set: { descricao, valor, gatilho } })
 }
 
 /** Na primeira parcela, cria o contrato do processo. A nova parcela entra no fim. */
-export async function adicionarParcela(processoId: string, dados: DadosParcela) {
+export async function adicionarParcela(processoId: string, { descricao, valor, gatilho }: DadosParcela) {
   exigirBanco()
-  const { contratos, parcelas } = schema
-  const [existente] = await db.select().from(contratos).where(eq(contratos.processoId, processoId))
-  const contratoId = existente?.id ?? crypto.randomUUID()
-  if (!existente) await db.insert(contratos).values({ id: contratoId, processoId })
-  const [{ ultima }] = await db.select({ ultima: max(parcelas.ordem) }).from(parcelas).where(eq(parcelas.contratoId, contratoId))
-  await db.insert(parcelas).values({ id: crypto.randomUUID(), contratoId, ordem: (ultima ?? 0) + 1, ...dados })
+  await exigirVinculo(db.processos, processoId)
+  const contrato = await db.contratos.findOneAndUpdate({ processoId }, { $setOnInsert: { _id: crypto.randomUUID() } }, { upsert: true, returnDocument: 'after' })
+  const contratoId = contrato!._id
+  const ultima = await db.parcelas.findOne({ contratoId }, { sort: { ordem: -1 }, projection: { ordem: 1 } })
+  await db.parcelas.insertOne({ _id: crypto.randomUUID(), contratoId, ordem: (ultima?.ordem ?? 0) + 1, descricao, valor, gatilho })
 }
 
+/** A nota que faturou a parcela continua existindo, sem o vínculo. */
 export async function apagarParcela(id: string) {
   exigirBanco()
-  await db.delete(schema.parcelas).where(eq(schema.parcelas.id, id))
+  await emTransacao(async (session) => {
+    await db.notasFiscais.updateMany({ parcelaId: id }, { $set: { parcelaId: null } }, { session })
+    await db.parcelas.deleteOne({ _id: id }, { session })
+  })
 }
 
-export type LinhaDoExtrato = typeof schema.extratoLinhas.$inferSelect
+export type LinhaDoExtrato = Omit<ExtratoLinhaDoc, '_id'> & { id: string }
+
+function linhaDoBanco({ _id, ...linha }: ExtratoLinhaDoc): LinhaDoExtrato {
+  return { id: _id, ...linha, lancamentoId: linha.lancamentoId ?? null }
+}
 
 /** Linhas do extrato e regras. Sem banco, tudo vazio: não há extrato fictício. */
 async function extratoERegras() {
@@ -320,10 +330,13 @@ async function extratoERegras() {
   await exigirArea('financeiro')
   if (!temBanco) return { linhas: [], regras: [] }
   const [linhas, regras] = await Promise.all([
-    db.select().from(schema.extratoLinhas).orderBy(desc(schema.extratoLinhas.data)),
-    db.select().from(schema.regrasClassificacao).orderBy(asc(schema.regrasClassificacao.contem)),
+    db.extratoLinhas.find({}, { sort: { data: -1, _id: 1 }, batchSize: 10_000 }).toArray(),
+    db.regrasClassificacao.find({}, { sort: { contem: 1 } }).toArray(),
   ])
-  return { linhas, regras: regras.map((r): Regra => ({ id: r.id, contem: r.contem, contaId: r.contaId as ContaId, processoId: r.processoId ?? undefined })) }
+  return {
+    linhas: linhas.map(linhaDoBanco),
+    regras: regras.map((r): Regra => ({ id: r._id, contem: r.contem, contaId: r.contaId as ContaId, processoId: r.processoId ?? undefined })),
+  }
 }
 
 /** A fila "a classificar": linhas sem lançamento e não ignoradas, cada uma com a sua sugestão. */
@@ -361,12 +374,18 @@ export async function extratoDeExemplo() {
 /** Grava as linhas novas e pula as que já tinham sido importadas. Devolve quantas entraram. */
 export async function gravarLinhasExtrato(linhas: LinhaExtrato[], arquivo: string) {
   exigirBanco()
-  const novas = await db
-    .insert(schema.extratoLinhas)
-    .values(linhas.map((linha) => ({ id: crypto.randomUUID(), arquivo, ...linha })))
-    .onConflictDoNothing({ target: schema.extratoLinhas.chave })
-    .returning({ id: schema.extratoLinhas.id })
-  return novas.length
+  if (!linhas.length) return 0
+  const importadoEm = new Date()
+  const { upsertedCount } = await db.extratoLinhas.bulkWrite(
+    linhas.map(({ chave, data, descricao, valor }) => ({
+      updateOne: {
+        filter: { chave },
+        update: { $setOnInsert: { _id: crypto.randomUUID(), data, descricao, valor, arquivo, lancamentoId: null, ignorada: false, importadoEm } },
+        upsert: true,
+      },
+    })),
+  )
+  return upsertedCount
 }
 
 /** Confirma as sugestões numa ida só ao banco. Devolve false se alguma linha já tinha sido lançada (nada é gravado). */
@@ -399,20 +418,22 @@ export async function receberPelaLinhaExtrato(linha: LinhaDoExtrato, nota: NotaF
 
 export async function ignorarLinhaExtrato(id: string, ignorada: boolean) {
   exigirBanco()
-  await db.update(schema.extratoLinhas).set({ ignorada }).where(eq(schema.extratoLinhas.id, id))
+  await db.extratoLinhas.updateOne({ _id: id }, { $set: { ignorada } })
 }
 
 /** Uma regra por trecho: gravar o mesmo trecho de novo troca a conta. */
 export async function gravarRegra(regra: Omit<Regra, 'id'>) {
   exigirBanco()
+  await exigirVinculo(db.processos, regra.processoId)
   const contem = palavrasDe(regra.contem).join(' ')
-  await db
-    .insert(schema.regrasClassificacao)
-    .values({ id: crypto.randomUUID(), ...regra, contem })
-    .onConflictDoUpdate({ target: schema.regrasClassificacao.contem, set: { contaId: regra.contaId, processoId: regra.processoId ?? null } })
+  await db.regrasClassificacao.updateOne(
+    { contem },
+    { $set: { contaId: regra.contaId, processoId: regra.processoId ?? null }, $setOnInsert: { _id: crypto.randomUUID(), criadoEm: new Date() } },
+    { upsert: true },
+  )
 }
 
 export async function apagarRegra(id: string) {
   exigirBanco()
-  await db.delete(schema.regrasClassificacao).where(eq(schema.regrasClassificacao.id, id))
+  await db.regrasClassificacao.deleteOne({ _id: id })
 }

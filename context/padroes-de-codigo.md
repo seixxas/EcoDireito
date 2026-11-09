@@ -17,7 +17,7 @@ app/ (rotas e composição)  →  data/ (acesso a dados)  →  domain/ (regras p
 ```
 
 - **`src/domain`**: regras de negócio puras. Sem React, sem Next, sem I/O. Toda regra com teste.
-- **`src/data`**: a única porta para os dados. Lê o banco; sem `DATABASE_URL`, usa `src/data/seed`. Páginas nunca importam `seed` direto.
+- **`src/data`**: a única porta para os dados. Lê o banco; sem `MONGODB_URI`, usa `src/data/seed`. Páginas nunca importam `seed` direto.
 - **`src/app`**: páginas buscam dados em `data/`, calculam com `domain/` e montam a tela.
 - **`src/components`**: UI reutilizável. Componente usado por uma rota só fica em `app/<rota>/_components/`.
 

@@ -1,5 +1,5 @@
-import { eq } from 'drizzle-orm'
-import { db, exigirBanco, schema } from '@/db'
+import type { ClientSession } from 'mongodb'
+import { db, emTransacao, exigirBanco, exigirVinculo } from '@/db'
 import { situacaoParcela } from '@/domain/financeiro/parcelas'
 import { gerarPrazos, proximoPrazo, type Prazo } from '@/domain/prazos'
 import { faseDepoisDoEvento, type Cliente, type Evento, type Processo } from '@/domain/processos'
@@ -90,22 +90,23 @@ export type DadosProposta = Pick<Processo, 'clienteId' | 'empreendimento' | 'end
 /** Proposta nova: o processo na fase 1 (sem nº SEI), o texto da proposta e o contrato com as parcelas do serviço, numa transação. Devolve o id. */
 export async function gravarProposta({ valor, escopo, validadeDias, ...processo }: DadosProposta) {
   exigirBanco()
+  await exigirVinculo(db.clientes, processo.clienteId)
   const id = crypto.randomUUID()
   const contratoId = crypto.randomUUID()
-  await db.batch([
-    db.insert(schema.processos).values({ id, ...processo, faseAtual: 1 }),
-    db.insert(schema.propostas).values({ processoId: id, escopo, validadeDias, criadaEm: await hoje() }),
-    db.insert(schema.contratos).values({ id: contratoId, processoId: id }),
-    db
-      .insert(schema.parcelas)
-      .values(parcelasDaProposta(processo.servico, valor).map((parcela, i) => ({ id: crypto.randomUUID(), contratoId, ordem: i + 1, ...parcela }))),
-  ])
+  const criadaEm = await hoje()
+  const parcelas = parcelasDaProposta(processo.servico, valor).map((parcela, i) => ({ _id: crypto.randomUUID(), contratoId, ordem: i + 1, ...parcela }))
+  await emTransacao(async (session) => {
+    await db.processos.insertOne({ _id: id, ...processo, faseAtual: 1, criadoEm: new Date() }, { session })
+    await db.propostas.insertOne({ _id: id, escopo, validadeDias, criadaEm }, { session })
+    await db.contratos.insertOne({ _id: contratoId, processoId: id }, { session })
+    await db.parcelas.insertMany(parcelas, { session })
+  })
   return id
 }
 
 export async function alterarProposta(processoId: string, dados: Pick<Proposta, 'escopo' | 'validadeDias'>) {
   exigirBanco()
-  await db.update(schema.propostas).set(dados).where(eq(schema.propostas.processoId, processoId))
+  await db.propostas.updateOne({ _id: processoId }, { $set: dados })
 }
 
 /** Parcelas cujo evento já aconteceu e ainda não viraram nota. */
@@ -123,59 +124,70 @@ export async function listarParcelasLiberadas() {
 /** Devolve o id do cliente gravado. */
 export async function gravarCliente(dados: DadosCliente, id?: string) {
   exigirBanco()
-  const valores = { ...dados, grupo: dados.grupo ?? null }
+  const valores = { nome: dados.nome, documento: dados.documento, grupo: dados.grupo ?? null }
   if (id) {
-    await db.update(schema.clientes).set(valores).where(eq(schema.clientes.id, id))
+    await db.clientes.updateOne({ _id: id }, { $set: valores })
     return id
   }
   const novo = crypto.randomUUID()
-  await db.insert(schema.clientes).values({ id: novo, ...valores })
+  await db.clientes.insertOne({ _id: novo, ...valores, criadoEm: new Date() })
   return novo
 }
 
 /** Devolve o id do processo gravado. */
 export async function gravarProcesso(dados: DadosProcesso, id?: string) {
   exigirBanco()
-  const valores = { ...dados, numeroSei: dados.numeroSei ?? null, numeroSimproc: dados.numeroSimproc ?? null, numeroTca: dados.numeroTca ?? null }
+  await exigirVinculo(db.clientes, dados.clienteId)
+  const { clienteId, empreendimento, endereco, responsavel, servico, faseAtual } = dados
+  const valores = {
+    clienteId,
+    empreendimento,
+    endereco,
+    responsavel,
+    servico,
+    faseAtual,
+    numeroSei: dados.numeroSei ?? null,
+    numeroSimproc: dados.numeroSimproc ?? null,
+    numeroTca: dados.numeroTca ?? null,
+  }
   if (id) {
-    await db.update(schema.processos).set(valores).where(eq(schema.processos.id, id))
+    await db.processos.updateOne({ _id: id }, { $set: valores })
     return id
   }
   const novo = crypto.randomUUID()
-  await db.insert(schema.processos).values({ id: novo, ...valores })
+  await db.processos.insertOne({ _id: novo, ...valores, criadoEm: new Date() })
   return novo
 }
 
 /**
- * As gravações de um evento novo, para juntar num `db.batch`: o evento e a fase do processo. Os prazos saem do motor na leitura.
+ * Grava um evento novo dentro de uma transação: o evento e a fase do processo. Os prazos saem do motor na leitura.
  * Id repetido não grava de novo: é o que impede o mesmo ato do Diário de virar dois eventos.
  */
-export function gravacoesDoEvento(processo: Processo, evento: Evento, dia: DataISO) {
-  return [
-    db
-      .insert(schema.eventos)
-      .values({ ...evento, processoId: processo.id, diasNoAto: evento.diasNoAto ?? null, observacao: evento.observacao ?? null })
-      .onConflictDoNothing(),
-    db
-      .update(schema.processos)
-      .set({ faseAtual: faseDepoisDoEvento(processo.faseAtual, evento, dia) })
-      .where(eq(schema.processos.id, processo.id)),
-  ] as const
+export async function lancarEvento(processo: Processo, { id, ...evento }: Evento, dia: DataISO, session: ClientSession) {
+  await db.eventos.updateOne(
+    { _id: id },
+    { $setOnInsert: { ...evento, processoId: processo.id, diasNoAto: evento.diasNoAto ?? null, observacao: evento.observacao ?? null, criadoEm: new Date() } },
+    { upsert: true, session },
+  )
+  await db.processos.updateOne({ _id: processo.id }, { $set: { faseAtual: faseDepoisDoEvento(processo.faseAtual, evento, dia) } }, { session })
 }
 
 /** `numeroSei` vem junto com a autuação, quando o processo ainda não tinha. */
 export async function gravarEvento(processo: Processo, evento: Omit<Evento, 'id'>, numeroSei?: string) {
   exigirBanco()
-  const gravacoes = gravacoesDoEvento(processo, { id: crypto.randomUUID(), ...evento }, await hoje())
-  if (!numeroSei) return void (await db.batch(gravacoes))
-  await db.batch([...gravacoes, db.update(schema.processos).set({ numeroSei }).where(eq(schema.processos.id, processo.id))])
+  const novo = { id: crypto.randomUUID(), ...evento }
+  const dia = await hoje()
+  await emTransacao(async (session) => {
+    await lancarEvento(processo, novo, dia, session)
+    if (numeroSei) await db.processos.updateOne({ _id: processo.id }, { $set: { numeroSei } }, { session })
+  })
 }
 
 /** Apaga um evento lançado por engano. Se ele veio do Diário Oficial, o ato volta para a caixa de entrada. */
 export async function removerEvento(id: string) {
   exigirBanco()
-  await db.batch([
-    db.update(schema.publicacoes).set({ status: 'nova', eventoId: null }).where(eq(schema.publicacoes.eventoId, id)),
-    db.delete(schema.eventos).where(eq(schema.eventos.id, id)),
-  ])
+  await emTransacao(async (session) => {
+    await db.publicacoes.updateMany({ eventoId: id }, { $set: { status: 'nova', eventoId: null } }, { session })
+    await db.eventos.deleteOne({ _id: id }, { session })
+  })
 }

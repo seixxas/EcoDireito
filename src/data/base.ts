@@ -1,5 +1,5 @@
-import { asc, desc } from 'drizzle-orm'
-import { db, schema, temBanco } from '@/db'
+import type { CollationOptions, Collection, Document, Sort } from 'mongodb'
+import { db, temBanco } from '@/db'
 import type { Lancamento } from '@/domain/financeiro/lancamentos'
 import type { NotaFiscal } from '@/domain/financeiro/notas'
 import type { Contrato } from '@/domain/financeiro/parcelas'
@@ -22,24 +22,29 @@ function daMemoria(dia: DataISO) {
   return memoria.base
 }
 
+/** A coleção inteira de uma vez: sem o `batchSize`, acima de 101 documentos cada coleção faria mais de uma ida ao banco. */
+function ler<T extends Document>(colecao: Collection<T>, sort: Sort, collation?: CollationOptions) {
+  return colecao.find({}, { sort, collation, batchSize: 10_000 }).toArray()
+}
+
 async function doBanco(dia: DataISO): Promise<Base> {
-  const [clientes, processos, eventos, propostas, contratos, parcelas, notas, lancamentos, atos, edicoes, contas] = await db.batch([
-    db.select().from(schema.clientes).orderBy(asc(schema.clientes.nome)),
-    db.select().from(schema.processos).orderBy(asc(schema.processos.id)),
-    db.select().from(schema.eventos).orderBy(asc(schema.eventos.data)),
-    db.select().from(schema.propostas),
-    db.select().from(schema.contratos),
-    db.select().from(schema.parcelas).orderBy(asc(schema.parcelas.ordem)),
-    db.select().from(schema.notasFiscais).orderBy(asc(schema.notasFiscais.emissao), asc(schema.notasFiscais.numero)),
-    db.select().from(schema.lancamentos).orderBy(asc(schema.lancamentos.data)),
-    db.select().from(schema.publicacoes).orderBy(desc(schema.publicacoes.data)),
-    db.select().from(schema.edicoesDiario).orderBy(desc(schema.edicoesDiario.data)).limit(1),
-    db.select().from(schema.contasBancarias).limit(1),
+  const [clientes, processos, eventos, propostas, contratos, parcelas, notas, lancamentos, atos, edicao, contaGravada] = await Promise.all([
+    ler(db.clientes, { nome: 1 }, { locale: 'pt' }),
+    ler(db.processos, { _id: 1 }),
+    ler(db.eventos, { data: 1, _id: 1 }),
+    ler(db.propostas, { _id: 1 }),
+    ler(db.contratos, { _id: 1 }),
+    ler(db.parcelas, { ordem: 1 }),
+    ler(db.notasFiscais, { emissao: 1, numero: 1 }),
+    ler(db.lancamentos, { data: 1, _id: 1 }),
+    ler(db.publicacoes, { data: -1, _id: 1 }),
+    db.edicoesDiario.findOne({}, { sort: { _id: -1 } }),
+    db.contasBancarias.findOne(),
   ])
 
-  const conta = contas[0] ?? { saldoInicial: 0, aplicadoInicial: 0, saldoEm: `${mesDe(dia)}-01` }
+  const conta = contaGravada ?? { saldoInicial: 0, aplicadoInicial: 0, saldoEm: `${mesDe(dia)}-01` }
   const lancamentosDominio: Lancamento[] = lancamentos.map((l) => ({
-    id: l.id,
+    id: l._id,
     data: l.data,
     competencia: l.competencia,
     descricao: l.descricao,
@@ -51,10 +56,10 @@ async function doBanco(dia: DataISO): Promise<Base> {
   }))
 
   return {
-    clientes: clientes.map((c) => ({ id: c.id, nome: c.nome, documento: c.documento, grupo: c.grupo ?? undefined })),
+    clientes: clientes.map((c) => ({ id: c._id, nome: c.nome, documento: c.documento, grupo: c.grupo ?? undefined })),
     processos: processos.map(
       (p): Processo => ({
-        id: p.id,
+        id: p._id,
         clienteId: p.clienteId,
         empreendimento: p.empreendimento,
         endereco: p.endereco,
@@ -66,10 +71,10 @@ async function doBanco(dia: DataISO): Promise<Base> {
         faseAtual: p.faseAtual as NumeroFase,
         eventos: eventos
           // Tipo que saiu de EVENTOS (ex.: parecer_conclusivo, que virou laa_emitido) não derruba a tela.
-          .filter((e) => e.processoId === p.id && e.tipo in EVENTOS)
+          .filter((e) => e.processoId === p._id && e.tipo in EVENTOS)
           .map(
             (e): Evento => ({
-              id: e.id,
+              id: e._id,
               tipo: e.tipo as TipoEvento,
               data: e.data,
               origem: e.origem as Evento['origem'],
@@ -81,18 +86,30 @@ async function doBanco(dia: DataISO): Promise<Base> {
     ),
     contratos: contratos.map(
       (c): Contrato => ({
-        id: c.id,
+        id: c._id,
         processoId: c.processoId,
         parcelas: parcelas
-          .filter((pc) => pc.contratoId === c.id)
-          .map((pc) => ({ id: pc.id, contratoId: pc.contratoId, descricao: pc.descricao, valor: pc.valor, gatilho: pc.gatilho as TipoEvento })),
+          .filter((pc) => pc.contratoId === c._id)
+          .map((pc) => ({ id: pc._id, contratoId: pc.contratoId, descricao: pc.descricao, valor: pc.valor, gatilho: pc.gatilho as TipoEvento })),
       }),
     ),
-    propostas,
+    propostas: propostas.map(({ _id, ...proposta }) => ({ processoId: _id, ...proposta })),
     publicacoes: {
-      atos: atos.map((a) => ({ ...a, status: a.status as StatusPublicacao, motivo: a.motivo ?? undefined, link: a.link ?? undefined })),
-      edicao: edicoes[0]
-        ? { ...edicoes[0], erro: edicoes[0].erro ?? undefined, processadaEm: edicoes[0].processadaEm.toISOString() }
+      atos: atos.map((a) => ({
+        id: a._id,
+        data: a.data,
+        orgao: a.orgao,
+        unidade: a.unidade,
+        serie: a.serie,
+        processo: a.processo,
+        documento: a.documento,
+        texto: a.texto,
+        status: a.status as StatusPublicacao,
+        motivo: a.motivo ?? undefined,
+        link: a.link ?? undefined,
+      })),
+      edicao: edicao
+        ? { data: edicao._id, totalAtos: edicao.totalAtos, atosSvma: edicao.atosSvma, erro: edicao.erro ?? undefined, processadaEm: edicao.processadaEm.toISOString() }
         : { data: dia, totalAtos: 0, atosSvma: 0 },
     },
     financeiro: {
@@ -100,7 +117,7 @@ async function doBanco(dia: DataISO): Promise<Base> {
       meses: mesesEntre(mesDe(conta.saldoEm), mesDe(dia)),
       notas: notas.map(
         (n): NotaFiscal => ({
-          id: n.id,
+          id: n._id,
           numero: n.numero,
           emissao: n.emissao,
           clienteId: n.clienteId,

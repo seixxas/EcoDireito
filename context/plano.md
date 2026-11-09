@@ -6,7 +6,7 @@ Atualizado em 2026-11-02. Vale para todas as sessões. Ao terminar uma etapa, ma
 
 | Módulo | Funcionalidade | Situação |
 |---|---|---|
-| Base | Dados no banco (Neon + Drizzle), login, perfis de acesso | **Hoje** (E1, E2) |
+| Base | Dados no banco (MongoDB Atlas), login, perfis de acesso | **Hoje** (E1, E2) |
 | Base | Histórico de alterações (quem mudou o quê), multiempresa (Ambiente Legal) | Depois |
 | Comercial | Proposta como fase 1 do processo: criar, documento para PDF, enviada, aprovada ou recusada; funil e retornos no Hoje | Pronto |
 | Comercial | Enviar a proposta por e-mail pelo sistema, versões da proposta, modelos de texto editáveis | Depois |
@@ -72,7 +72,7 @@ Pode mexer em: `src/domain/financeiro/**`, `src/data/financeiro.ts`, `src/app/(a
 
 - **Cada sessão no seu worktree**, dentro de `.claude/worktrees/` (ignorado pelo git). A pasta principal fica sempre na `main`, só para merge e push. Para começar: `git worktree add .claude/worktrees/sessao-b -b feat/robo-doc-sp main`, entrar nele (ferramenta EnterWorktree com `path`), `npm install` e copiar o `.env.local` da pasta principal.
 - **Só mexa nos arquivos da sua sessão.** Precisa de um arquivo de outra sessão? Anote em "Pedidos entre sessões", abaixo, e siga com outra tarefa.
-- **Schema e banco:** B e C podem **acrescentar tabelas novas** no schema da sua área (B: `src/db/schema/publicacoes.ts`; C: `src/db/schema/financeiro.ts`). Para mudar uma tabela que já existe, peça à A por mensagem. Só a A roda `db:push` e `db:seed`, depois do merge na `main`.
+- **Schema e banco:** B e C podem **acrescentar coleções novas** em `src/db/documentos.ts` e `src/db/index.ts`. Para mudar uma tabela que já existe, peça à A por mensagem. Só a A roda `db:push` e `db:seed`, depois do merge na `main`.
 - **Comunicação:** as sessões conversam por mensagem (ecodireito-2a = C, ecodireito-32 = B). Avise ao fazer merge na `main` e ao pedir algo de outra sessão.
 - **Merge:** com a etapa pronta, `git merge main` na sua branch, rode as checagens e depois `git -C <pasta principal> merge --no-ff <sua-branch>`. O usuário faz o push (o push é bloqueado para o Claude).
 - **Segurança:** guarda em layout não protege dados (o Next renderiza layout e página em paralelo). Toda leitura passa por `carregar()`, que já recorta por perfil, ou começa com `exigirArea()`. Toda Server Action começa com `exigirArea(area, 'editar')`.
