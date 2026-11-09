@@ -26,6 +26,9 @@ type Filtros = { fase?: NumeroFase; q?: string; pagina?: number }
 /** O nome fica com a sobra. Em lista mais estreita que isso, cada projeto empilha em vez de espremer o nome. */
 const COLUNAS = '@[52rem]:grid @[52rem]:grid-cols-[minmax(0,1fr)_11rem_15rem_6.5rem_3.5rem]'
 
+/** Ao passar o mouse, a linha ganha um traço verde à esquerda, como um caule; numa lista corrida, subir a linha a faria pular. */
+const CAULE_NO_HOVER = 'group-hover:shadow-[inset_3px_0_0_var(--color-brand-500)]'
+
 function endereco({ fase, q, pagina = 1 }: Filtros) {
   const busca = new URLSearchParams()
   if (fase) busca.set('fase', String(fase))
@@ -98,7 +101,7 @@ export default async function PaginaProcessos({ searchParams }: { searchParams: 
             <span>Responsável</span>
           </li>
           {paginado.itens.map(({ processo, cliente, proximo }) => (
-            <Linha key={processo.id} href={`/projetos/${processo.id}`} className={COLUNAS}>
+            <Linha key={processo.id} href={`/projetos/${processo.id}`} className={cn(COLUNAS, CAULE_NO_HOVER)}>
               <div className="min-w-0 basis-full">
                 <p className="font-semibold leading-snug text-ink">{processo.empreendimento}</p>
                 <p className="text-xs text-muted">

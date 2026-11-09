@@ -42,7 +42,8 @@ function Cartao({ item }: { item: Item }) {
     <li>
       <LinkRapido
         href={`/projetos/${processo.id}?aba=proposta`}
-        className="group flex h-full flex-col rounded-md bg-surface px-3 py-2 text-ink transition-colors hover:bg-brand-50"
+        // Ao passar o mouse, o cartão sobe de leve (sem mexer em quem pediu menos movimento).
+        className="group flex h-full flex-col rounded-md bg-surface px-3 py-2 text-ink transition duration-200 hover:bg-brand-50 hover:shadow-md hover:shadow-brand-900/10 motion-safe:hover:-translate-y-px dark:hover:shadow-black/40"
       >
         <p className="text-sm font-semibold leading-snug">{processo.empreendimento}</p>
         <p className="text-xs text-muted">{cliente.nome}</p>
