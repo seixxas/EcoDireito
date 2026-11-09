@@ -18,10 +18,28 @@ export type FaseDaTrilha = {
 
 const LEGENDA = { feita: 'Concluída', atual: 'Fase atual', futura: 'A seguir' } as const
 
+/** A copa (gradiente da marca) no claro; no escuro, os verdes claros de sempre, que aparecem sobre o fundo escuro. */
+const CRESCIDA = 'copa dark:bg-none dark:bg-brand-700'
+const CRESCENDO = 'copa dark:bg-none dark:bg-brand-500'
+
+/** A trilha cresce como planta: o que foi feito é copa, a fase atual está pela metade com um broto na ponta, o resto é terreno claro. */
+function Barra({ estado }: { estado: FaseDaTrilha['estado'] }) {
+  if (estado !== 'atual') return <span className={cn('block h-1.5 rounded-full', estado === 'feita' ? CRESCIDA : 'bg-line')} />
+  return (
+    <span className="relative block h-1.5 rounded-full bg-line">
+      <span className={cn('absolute inset-y-0 left-0 w-[55%] rounded-full', CRESCENDO)} />
+      <svg viewBox="0 0 24 24" className="absolute bottom-0.5 left-[calc(55%-3px)] size-3.5 text-brand-500" aria-hidden>
+        <path d="M4 20C4 11 10 5 20 4C20 13.5 14 20 4 20Z" fill="currentColor" />
+        <path d="M3 21L14.5 9.5" className="stroke-brand-50" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    </span>
+  )
+}
+
 function Fase({ numero, nome, estado, legenda, selecionada }: FaseDaTrilha) {
   return (
     <>
-      <span className={cn('block h-1.5 rounded-sm', estado === 'atual' && 'bg-brand-500', estado === 'feita' && 'bg-brand-700', estado === 'futura' && 'bg-line')} />
+      <Barra estado={estado} />
       <span className={cn('block text-xs leading-tight text-ink', estado === 'atual' ? 'font-semibold' : 'font-medium', selecionada && 'underline decoration-1 underline-offset-2')}>
         <span className="sr-only">{numero}. </span>
         {nome}
@@ -31,7 +49,7 @@ function Fase({ numero, nome, estado, legenda, selecionada }: FaseDaTrilha) {
   )
 }
 
-/** As 8 fases do projeto numa barra só: a feita preenchida, a atual destacada, a seguir apagada. Em tela estreita, quebra em duas fileiras. */
+/** As 8 fases do projeto numa barra só: a feita preenchida, a atual crescendo, a seguir apagada. Em tela estreita, quebra em duas fileiras. */
 export function TrilhaDeFases({ fases }: { fases: FaseDaTrilha[] }) {
   return (
     <div className="@container">

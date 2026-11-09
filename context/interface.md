@@ -104,4 +104,7 @@ A ideia: uma ferramenta de trabalho que lembra o propósito, o meio ambiente e o
 - **Brilho** (`.brilho`): faixa de luz bem fraca ao passar o mouse. Use pouco: em botão e menu ficou insistente e saiu.
 - **Surgir** (`.surgir`): os blocos da tela sobem de leve ao abrir. Está no `<main>` da área interna; não repita dentro das telas.
 - **Natureza** (`src/components/marca/natureza.tsx`): `CurvasDeNivel` (traço claro, para fundo verde) e `FolhasCaindo`.
+- **Trilha que cresce** (`TrilhaDeFases`, `FaseProgresso`): fase feita em copa; a atual pela metade, com um broto na ponta; a seguir em `line`. No escuro, a copa vira `brand-700` (feita) e `brand-500` (atual), que aparecem sobre o fundo escuro.
+- **Portal**: topo em copa com `CurvasDeNivel` e `Logo claro`, página em `relevo`.
+- **Hover**: cartão do funil de Propostas sobe 1 px com sombra leve; linha da lista de Projetos ganha um traço verde à esquerda (numa lista corrida, subir a linha a faria pular).
 - Todo movimento para com `prefers-reduced-motion`.
