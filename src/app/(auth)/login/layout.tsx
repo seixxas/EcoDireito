@@ -5,17 +5,18 @@ import { CurvasDeNivel, FolhasCaindo } from '@/components/marca/natureza'
 
 const PONTOS = ['Prazos da Secretaria do Verde', 'Diário Oficial lido todo dia', 'Financeiro por projeto']
 
-/** Fundo verde com curvas de nível e folhas caindo; à esquerda a marca com reflexo, à direita o formulário num cartão de vidro. */
+/** Tela dividida: à esquerda o verde da marca (curvas de nível, folhas caindo, símbolo com reflexo); à direita, em claro, o formulário. */
 export default function LayoutDoLogin({ children }: { children: ReactNode }) {
   return (
-    <div className="copa relative grid min-h-screen overflow-hidden lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
-      <CurvasDeNivel />
-      <FolhasCaindo />
-      <div className="pointer-events-none absolute -right-32 -top-40 size-[34rem] rounded-full bg-[#ffc84a] opacity-[0.13] blur-3xl" aria-hidden />
-
-      <aside className="surgir relative hidden flex-col justify-between px-12 py-10 text-white lg:flex">
-        <Logo claro />
-        <div className="max-w-[34rem]">
+    <div className="grid min-h-screen lg:grid-cols-2">
+      <aside className="copa surgir relative hidden flex-col justify-between overflow-hidden px-12 py-10 text-white lg:flex">
+        <CurvasDeNivel />
+        <FolhasCaindo />
+        <div className="pointer-events-none absolute -right-48 -top-48 size-[34rem] rounded-full bg-[radial-gradient(circle,rgb(255_200_74_/_0.2),transparent_68%)]" aria-hidden />
+        <span className="relative">
+          <Logo claro />
+        </span>
+        <div className="relative max-w-[32rem]">
           <Simbolo className="reflexo mb-10 size-20 drop-shadow-[0_10px_24px_rgb(0_0_0_/_0.25)]" />
           <p className="text-4xl font-bold leading-tight tracking-tight">
             O licenciamento ambiental dos seus clientes, <span className="text-[#bfe6c4]">em dia.</span>
@@ -28,19 +29,19 @@ export default function LayoutDoLogin({ children }: { children: ReactNode }) {
             ))}
           </ul>
         </div>
-        <p className="text-xs text-white/70">Dados fictícios para demonstração · Sistema desenvolvido pela Awer</p>
+        <p className="relative text-xs text-white/70">Dados fictícios para demonstração · Sistema desenvolvido pela Awer</p>
       </aside>
 
-      <main className="relative flex flex-col px-4 py-4 lg:px-10">
+      <main className="lado-claro relative flex flex-col px-4 py-4 lg:px-10">
         <div className="flex items-center justify-between gap-2 lg:justify-end">
           <span className="lg:hidden">
-            <Logo claro />
+            <Logo />
           </span>
           <BotaoTema />
         </div>
-        <div className="surgir m-auto w-full max-w-[26rem] py-6">
-          <div className="vidro brilho rounded-2xl p-6 sm:p-7">{children}</div>
-          <p className="mt-4 text-center text-2xs font-medium text-white/80 lg:hidden">Dados fictícios para demonstração</p>
+        <div className="surgir m-auto w-full max-w-[30rem] py-8">
+          <div className="rounded-2xl bg-surface p-7 shadow-[0_24px_60px_-28px_rgb(18_61_23_/_0.35)] ring-1 ring-line sm:p-9">{children}</div>
+          <p className="mt-4 text-center text-2xs font-medium text-warn lg:hidden">Dados fictícios para demonstração</p>
         </div>
       </main>
     </div>

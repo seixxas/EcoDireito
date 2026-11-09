@@ -45,7 +45,7 @@ function ItemDoMenu({ item, pathname, className }: { item: Item; pathname: strin
       aria-current={ligado ? 'page' : undefined}
       className={cn(
         'flex min-h-9 items-center rounded-md px-3 text-sm font-medium transition-all duration-200 pointer-coarse:min-h-10',
-        ligado ? 'copa brilho text-white shadow-[0_6px_16px_-8px_rgb(18_61_23_/_0.7)]' : 'text-brand-700 hover:translate-x-0.5 hover:bg-brand-100/80',
+        ligado ? 'copa text-white shadow-[0_6px_16px_-8px_rgb(18_61_23_/_0.7)]' : 'text-brand-700 hover:translate-x-0.5 hover:bg-white/55 dark:hover:bg-white/5',
         className,
       )}
     >
@@ -81,7 +81,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
 
   return (
     <>
-      <aside className="vidro sticky top-0 hidden h-screen w-56 shrink-0 flex-col gap-2 overflow-y-auto rounded-none! border-y-0! border-l-0! px-3 py-4 lg:flex print:hidden">
+      <aside className="menu-folhagem sticky top-0 hidden h-screen w-56 shrink-0 flex-col gap-2 overflow-y-auto rounded-none! border-y-0! border-l-0! px-3 py-4 lg:flex print:hidden">
         <div className="mb-1">
           <Marca />
         </div>
@@ -112,7 +112,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
         )}
       </aside>
 
-      <header className="vidro rounded-none! border-x-0! border-t-0! px-4 py-2.5 lg:hidden print:hidden">
+      <header className="menu-folhagem rounded-none! border-x-0! border-t-0! px-4 py-2.5 lg:hidden print:hidden">
         <div className="flex items-center justify-between gap-2">
           <Marca />
           <div className="flex items-center gap-1.5">

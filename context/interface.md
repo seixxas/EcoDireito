@@ -98,9 +98,10 @@ A ideia: uma ferramenta de trabalho que lembra o propósito, o meio ambiente e o
 - **Marca:** `Simbolo` e `Logo` em `src/components/marca/logo.tsx`. Folha com nervura sobre quadrado verde, com o sol amarelo no canto: "folha" é planta e é página. O favicon é `src/app/icon.svg`, o mesmo desenho.
 - **Copa** (`.copa`): o gradiente verde da marca. Usado no item ativo do menu, na faixa acima do título (`PageHeader`) e no fundo do login. Não use em blocos grandes dentro das telas.
 - **Relevo** (`.relevo`): curvas de nível bem claras no fundo da área interna, com luz verde e amarela nos cantos.
-- **Vidro** (`.vidro`): painel translúcido com reflexo em cima. Menu lateral e cartão do login. Só sobre fundo com relevo ou copa.
+- **Vidro** (`.vidro`): painel translúcido com reflexo em cima, só sobre fundo com relevo ou copa.
+- **Folhagem** (`.menu-folhagem`): o menu, em degradê verde de cima para baixo (claro e escuro). O login é dividido: verde à esquerda, `.lado-claro` à direita com o cartão branco.
 - **Espelho** (`.reflexo`): o símbolo refletido embaixo, só no login.
-- **Brilho** (`.brilho`): faixa de luz ao passar o mouse. Já vem no botão `primario`.
+- **Brilho** (`.brilho`): faixa de luz bem fraca ao passar o mouse. Use pouco: em botão e menu ficou insistente e saiu.
 - **Surgir** (`.surgir`): os blocos da tela sobem de leve ao abrir. Está no `<main>` da área interna; não repita dentro das telas.
 - **Natureza** (`src/components/marca/natureza.tsx`): `CurvasDeNivel` (traço claro, para fundo verde) e `FolhasCaindo`.
 - Todo movimento para com `prefers-reduced-motion`.

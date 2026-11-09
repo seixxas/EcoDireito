@@ -5,7 +5,7 @@ import { BotaoEnviar } from '@/components/ui/botao-enviar'
 import { Botao, Campo, Entrada, MensagemFormulario } from '@/components/ui/form'
 import { entrar } from '../../actions'
 
-const ALTO = 'min-h-10!'
+const ALTO = 'min-h-11!'
 
 export function FormularioLogin({ voltar }: { voltar?: string }) {
   const [estado, acao] = useActionState(entrar, {})
@@ -25,7 +25,7 @@ export function FormularioLogin({ voltar }: { voltar?: string }) {
         </span>
       </Campo>
       <MensagemFormulario estado={estado} />
-      <BotaoEnviar className="mt-1 min-h-10! w-full">Entrar</BotaoEnviar>
+      <BotaoEnviar className="mt-1 min-h-11! w-full">Entrar</BotaoEnviar>
     </form>
   )
 }
