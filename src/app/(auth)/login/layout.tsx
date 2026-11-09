@@ -1,31 +1,46 @@
 import type { ReactNode } from 'react'
 import { BotaoTema } from '@/components/layout/botao-tema'
+import { Logo, Simbolo } from '@/components/marca/logo'
+import { CurvasDeNivel, FolhasCaindo } from '@/components/marca/natureza'
 
-/** Faixa verde à esquerda e formulário à direita. Em tela estreita, só o formulário com a marca em cima. */
+const PONTOS = ['Prazos da Secretaria do Verde', 'Diário Oficial lido todo dia', 'Financeiro por projeto']
+
+/** Fundo verde com curvas de nível e folhas caindo; à esquerda a marca com reflexo, à direita o formulário num cartão de vidro. */
 export default function LayoutDoLogin({ children }: { children: ReactNode }) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-      <aside className="hidden flex-col justify-between bg-brand-700 px-8 py-10 text-lg text-on-brand lg:flex dark:bg-brand-100 dark:text-ink">
-        <p className="font-semibold leading-snug">
-          Eco Direito
-          <small className="block text-lg font-medium opacity-85">Consultoria ambiental</small>
-        </p>
-        <div>
-          <p className="max-w-[30ch]">Projetos de licenciamento, prazos, Diário Oficial e financeiro em um só lugar.</p>
-          <p className="font-medium">Dados fictícios para demonstração</p>
-        </div>
-      </aside>
-      <main className="relative flex flex-col px-3 py-3 lg:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-2 lg:absolute lg:right-6 lg:top-6">
-          <p className="leading-tight lg:hidden">
-            <span className="block text-xl font-semibold text-brand-700">Eco Direito</span>
-            <span className="mt-1 block text-2xs font-medium text-subtle">Consultoria ambiental</span>
+    <div className="copa relative grid min-h-screen overflow-hidden lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)]">
+      <CurvasDeNivel />
+      <FolhasCaindo />
+      <div className="pointer-events-none absolute -right-32 -top-40 size-[34rem] rounded-full bg-[#ffc84a] opacity-[0.13] blur-3xl" aria-hidden />
+
+      <aside className="surgir relative hidden flex-col justify-between px-12 py-10 text-white lg:flex">
+        <Logo claro />
+        <div className="max-w-[34rem]">
+          <Simbolo className="reflexo mb-10 size-20 drop-shadow-[0_10px_24px_rgb(0_0_0_/_0.25)]" />
+          <p className="text-4xl font-bold leading-tight tracking-tight">
+            O licenciamento ambiental dos seus clientes, <span className="text-[#bfe6c4]">em dia.</span>
           </p>
+          <ul className="mt-6 flex flex-wrap gap-2">
+            {PONTOS.map((ponto) => (
+              <li key={ponto} className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-sm backdrop-blur-sm">
+                {ponto}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className="text-xs text-white/70">Dados fictícios para demonstração · Sistema desenvolvido pela Awer</p>
+      </aside>
+
+      <main className="relative flex flex-col px-4 py-4 lg:px-10">
+        <div className="flex items-center justify-between gap-2 lg:justify-end">
+          <span className="lg:hidden">
+            <Logo claro />
+          </span>
           <BotaoTema />
         </div>
-        <div className="m-auto w-full max-w-130 py-5 lg:py-10">
-          {children}
-          <p className="mt-4 text-2xs font-medium text-warn lg:hidden">Dados fictícios para demonstração</p>
+        <div className="surgir m-auto w-full max-w-[26rem] py-6">
+          <div className="vidro brilho rounded-2xl p-6 sm:p-7">{children}</div>
+          <p className="mt-4 text-center text-2xs font-medium text-white/80 lg:hidden">Dados fictícios para demonstração</p>
         </div>
       </main>
     </div>

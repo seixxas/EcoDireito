@@ -3,7 +3,7 @@ import { cn } from '@/lib/cn'
 import type { EstadoFormulario } from '@/lib/formulario'
 
 const VARIANTES = {
-  primario: 'border-brand-700 bg-brand-700 text-on-brand hover:border-brand-900 hover:bg-brand-900',
+  primario: 'brilho border-brand-700 bg-brand-700 text-on-brand hover:border-brand-900 hover:bg-brand-900',
   secundario: 'border-campo bg-surface text-brand-700 hover:border-brand-700 hover:bg-brand-50',
   perigo: 'border-danger bg-danger text-on-danger hover:border-danger-forte hover:bg-danger-forte',
   /** Ação do Diário Oficial, em cima de bloco azul. */
