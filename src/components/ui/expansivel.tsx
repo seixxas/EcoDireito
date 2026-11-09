@@ -21,5 +21,12 @@ export function Expansivel({ resumo, aberto, className, children }: { resumo: Re
 
 /** Lista ou busca sem resultado. */
 export function Vazio({ children }: { children: ReactNode }) {
-  return <p className="px-3 py-6 text-center text-xs text-muted">{children}</p>
+  return (
+    <div className="px-3 py-6 text-center text-xs text-muted">
+      <svg viewBox="0 0 24 24" className="mx-auto mb-1 size-5 text-brand-500/40" aria-hidden>
+        <path d="M4 20C4 11 10 5 20 4C20 13.5 14 20 4 20Z" fill="currentColor" />
+      </svg>
+      <p>{children}</p>
+    </div>
+  )
 }

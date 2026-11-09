@@ -15,7 +15,7 @@ export type TomZona = keyof typeof TONS
 /** Bloco colorido pela urgência: vermelho atrasado, amarelo hoje, verde próximos dias. */
 export function Zona({ tom = 'neutra', titulo, detalhe, acao, className, children }: { tom?: TomZona; titulo: ReactNode; detalhe?: ReactNode; acao?: ReactNode; className?: string; children: ReactNode }) {
   return (
-    <section className={cn('mb-4 rounded-lg p-2', TONS[tom], className)}>
+    <section className={cn('mb-4 rounded-lg p-2', TONS[tom], 'bg-[linear-gradient(180deg,color-mix(in_oklab,var(--color-surface)_45%,transparent),transparent_2.5rem)]', className)}>
       <h2 className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 px-1 text-sm font-semibold">
         <span>{titulo}</span>
         {detalhe && <small className="text-xs font-normal text-muted">{detalhe}</small>}
