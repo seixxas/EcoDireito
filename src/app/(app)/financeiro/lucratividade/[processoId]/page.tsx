@@ -17,6 +17,7 @@ import { nomeDaConta } from '@/domain/financeiro/plano-de-contas'
 import { cn } from '@/lib/cn'
 import { brl, contar, formatarData, formatarPercentual } from '@/lib/formatar'
 import { AvisoDeSimulacao, MARGENS, Margem } from '../_components/margem'
+import { BARRA_DA_COPA, LINHA_DA_COPA } from '../../_components/identidade'
 
 export const metadata: Metadata = { title: 'Lucratividade do projeto' }
 
@@ -67,7 +68,7 @@ export default async function PaginaLucratividade({ params }: { params: Promise<
       />
       <AvisoDeSimulacao className="mb-4" />
 
-      <Resumo>
+      <Resumo className={LINHA_DA_COPA}>
         <ItemResumo rotulo="Faturado" valor={brl(faturado)} detalhe={`${brl(recebido)} recebido`} />
         <ItemResumo rotulo="Custos diretos" valor={brl(custosDiretos)} detalhe={`${doFaturado(custosDiretos)} do faturado`} />
         <ItemResumo rotulo="Equipe (estimado)" valor={brl(custoEquipe)} detalhe={`${contar(horas, 'hora', 'horas')} × ${brl(CUSTO_HORA_EQUIPE)}`} />
@@ -84,7 +85,7 @@ export default async function PaginaLucratividade({ params }: { params: Promise<
           <div className="grid items-center gap-x-3 gap-y-1 sm:grid-cols-[6rem_1fr_11rem]">
             <span>Receita</span>
             <div className="h-8 overflow-hidden rounded-md bg-surface">
-              <div className="h-full rounded-md bg-brand-500" style={{ width: `${(faturado / escala) * 100}%` }} title={`Faturado: ${brl(faturado)}`} />
+              <div className={cn('h-full rounded-md', BARRA_DA_COPA)} style={{ width: `${(faturado / escala) * 100}%` }} title={`Faturado: ${brl(faturado)}`} />
             </div>
             <span className="text-right text-sm font-semibold">{brl(faturado)}</span>
           </div>
