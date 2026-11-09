@@ -4,9 +4,8 @@
  */
 import { randomUUID } from 'node:crypto'
 import { hashPassword } from 'better-auth/crypto'
-import { inArray } from 'drizzle-orm'
 import type { Papel } from '@/lib/permissoes'
-import { db, schema } from '.'
+import { cliente, db } from '.'
 
 const senha = process.env.SENHA_DEMO
 if (!senha) throw new Error('Defina SENHA_DEMO no .env.local')
@@ -21,17 +20,19 @@ const USUARIOS: { nome: string; email: string; papel: Papel; clienteId?: string 
   { nome: 'Altavista Pinheiros', email: 'cliente@demo.ecodireito.com.br', papel: 'cliente', clienteId: 'altavista-pinheiros' },
 ]
 
-await db.delete(schema.user).where(
-  inArray(
-    schema.user.email,
-    USUARIOS.map((u) => u.email),
-  ),
-)
+const antigos = await db.user.find({ email: { $in: USUARIOS.map((u) => u.email) } }, { projection: { _id: 1 } }).toArray()
+const ids = antigos.map((u) => u._id)
+await db.session.deleteMany({ userId: { $in: ids } })
+await db.account.deleteMany({ userId: { $in: ids } })
+await db.user.deleteMany({ _id: { $in: ids } })
+
 const hash = await hashPassword(senha)
+const agora = new Date()
 for (const usuario of USUARIOS) {
   const id = randomUUID()
-  await db.insert(schema.user).values({ id, name: usuario.nome, email: usuario.email, emailVerified: true, papel: usuario.papel, clienteId: usuario.clienteId })
-  await db.insert(schema.account).values({ id: randomUUID(), accountId: id, providerId: 'credential', userId: id, password: hash })
+  await db.user.insertOne({ _id: id, name: usuario.nome, email: usuario.email, emailVerified: true, papel: usuario.papel, clienteId: usuario.clienteId, createdAt: agora, updatedAt: agora })
+  await db.account.insertOne({ _id: randomUUID(), accountId: id, providerId: 'credential', userId: id, password: hash, createdAt: agora, updatedAt: agora })
 }
 
+await cliente.close()
 console.log(`Usuários de demonstração: ${USUARIOS.map((u) => `${u.email} (${u.papel})`).join(', ')}`)

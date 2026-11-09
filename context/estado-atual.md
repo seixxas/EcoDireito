@@ -1,7 +1,7 @@
 # Estado atual
 
-Atualizado em 2026-11-06. Os dados ficam no banco Neon (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login.
-Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de demonstração.
+Atualizado em 2026-11-06. Os dados ficam no MongoDB Atlas (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login. O Neon foi abandonado em 06/11, quando a cota dele estourou.
+Sem `MONGODB_URI`, o app usa os dados em memória e entra direto como sócia de demonstração.
 
 ## Pronto
 
@@ -43,7 +43,7 @@ Sem `DATABASE_URL`, o app usa os dados em memória e entra direto como sócia de
 - Local: `npm run dev` e abrir http://localhost:3000.
 - Usuários de demonstração (senha em `SENHA_DEMO` do `.env.local`): `admin@`, `elaine@`, `karim@`, `cissa@` (sócias), `juliana@` (equipe), `contador@` e `cliente@` (portal da Altavista Pinheiros), todos `@demo.ecodireito.com.br`.
 - Antes da reunião: `npm run db:seed` refaz a base com as datas do dia (apaga o que foi editado e recria os usuários).
-- Roteiro testado em 03/11 no site e de novo no visual novo (navegador real, gravando no Neon): confirmar o Extrato do TCA do Jequitibá Campo Belo em `/publicacoes` → prazo da cláusula 9.3 em `/projetos/p11` e parcela 3 "pronta para faturar" na aba Cobrança → "Emitir nota" → registrar recebimento → em `/financeiro/extrato`, "baixar extrato de exemplo" e importar o arquivo (2 linhas "já lançado", o PIX recebido sugere a NF em aberto do mesmo valor, o PIX enviado e a tarifa ficam a classificar). O exemplo é montado da base do dia, então bate com qualquer seed.
+- Roteiro testado em 03/11 no site e de novo no visual novo (navegador real, gravando no banco): confirmar o Extrato do TCA do Jequitibá Campo Belo em `/publicacoes` → prazo da cláusula 9.3 em `/projetos/p11` e parcela 3 "pronta para faturar" na aba Cobrança → "Emitir nota" → registrar recebimento → em `/financeiro/extrato`, "baixar extrato de exemplo" e importar o arquivo (2 linhas "já lançado", o PIX recebido sugere a NF em aberto do mesmo valor, o PIX enviado e a tarifa ficam a classificar). O exemplo é montado da base do dia, então bate com qualquer seed.
 - Login em produção: no máximo 3 tentativas a cada 10 s por IP (proteção do Better Auth).
 - Bons exemplos: `/projetos/p06` (fase Resposta: Comunique-se vencido, LAA depois da resposta), `/projetos/p15` (proposta enviada, sem nº SEI), `/projetos/p16` (proposta em elaboração), `/projetos/p17` (sem resposta há 12 dias, aparece no Hoje), `/projetos/p18` (recusada), `/projetos/p08` (Documentação, falta autuar), `/projetos/p02` (TCA publicado, parcela pronta para faturar), `/projetos/p13` (processo antigo com nº SIMPROC) e o portal com o usuário cliente.
 

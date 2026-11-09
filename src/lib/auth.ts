@@ -1,11 +1,13 @@
-import { drizzleAdapter } from '@better-auth/drizzle-adapter'
 import { betterAuth } from 'better-auth'
+import { mongodbAdapter } from 'better-auth/adapters/mongodb'
 import { nextCookies } from 'better-auth/next-js'
-import { db, schema } from '@/db'
+import { banco, cliente } from '@/db'
 
 /** Login por e-mail e senha. Contas são criadas pela equipe (sem cadastro aberto). */
 export const auth = betterAuth({
-  database: drizzleAdapter(db, { provider: 'pg', schema }),
+  database: mongodbAdapter(banco, { client: cliente }),
+  // Id em texto, como no resto do banco. Sem isto o adaptador usa ObjectId, e os ids dos usuários viram outro tipo.
+  advanced: { database: { generateId: () => crypto.randomUUID() } },
   emailAndPassword: { enabled: true, disableSignUp: true },
   session: { expiresIn: 60 * 60 * 24 * 30 },
   user: {
