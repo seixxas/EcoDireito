@@ -8,7 +8,12 @@ import { importarExtrato } from '../actions'
 function Passo({ numero, texto, children }: { numero: number; texto: string; children?: ReactNode }) {
   return (
     <li className="flex flex-col gap-2 rounded-lg bg-surface px-3 py-3">
-      <b className="text-xs font-semibold text-subtle">Passo {numero}</b>
+      <b className="flex items-center gap-1.5 text-xs font-semibold text-subtle">
+        <span aria-hidden className="copa inline-flex size-5 items-center justify-center rounded-full text-2xs text-white">
+          {numero}
+        </span>
+        Passo {numero}
+      </b>
       <p>{texto}</p>
       {children}
     </li>

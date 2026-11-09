@@ -18,6 +18,7 @@ import { paginar } from '@/lib/paginar'
 import { AbrirLinha } from '../_components/abrir-linha'
 import { AvisoDeSimulacao, MARGENS, Margem } from './_components/margem'
 import { NoCartao, TABELA_EMPILHADA } from '../_components/tabela-empilhada'
+import { LINHA_DA_COPA } from '../_components/identidade'
 
 export const metadata: Metadata = { title: 'Lucratividade por projeto' }
 
@@ -52,7 +53,7 @@ export default async function PaginaLucratividade({ searchParams }: { searchPara
 
       <AvisoDeSimulacao />
 
-      <section aria-label="Resumo" className="mt-3 grid items-center gap-x-6 gap-y-2 rounded-lg bg-painel px-4 py-2 lg:grid-cols-[13rem_minmax(0,1fr)]">
+      <section aria-label="Resumo" className={cn('mt-3 grid items-center gap-x-6 gap-y-2 rounded-lg bg-painel px-4 py-2 lg:grid-cols-[13rem_minmax(0,1fr)]', LINHA_DA_COPA)}>
         <div>
           <p className="text-xs text-subtle">Margem média</p>
           <p className={cn('text-xl font-semibold leading-tight', COR_DO_TEXTO[tomDaMedia])}>

@@ -28,6 +28,13 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 - Busca (`Busca`, `?q=`, sem acento nem maiúscula): Faturamento (cliente, grupo, NF, serviço, processo; na parcela, processo, nº SEI, cliente, grupo e parcela; frase, abas e contagens seguem a busca), Lançamentos, Contratos (processo, cliente, grupo, nº SEI) e Extrato. Busca e filtros se somam e a paginação conta o resultado.
 - Situação da nota é ponto + texto (`SituacaoDaNota`, em `components/financeiro/situacao-nota.tsx`).
 
+## Identidade visual no Financeiro (09/11)
+
+- Gráficos (`src/components/charts`): barras e áreas em degradê da marca, cheias em cima e sumindo para baixo (`Degrades` e `useIdDoGrafico` em `estilo.tsx`; cores por variável, o tema escuro troca sozinho). Entradas em verde, saídas e o menor saldo em âmbar, saldo negativo em vermelho; no fluxo mensal, uma área bem clara sob a linha do saldo.
+- Números-chave (totais de Contratos, conta do Fluxo, resumo da Lucratividade e do projeto): linha fina em degradê no topo (`LINHA_DA_COPA` em `financeiro/_components/identidade.ts`). Barra da receita e do faturado em degradê (`BARRA_DA_COPA`).
+- Passos da importação do Extrato com o número num círculo da copa.
+- Quadros do ciclo do Faturamento e hover das tabelas vêm dos componentes comuns (`Abas`, `.tabela`).
+
 ## Faturamento: abas do ciclo (`/financeiro`)
 
 Uma tela só, do faturar ao receber. Regras em `src/domain/financeiro/ciclo.ts` (com teste). Contas a receber saiu: `/financeiro/receber` redireciona para `?aba=atrasadas`, mantendo `q` e `faixa`.

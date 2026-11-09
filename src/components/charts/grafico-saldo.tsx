@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { Bar, BarChart, LabelList, Rectangle, ReferenceLine, Tooltip, XAxis, YAxis, type BarShapeProps } from 'recharts'
 import { brlCompacto } from '@/lib/formatar'
-import { AMARELO, DICA, TEXTO_DO_EIXO } from './estilo'
+import { AMARELO, DICA, Degrades, TEXTO_DO_EIXO, useIdDoGrafico } from './estilo'
 
 export type PontoSaldo = { rotulo: string; saldo: number }
 
@@ -20,10 +20,11 @@ const saldoCurto = (centavos: number) => (Math.abs(centavos) < 100_000_000 ? mil
  */
 export function GraficoSaldo({ dados, links, altura = 220 }: { dados: PontoSaldo[]; links?: string[]; altura?: number }) {
   const router = useRouter()
+  const id = useIdDoGrafico()
   const saldos = dados.map((ponto) => ponto.saldo)
   const menor = Math.min(...saldos)
   const maior = Math.max(...saldos)
-  const corDaBarra = (saldo: number) => (saldo < 0 ? 'var(--color-danger)' : saldo === menor ? AMARELO : 'var(--color-brand-500)')
+  const corDaBarra = (saldo: number) => `url(#${id}-${saldo < 0 ? 'negativo' : saldo === menor ? 'menor' : 'saldo'})`
   const corDoTexto = (saldo: number) => (saldo < 0 ? 'var(--color-danger)' : saldo === menor ? 'var(--color-warn)' : 'var(--color-ink)')
 
   return (
@@ -38,6 +39,13 @@ export function GraficoSaldo({ dados, links, altura = 220 }: { dados: PontoSaldo
         if (link) router.push(link, { scroll: false })
       }}
     >
+      <Degrades
+        degrades={[
+          { id: `${id}-saldo`, cor: 'var(--color-brand-500)' },
+          { id: `${id}-menor`, cor: AMARELO },
+          { id: `${id}-negativo`, cor: 'var(--color-danger)' },
+        ]}
+      />
       <XAxis dataKey="rotulo" tickLine={false} tickMargin={8} axisLine={{ stroke: 'var(--color-campo)' }} tick={TEXTO_DO_EIXO} />
       <YAxis hide domain={[Math.min(menor, 0) * FOLGA, Math.max(maior, 0) * FOLGA]} />
       <Tooltip {...DICA} />

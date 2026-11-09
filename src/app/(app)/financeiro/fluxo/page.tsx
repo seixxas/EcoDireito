@@ -15,6 +15,7 @@ import { cn } from '@/lib/cn'
 import { somar } from '@/lib/dinheiro'
 import { brl, contar, formatarData, formatarDataCurta, formatarDataLonga, formatarDiaEData, formatarMes } from '@/lib/formatar'
 import { NoCartao, TABELA_EMPILHADA } from '../_components/tabela-empilhada'
+import { LINHA_DA_COPA } from '../_components/identidade'
 
 export const metadata: Metadata = { title: 'Fluxo de caixa' }
 
@@ -57,7 +58,10 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
         resumo={`${brl(saldoHoje)} na conta hoje; ${brl(ultima.saldoFinal)} em ${formatarDataCurta(ultima.fim)} se nada mudar.`}
       />
 
-      <section aria-label="Conta das próximas 8 semanas" className="grid items-center gap-2 rounded-xl bg-painel px-4 py-3.5 sm:grid-cols-2 xl:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]">
+      <section
+        aria-label="Conta das próximas 8 semanas"
+        className={cn('grid items-center gap-2 rounded-xl bg-painel px-4 py-3.5 sm:grid-cols-2 xl:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]', LINHA_DA_COPA)}
+      >
         <NaConta rotulo="Saldo hoje" valor={brl(saldoHoje)} detalhe={`mais ${brl(aplicado)} aplicados`} />
         <Sinal>+</Sinal>
         <NaConta rotulo="Entradas previstas" valor={brl(entradas)} detalhe="próximas 8 semanas" cor="text-ok" />
