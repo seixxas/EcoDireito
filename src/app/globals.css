@@ -187,33 +187,7 @@ body {
   }
 }
 
-/* Cena do login (FundoDoLogin): raios girando, sol respirando, rio correndo, pássaros, vagalumes, árvores balançando. */
-@keyframes cena-girar {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes cena-respira {
-  0%,
-  100% {
-    opacity: 0.85;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.06);
-  }
-}
-@keyframes cena-pulso {
-  from {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  to {
-    transform: scale(2.4);
-    opacity: 0;
-  }
-}
+/* Cena do login (FundoDoLogin): rio correndo, pássaros, vagalumes, árvores balançando. */
 @keyframes cena-correnteza {
   from {
     stroke-dashoffset: 0;
@@ -451,23 +425,6 @@ body {
     animation: folha-caindo var(--duracao, 18s) linear var(--atraso, 0s) infinite;
   }
 
-  .cena svg > g {
-    transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
-  }
-  .cena-raios {
-    animation: cena-girar 140s linear infinite;
-  }
-  .cena-respira {
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: cena-respira 6s ease-in-out infinite;
-  }
-  .cena-pulso,
-  .cena-alfinete {
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: cena-pulso 3.2s ease-out var(--atraso, 0s) infinite;
-  }
   .cena-correnteza {
     animation: cena-correnteza 9s linear infinite;
   }

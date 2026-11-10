@@ -1,11 +1,10 @@
 import type { CSSProperties } from 'react'
-import { Paralaxe } from './paralaxe'
 
 /**
- * Cena do login (10/11): floresta ao amanhecer. A ideia da tela do Ecoamper (uma linha de luz correndo até um ponto que pulsa)
- * virou um rio que brilha correndo até o sol dourado da logo. Por cima, curvas de nível como num mapa, com alfinetes pulsando
- * (os processos), folhas caindo, vagalumes e pássaros. As camadas andam com o mouse (Paralaxe), cada uma numa profundidade.
- * Tudo SVG e CSS (classes `cena-*` no globals.css); com "reduzir movimento" fica parado. Peça para enxugar depois.
+ * Cena do login (10/11): floresta ao amanhecer. A ideia da tela do Ecoamper (uma linha de luz correndo) virou um rio com
+ * reflexos correndo até o horizonte. Por cima, curvas de nível como num mapa, neblina, folhas caindo, vagalumes e pássaros.
+ * Tudo SVG e CSS (classes `cena-*` no globals.css); com "reduzir movimento" fica parado.
+ * Tirados a pedido (10/11): o sol, o movimento com o mouse e os alfinetes.
  */
 
 /** Aleatório com semente: o servidor e o navegador desenham a mesma floresta. */
@@ -18,7 +17,6 @@ function sorteio(semente: number) {
   }
 }
 
-const SOL = { x: 860, y: 515 }
 const n = (v: number) => Math.round(v * 10) / 10
 
 /** Pinheiro: três andares de galhos, mais estreito em cima. */
@@ -68,7 +66,7 @@ function rio() {
     [330, 910],
     [760, 820],
     [440, 700],
-    [SOL.x - 20, 640],
+    [840, 640],
   ]
   const ponto = (t: number) => {
     const u = 1 - t
@@ -93,23 +91,10 @@ function rio() {
 }
 const RIO = rio()
 
-const RAIOS = Array.from({ length: 16 }, (_, i) => {
-  const a = (i / 16) * Math.PI * 2
-  const abertura = 0.045 + (i % 3) * 0.02
-  const alcance = 760 + (i % 4) * 120
-  return `M0 0L${n(Math.cos(a - abertura) * alcance)} ${n(Math.sin(a - abertura) * alcance)}L${n(Math.cos(a + abertura) * alcance)} ${n(Math.sin(a + abertura) * alcance)}Z`
-})
-
 /** Curvas de nível em volta de dois morros, como numa carta topográfica. */
 const CURVAS = [
   ...[1, 2, 3, 4, 5, 6, 7].map((i) => ({ cx: 250, cy: 610, rx: 90 * i, ry: 38 * i, giro: -8 })),
   ...[1, 2, 3, 4, 5].map((i) => ({ cx: 1080, cy: 300, rx: 70 * i, ry: 46 * i, giro: 18 })),
-]
-
-const ALFINETES = [
-  { x: 335, y: 612, atraso: '0s' },
-  { x: 610, y: 600, atraso: '-1.1s' },
-  { x: 1090, y: 628, atraso: '-2.2s' },
 ]
 
 const VAGALUMES = Array.from({ length: 18 }, (_, i) => {
@@ -128,14 +113,9 @@ const FOLHAS = [
   { left: '92%', tamanho: 13, duracao: '17s', atraso: '-13s', deriva: '4vw', giro: '-200deg', cor: '#cfeed3' },
 ]
 
-/** Camada que anda com o mouse: quanto maior a profundidade, mais ela anda. */
-function camada(profundidade: number): CSSProperties {
-  return { transform: `translate(calc(var(--px, 0) * ${-profundidade}px), calc(var(--py, 0) * ${-profundidade * 0.4}px))` }
-}
-
 export function FundoDoLogin() {
   return (
-    <Paralaxe className="cena pointer-events-none absolute inset-0 overflow-hidden">
+    <div className="cena pointer-events-none absolute inset-0 overflow-hidden">
       <svg aria-hidden className="absolute inset-0 size-full" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMax slice">
         <defs>
           <linearGradient id="cena-ceu" x1="0" x2="0" y1="0" y2="1">
@@ -145,16 +125,6 @@ export function FundoDoLogin() {
             <stop offset="68%" stopColor="#a99a56" />
             <stop offset="74%" stopColor="#e7c27a" />
           </linearGradient>
-          <radialGradient id="cena-brilho-do-sol">
-            <stop offset="0%" stopColor="#fff1c9" stopOpacity="0.95" />
-            <stop offset="12%" stopColor="#f4d488" stopOpacity="0.7" />
-            <stop offset="40%" stopColor="#d4a537" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="#d4a537" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="cena-raio" cx="0" cy="0" r="900" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#fff3cf" stopOpacity="0.09" />
-            <stop offset="100%" stopColor="#fff3cf" stopOpacity="0" />
-          </radialGradient>
           <linearGradient id="cena-agua" x1="0" x2="0" y1="910" y2="640" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#1c4746" />
             <stop offset="55%" stopColor="#4f8579" />
@@ -171,21 +141,8 @@ export function FundoDoLogin() {
           </filter>
         </defs>
 
-        {/* Céu, raios e sol */}
+        {/* Céu */}
         <rect width="1200" height="900" fill="url(#cena-ceu)" />
-        <g style={camada(4)}>
-          <g transform={`translate(${SOL.x} ${SOL.y})`}>
-            <g className="cena-raios" fill="url(#cena-raio)">
-              {RAIOS.map((d, i) => (
-                <path key={i} d={d} />
-              ))}
-            </g>
-          </g>
-          <circle cx={SOL.x} cy={SOL.y} r="300" fill="url(#cena-brilho-do-sol)" className="cena-respira" />
-          <circle cx={SOL.x} cy={SOL.y} r="46" fill="#fbe6ae" />
-          <circle cx={SOL.x} cy={SOL.y} r="46" fill="none" stroke="#fff4d6" strokeOpacity="0.6" strokeWidth="2" className="cena-pulso" />
-        </g>
-
         {/* Pássaros */}
         <g fill="none" stroke="#0b2416" strokeOpacity="0.55" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           {[
@@ -201,19 +158,19 @@ export function FundoDoLogin() {
           ))}
         </g>
 
-        {/* Curvas de nível e alfinetes dos processos */}
-        <g fill="none" stroke="#e8f1e0" strokeWidth="1" className="cena-curvas" style={camada(10)}>
+        {/* Curvas de nível */}
+        <g fill="none" stroke="#e8f1e0" strokeWidth="1" className="cena-curvas">
           {CURVAS.map((c, i) => (
             <ellipse key={i} cx={c.cx} cy={c.cy} rx={c.rx} ry={c.ry} transform={`rotate(${c.giro} ${c.cx} ${c.cy})`} strokeOpacity={0.05 + (i % 2) * 0.03} strokeDasharray={i % 3 === 0 ? '2 6' : undefined} />
           ))}
         </g>
 
         {/* Morros */}
-        <g style={camada(8)}>
+        <g>
           <path d="M-40 600C120 560 240 585 360 570S600 540 760 575S1000 560 1240 590V900H-40Z" fill="#3d6e4c" fillOpacity="0.9" />
           <rect y="585" width="1200" height="60" fill="url(#cena-neblina)" className="cena-neblina" />
         </g>
-        <g style={camada(14)}>
+        <g>
           <path d="M-40 645C140 610 300 640 470 625S760 650 940 630S1120 615 1240 640V900H-40Z" fill="#285639" />
           <g fill="#1d4730">
             {ARVORES_DO_FUNDO.map((a, i) => (
@@ -222,8 +179,8 @@ export function FundoDoLogin() {
           </g>
         </g>
 
-        {/* Árvores do meio, neblina e alfinetes */}
-        <g style={camada(22)}>
+        {/* Árvores do meio e neblina */}
+        <g>
           <path d="M-40 730C120 715 260 735 400 742C540 760 700 760 820 735C960 722 1100 730 1240 720V900H-40Z" fill="#163a25" />
           <g fill="#133421">
             {ARVORES_DO_MEIO.map((a, i) => (
@@ -231,17 +188,10 @@ export function FundoDoLogin() {
             ))}
           </g>
           <rect y="700" width="1200" height="70" fill="url(#cena-neblina)" className="cena-neblina cena-neblina-2" />
-          {ALFINETES.map((a) => (
-            <g key={a.x} transform={`translate(${a.x} ${a.y})`}>
-              <circle r="16" fill="none" stroke="#e8c477" strokeWidth="1.5" className="cena-alfinete" style={{ '--atraso': a.atraso } as CSSProperties} />
-              <path d="M0 0C-5 -7 -7 -10 -7 -14A7 7 0 1 1 7 -14C7 -10 5 -7 0 0Z" fill="#e8c477" />
-              <circle cy="-14" r="2.6" fill="#173a22" />
-            </g>
-          ))}
         </g>
 
-        {/* Rio com o brilho correndo até o sol */}
-        <g style={camada(18)}>
+        {/* Rio com o brilho correndo */}
+        <g>
           <path d={RIO.leito} fill="url(#cena-agua)" />
           {/* Reflexos: riscos curtos e irregulares em três faixas, correndo em velocidades diferentes. */}
           {[-14, 0, 12].map((desvio, i) => (
@@ -276,7 +226,7 @@ export function FundoDoLogin() {
         </g>
 
         {/* Árvores da frente, balançando */}
-        <g style={camada(34)}>
+        <g>
           <path d="M-60 880C200 860 500 900 760 885S1100 865 1260 880V900H-60Z" fill="#081b10" />
           <g fill="#0a2114">
             {ARVORES_DA_FRENTE.map((a, i) => (
@@ -305,6 +255,6 @@ export function FundoDoLogin() {
       {/* Escurece em cima à esquerda, onde fica o texto, e embaixo, onde fica o rodapé */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_0%_20%,rgb(5_20_11/0.7),transparent_60%)]" />
       <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-[rgb(5_20_11/0.75)] to-transparent" />
-    </Paralaxe>
+    </div>
   )
 }
