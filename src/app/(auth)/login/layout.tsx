@@ -13,11 +13,17 @@ export default function LayoutDoLogin({ children }: { children: ReactNode }) {
         <CurvasDeNivel />
         <FolhasCaindo />
         <div className="pointer-events-none absolute -right-48 -top-48 size-[34rem] rounded-full bg-[radial-gradient(circle,rgb(255_200_74_/_0.2),transparent_68%)]" aria-hidden />
-        <span className="relative">
-          <Logo claro />
-        </span>
+        <span aria-hidden />
         <div className="relative max-w-[32rem]">
-          <Simbolo className="reflexo mb-10 size-20 drop-shadow-[0_10px_24px_rgb(0_0_0_/_0.25)]" />
+          <div className="mb-10 flex items-center gap-4">
+            <Simbolo className="reflexo size-20 drop-shadow-[0_10px_24px_rgb(0_0_0_/_0.25)]" />
+            <p className="leading-tight">
+              <span className="block text-4xl font-bold tracking-tight">
+                Eco <span className="text-[#bfe6c4]">Direito</span>
+              </span>
+              <span className="mt-1 block text-base font-medium text-white/80">Consultoria ambiental</span>
+            </p>
+          </div>
           <p className="text-4xl font-bold leading-tight tracking-tight">
             O licenciamento ambiental dos seus clientes, <span className="text-[#bfe6c4]">em dia.</span>
           </p>
