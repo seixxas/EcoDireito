@@ -2,6 +2,20 @@
 
 Objetivo: uma ferramenta de trabalho, não um "dashboard". Quem usa são as sócias e a equipe da Eco Direito, todo dia, para saber **o que fazer agora**. O sistema tem de ser intuitivo e fácil, em tamanho normal: **não aumente letra, botão ou espaço para "facilitar"**. A primeira versão fez isso, com letra de 19 px e botão de 52 px, e as telas ficaram 2 a 2,5 vezes mais altas. Rolagem é defeito: mude a tela de lugar antes de aceitar uma tela longa.
 
+## Redesenho 3a, "Urgência" (10/11): vale sobre o que estiver diferente abaixo
+
+Desenho aprovado em `Redesign Eco Direito/export/Eco Direito 3a - Urgencia.html`, fora do repositório. O usuário pediu menos texto, um número grande por bloco e um clique para o detalhe, sem aumentar a fonte.
+- **Fonte:** Instrument Sans. **Ícones:** Material Symbols Rounded (`Icone`, `src/components/ui/icone.tsx`), vindos do Google e recortados pela lista `ICONES`. Ícone novo precisa entrar na lista, senão aparece o nome escrito. O ícone acompanha o texto, nunca o substitui.
+- **Casca:**
+  - Menu verde-escuro (`bg-menu`, 240 px), com ícone e nome: Resumo; grupo Processos (Projetos, Prazos, Diário Oficial); grupo Gestão (Propostas, Financeiro, Usuários). Número vermelho em Projetos (prazos vencidos) e no Diário Oficial (publicações sem revisão). Depois os fixados. No pé: iniciais, nome e perfil, "Tema escuro" e "Sair" (ajuste de 10/11: o Diário não era achado e o menu tinha um vazio grande).
+  - Topo branco de 60 px (`Topo`), com a busca, o aviso vermelho "N prazos vencidos" (leva a /prazos) e "+ Novo". O avatar (`MenuDaConta`) só aparece no celular, onde o menu lateral não existe. O fundo das telas é branco.
+- **Login (10/11):** dois painéis arredondados sobre verde bem escuro. À esquerda, a cena `FundoDoLogin` (floresta ao amanhecer: céu com brilho dourado no horizonte, morros, três camadas de árvores balançando, um rio com reflexo correndo, curvas de nível, neblina, pássaros, vagalumes e folhas caindo; sol, movimento com o mouse e alfinetes saíram a pedido em 10/11; tudo parado com "reduzir movimento"), a marca, "Do protocolo ao TCA, cada prazo em dia." e três etiquetas. À direita, em branco com raminhos e curvas de nível leves nos cantos: símbolo, "Entrar", e-mail, senha com o olho e o botão. Primeiro enxugamento feito em 10/11.
+- **Logo nova:** círculo aberto, folha em traço e sol dourado (`Simbolo`, `src/app/icon.svg`), com o nome Eco Direito.
+- **Resumo (`/`):**
+  - Ocupa a largura toda e, na tela grande, a altura da janela: as duas faixas crescem e os gráficos crescem junto (altura das barras por `flex-grow`, porque % não pega altura de pai flexível).
+  - Primeira linha: "Prazos vencidos" em vermelho (lista com o botão "Abrir projeto", que leva à fase do projeto atrasado) e "Prazos nas próximas duas semanas" (três contadores e um gráfico por dia, de −6 a +14).
+  - Segunda linha: os cartões Financeiro, Projetos, Propostas e Diário Oficial (publicações para revisar; `src/app/(app)/_resumo/`), quatro lado a lado na tela larga, cada um com o link "Abrir". Cada cartão lê os próprios dados. Financeiro só aparece para quem vê o financeiro; Propostas, só para quem vê o comercial.
+
 ## Princípios
 
 1. **Uma pergunta por tela.** O topo responde a pergunta da tela numa frase ("1 prazo vencido e 8 nesta semana").

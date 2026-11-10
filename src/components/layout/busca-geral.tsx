@@ -2,6 +2,7 @@
 
 import Form from 'next/form'
 import { useEffect, useRef } from 'react'
+import { Icone } from '@/components/ui/icone'
 
 /** Busca de toda a plataforma (cliente, projeto, nota), sempre à vista. Ctrl+K leva o cursor para ela. */
 export function BuscaGeral() {
@@ -19,15 +20,16 @@ export function BuscaGeral() {
   }, [])
 
   return (
-    <Form action="/busca" role="search">
+    <Form action="/busca" role="search" className="relative">
+      <Icone nome="search" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-subtle" />
       <input
         ref={campo}
         type="search"
         name="q"
-        placeholder="Buscar (Ctrl+K)"
+        placeholder="Buscar projeto, cliente ou nº SEI"
         aria-label="Buscar cliente, projeto ou nota"
         title="Cliente, projeto, nº SEI ou nº da NF (Ctrl+K)"
-        className="min-h-9 w-full rounded-md border border-campo bg-surface px-3 text-sm text-ink outline-none placeholder:text-subtle focus:border-brand-700 focus:ring-2 focus:ring-brand-100 pointer-coarse:min-h-11"
+        className="h-[38px] w-full rounded-lg border border-line bg-painel pl-10 pr-3 text-[0.90625rem] text-ink outline-none placeholder:text-subtle focus:border-brand-700 focus:bg-surface focus:ring-2 focus:ring-brand-100 pointer-coarse:h-11"
       />
     </Form>
   )

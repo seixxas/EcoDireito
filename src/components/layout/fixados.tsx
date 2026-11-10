@@ -3,6 +3,7 @@
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { useSyncExternalStore } from 'react'
 import { classeBotao } from '@/components/ui/form'
+import { Icone } from '@/components/ui/icone'
 
 type Fixado = { href: string; rotulo: string }
 
@@ -67,15 +68,18 @@ export function ListaFixados() {
   if (fixados.length === 0) return null
   return (
     <div>
-      <p className="mb-1 px-2 text-xs font-medium text-subtle">Fixados</p>
+      <p className="mb-1 flex items-center gap-1.5 px-3 text-xs font-medium text-white/55">
+        <Icone nome="push_pin" className="text-sm" />
+        Fixados
+      </p>
       <ul className="flex flex-col gap-0.5">
         {fixados.map(({ href, rotulo }) => (
           <li key={href} className="flex items-center gap-1">
-            <LinkRapido href={href} className="flex min-h-7 min-w-0 flex-1 items-center rounded-md px-2 text-sm text-brand-700 hover:bg-brand-100">
+            <LinkRapido href={href} className="flex min-h-8 min-w-0 flex-1 items-center rounded-lg px-3 text-sm text-white/82 hover:bg-white/7 hover:text-white">
               <span className="truncate">{rotulo}</span>
             </LinkRapido>
-            <button type="button" title="Tirar dos fixados" onClick={() => gravar(fixados.filter((item) => item.href !== href))} className={classeBotao('secundario', undefined, 'pequeno')}>
-              Tirar
+            <button type="button" title="Tirar dos fixados" aria-label="Tirar dos fixados" onClick={() => gravar(fixados.filter((item) => item.href !== href))} className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-white/50 hover:bg-white/10 hover:text-white">
+              <Icone nome="close" className="text-base" />
             </button>
           </li>
         ))}

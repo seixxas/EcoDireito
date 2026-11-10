@@ -40,3 +40,4 @@ Registro curto, do mais novo para o mais antigo. Mudou uma decisão? Acrescente 
 | 2026-11-02 | Cache Components mantido (padrão do Next 16) | Data de hoje via `connection()`, páginas dentro do Suspense do `loading.tsx` |
 | 2026-11-02 | Regras de prazo no código (`REGRAS_SVMA`) por enquanto | Viram cadastro editável quando o banco entrar |
 | 2026-11-02 | Contexto em `context/`, com `CLAUDE.md` só apontando caminhos | Várias sessões; cada uma lê só a área que vai mexer |
+| 2026-11-10 | Redesenho 3a: fonte Instrument Sans e ícones Material Symbols do Google Fonts (recortados por `icon_names`) | Desenho aprovado pelo usuário; o recorte deixa a fonte de ícones pequena e sem dependência npm |

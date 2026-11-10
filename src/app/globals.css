@@ -1,44 +1,49 @@
 @import "tailwindcss";
 
 @theme {
-  /* Fundos: página branca, blocos em verde bem claro e itens brancos dentro deles. */
+  /* Desenho 3a (10/11): página branca, cartões brancos com fio fino, menu verde escuro. */
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-painel: #f4f8f5;
-  --color-rail: #eef5ef;
-  --color-apagado: #f3f4f3;
-  --color-line: #dbe6de;
+  --color-painel: #f5f6f3;
+  --color-rail: #f1f5f0;
+  --color-apagado: #f5f6f3;
+  --color-line: #e4e7e2;
   /* Borda de campo de formulário. */
   --color-campo: #7d9a85;
-  --color-ink: #15211b;
-  --color-muted: #47564c;
-  --color-subtle: #5f6f64;
+  --color-ink: #18201b;
+  --color-muted: #5b655e;
+  --color-subtle: #6b756e;
 
-  --color-brand-50: #eef6ef;
-  --color-brand-100: #e3f0e5;
-  --color-brand-300: #9bb7a1;
-  --color-brand-500: #2e7d32;
-  --color-brand-700: #1b5e20;
-  --color-brand-900: #14451a;
+  --color-brand-50: #f1f5f0;
+  --color-brand-100: #e6f2e8;
+  --color-brand-300: #a8d5b1;
+  --color-brand-500: #2e7d3e;
+  --color-brand-700: #1d5c2c;
+  --color-brand-900: #164a23;
 
   /* Semáforo: vermelho atrasado, amarelo hoje, verde em dia, azul Diário Oficial. */
-  --color-accent: #ffc84a;
+  --color-accent: #e0a030;
   --color-on-accent: #2b1f00;
-  --color-ok: #1b5e20;
-  --color-ok-soft: #e3f0e5;
-  --color-warn: #6b4100;
-  --color-warn-soft: #fff6dd;
-  --color-danger: #a4161a;
-  --color-danger-forte: #7f1014;
-  --color-danger-soft: #fdedec;
+  --color-ok: #2e7d3e;
+  --color-ok-soft: #e6f2e8;
+  --color-warn: #8a5300;
+  --color-warn-soft: #fff4dc;
+  --color-danger: #b42318;
+  --color-danger-forte: #8f1d14;
+  --color-danger-soft: #fdecea;
   --color-on-danger: #ffffff;
-  --color-info: #0a2f66;
+  --color-info: #2a4d8f;
   --color-info-soft: #eef3fa;
   --color-info-tag: #dce8f7;
   --color-on-info: #ffffff;
 
   /* Texto sobre fundo de marca (botão principal). */
   --color-on-brand: #ffffff;
+
+  /* Menu lateral (igual nos dois temas), fio do alerta vermelho e verde claro das barras secundárias. */
+  --color-menu: #173a22;
+  --color-danger-fio: #f4c7c1;
+  --color-brand-claro: #a8d5b1;
 
   /* Linha forte da grade da DRE. */
   --color-grade: #9bb7a1;
@@ -65,7 +70,7 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-atkinson), Verdana, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Modo escuro: `data-theme="dark"` no <html>, posto pelo script do layout raiz e pelo BotaoTema.
@@ -108,6 +113,9 @@
 
   --color-on-brand: #0f2016;
   --color-grade: #4c7a5a;
+  --color-menu: #10251a;
+  --color-danger-fio: #5a2622;
+  --color-brand-claro: #3d6b4b;
 }
 
 /* Monitor grande: tudo cresce junto, porque as medidas estão em rem. */
@@ -179,6 +187,75 @@ body {
   }
 }
 
+/* Cena do login (FundoDoLogin): rio correndo, pássaros, vagalumes, árvores balançando. */
+@keyframes cena-correnteza {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+@keyframes cena-voo {
+  from {
+    transform: translate(-120px, 30px);
+  }
+  to {
+    transform: translate(1320px, -60px);
+  }
+}
+@keyframes cena-asa {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(-0.4);
+  }
+}
+@keyframes cena-vagalume {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(var(--dx), var(--dy));
+    opacity: 0.3;
+  }
+  75% {
+    opacity: 1;
+  }
+}
+@keyframes cena-balanco {
+  0%,
+  100% {
+    transform: rotate(-0.8deg);
+  }
+  50% {
+    transform: rotate(0.9deg);
+  }
+}
+@keyframes cena-neblina {
+  from {
+    transform: translateX(-6%);
+  }
+  to {
+    transform: translateX(6%);
+  }
+}
+@keyframes cena-curvas {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-12px);
+  }
+}
+
 @keyframes barra-de-espera {
   from {
     transform: scaleX(0);
@@ -189,6 +266,28 @@ body {
 }
 
 @layer components {
+  /* Ícone do Material Symbols (componente Icone). Largura fixa: enquanto a fonte não chega, o nome não empurra o texto. */
+  .icone {
+    font-family: 'Material Symbols Rounded';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.25rem;
+    line-height: 1;
+    width: 1em;
+    overflow: hidden;
+    display: inline-block;
+    flex-shrink: 0;
+    white-space: nowrap;
+    letter-spacing: normal;
+    text-transform: none;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0;
+  }
+  .icone-cheio {
+    font-variation-settings: 'FILL' 1;
+  }
+
   /* Link dentro de texto ou de tabela: sublinhado para ficar claro que abre outra tela. */
   .link {
     @apply font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 transition-colors hover:decoration-brand-700;
@@ -256,27 +355,6 @@ body {
       radial-gradient(42rem 28rem at 30% 115%, rgb(255 200 74 / 0.05), transparent 60%),
       radial-gradient(30rem 22rem at -5% 40%, rgb(46 125 50 / 0.14), transparent 65%),
       var(--curvas-de-nivel);
-  }
-
-  /* Menu: folhagem, do verde mais forte em cima para o claro embaixo. */
-  .menu-folhagem {
-    background-image:
-      radial-gradient(20rem 16rem at 0% 100%, rgb(255 200 74 / 0.35), transparent 70%),
-      radial-gradient(16rem 12rem at 100% 0%, rgb(255 255 255 / 0.35), transparent 70%),
-      linear-gradient(180deg, #7fc28b 0%, #a6d6ae 22%, #c4e5c9 50%, #acd9b4 78%, #86c592 100%);
-    border-right: 1px solid #7fb98a;
-    box-shadow: 1px 0 0 rgb(255 255 255 / 0.6) inset;
-  }
-  :root[data-theme='dark'] .menu-folhagem {
-    background-image: linear-gradient(180deg, #1f3a28 0%, #19291f 45%, #16231b 75%, #1c3324 100%);
-    border-right-color: #2b4434;
-    box-shadow: none;
-  }
-  @media (max-width: 63.99rem) {
-    .menu-folhagem {
-      border-right: 0;
-      border-bottom: 1px solid #bcd8c1;
-    }
   }
 
   /* Lado claro do login. */
@@ -347,7 +425,40 @@ body {
     animation: folha-caindo var(--duracao, 18s) linear var(--atraso, 0s) infinite;
   }
 
+  .cena-correnteza {
+    animation: cena-correnteza 9s linear infinite;
+  }
+  .cena-passaro {
+    animation: cena-voo 46s linear var(--atraso, 0s) infinite;
+  }
+  .cena-asa {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: cena-asa 0.9s ease-in-out infinite;
+  }
+  .cena-vagalume {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: cena-vagalume var(--duracao, 7s) ease-in-out var(--atraso, 0s) infinite;
+  }
+  .cena-balanco {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: cena-balanco 7s ease-in-out var(--atraso, 0s) infinite;
+  }
+  .cena-neblina {
+    animation: cena-neblina 28s ease-in-out infinite alternate;
+  }
+  .cena-neblina-2 {
+    animation-duration: 36s;
+    animation-direction: alternate-reverse;
+  }
+  .cena-curvas {
+    animation: cena-curvas 12s ease-in-out infinite alternate;
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    .cena *,
     .surgir > *,
     .folha-caindo,
     .brilho:hover::after {
