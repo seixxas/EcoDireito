@@ -187,33 +187,98 @@ body {
   }
 }
 
-/* Fundo do login (FundoDoLogin): o brilho corre pela linha dourada, o sol pulsa, o leque respira devagar. */
-@keyframes fundo-login-cometa {
-  from {
-    stroke-dashoffset: 1000;
-  }
+/* Cena do login (FundoDoLogin): raios girando, sol respirando, rio correndo, pássaros, vagalumes, árvores balançando. */
+@keyframes cena-girar {
   to {
-    stroke-dashoffset: 0;
+    transform: rotate(360deg);
   }
 }
-
-@keyframes fundo-login-pulso {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.9;
-  }
+@keyframes cena-respira {
+  0%,
   100% {
-    transform: scale(2);
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+@keyframes cena-pulso {
+  from {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(2.4);
     opacity: 0;
   }
 }
-
-@keyframes fundo-login-leque {
+@keyframes cena-correnteza {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+@keyframes cena-voo {
+  from {
+    transform: translate(-120px, 30px);
+  }
+  to {
+    transform: translate(1320px, -60px);
+  }
+}
+@keyframes cena-asa {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(-0.4);
+  }
+}
+@keyframes cena-vagalume {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(var(--dx), var(--dy));
+    opacity: 0.3;
+  }
+  75% {
+    opacity: 1;
+  }
+}
+@keyframes cena-balanco {
+  0%,
+  100% {
+    transform: rotate(-0.8deg);
+  }
+  50% {
+    transform: rotate(0.9deg);
+  }
+}
+@keyframes cena-neblina {
+  from {
+    transform: translateX(-6%);
+  }
+  to {
+    transform: translateX(6%);
+  }
+}
+@keyframes cena-curvas {
   from {
     transform: translateY(0);
   }
   to {
-    transform: translateY(-14px);
+    transform: translateY(-12px);
   }
 }
 
@@ -386,23 +451,57 @@ body {
     animation: folha-caindo var(--duracao, 18s) linear var(--atraso, 0s) infinite;
   }
 
-  .fundo-login-cometa {
-    stroke-dasharray: 140 860;
-    animation: fundo-login-cometa 7s cubic-bezier(0.45, 0, 0.3, 1) infinite;
+  .cena svg > g {
+    transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  .fundo-login-pulso {
+  .cena-raios {
+    animation: cena-girar 140s linear infinite;
+  }
+  .cena-respira {
     transform-box: fill-box;
     transform-origin: center;
-    animation: fundo-login-pulso 2.8s ease-out infinite;
+    animation: cena-respira 6s ease-in-out infinite;
   }
-  .fundo-login-leque {
-    animation: fundo-login-leque 9s ease-in-out infinite alternate;
+  .cena-pulso,
+  .cena-alfinete {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: cena-pulso 3.2s ease-out var(--atraso, 0s) infinite;
+  }
+  .cena-correnteza {
+    animation: cena-correnteza 9s linear infinite;
+  }
+  .cena-passaro {
+    animation: cena-voo 46s linear var(--atraso, 0s) infinite;
+  }
+  .cena-asa {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: cena-asa 0.9s ease-in-out infinite;
+  }
+  .cena-vagalume {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: cena-vagalume var(--duracao, 7s) ease-in-out var(--atraso, 0s) infinite;
+  }
+  .cena-balanco {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: cena-balanco 7s ease-in-out var(--atraso, 0s) infinite;
+  }
+  .cena-neblina {
+    animation: cena-neblina 28s ease-in-out infinite alternate;
+  }
+  .cena-neblina-2 {
+    animation-duration: 36s;
+    animation-direction: alternate-reverse;
+  }
+  .cena-curvas {
+    animation: cena-curvas 12s ease-in-out infinite alternate;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .fundo-login-cometa,
-    .fundo-login-pulso,
-    .fundo-login-leque,
+    .cena *,
     .surgir > *,
     .folha-caindo,
     .brilho:hover::after {
