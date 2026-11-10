@@ -239,12 +239,13 @@ body {
   }
 
   .relevo {
-    background-color: #f5faf5;
+    background-color: #e9f5ea;
     background-image:
-      radial-gradient(62rem 36rem at 105% -12%, rgb(46 125 50 / 0.22), transparent 62%),
-      radial-gradient(46rem 30rem at 35% 118%, rgb(255 200 74 / 0.16), transparent 62%),
-      radial-gradient(34rem 26rem at -6% 45%, rgb(102 187 106 / 0.2), transparent 66%),
-      linear-gradient(160deg, #eef8ef 0%, #f7fbf6 45%, #eef7ee 100%),
+      radial-gradient(64rem 38rem at 105% -12%, rgb(46 125 50 / 0.34), transparent 62%),
+      radial-gradient(50rem 32rem at 35% 120%, rgb(255 200 74 / 0.26), transparent 62%),
+      radial-gradient(38rem 28rem at -6% 45%, rgb(102 187 106 / 0.32), transparent 66%),
+      radial-gradient(30rem 22rem at 70% 55%, rgb(0 150 136 / 0.08), transparent 70%),
+      linear-gradient(160deg, #dff0e1 0%, #eef7ee 45%, #e2f2e4 100%),
       var(--curvas-de-nivel);
     background-attachment: fixed;
   }
@@ -260,10 +261,10 @@ body {
   /* Menu: folhagem, do verde mais forte em cima para o claro embaixo. */
   .menu-folhagem {
     background-image:
-      radial-gradient(18rem 14rem at 0% 100%, rgb(255 200 74 / 0.22), transparent 70%),
-      radial-gradient(16rem 12rem at 100% 0%, rgb(255 255 255 / 0.45), transparent 70%),
-      linear-gradient(180deg, #9fd1a8 0%, #bfe2c4 22%, #d8eedb 50%, #c7e6cc 78%, #a8d6b0 100%);
-    border-right: 1px solid #9cc9a4;
+      radial-gradient(20rem 16rem at 0% 100%, rgb(255 200 74 / 0.35), transparent 70%),
+      radial-gradient(16rem 12rem at 100% 0%, rgb(255 255 255 / 0.35), transparent 70%),
+      linear-gradient(180deg, #7fc28b 0%, #a6d6ae 22%, #c4e5c9 50%, #acd9b4 78%, #86c592 100%);
+    border-right: 1px solid #7fb98a;
     box-shadow: 1px 0 0 rgb(255 255 255 / 0.6) inset;
   }
   :root[data-theme='dark'] .menu-folhagem {
