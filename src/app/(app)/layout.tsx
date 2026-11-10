@@ -6,25 +6,28 @@ import { Carregando } from '@/components/ui/carregando'
 import { hoje } from '@/data/hoje'
 import { exigirUsuario } from '@/data/sessao'
 import { pode } from '@/lib/permissoes'
+import { contarPublicacoesNovas } from './_resumo/cartao-diario'
 import { contarPrazosVencidos } from './_resumo/prazos-vencidos'
 
 /** A navegação entre as telas não mostra esqueleto de propósito: veja a fronteira abaixo. Isto desliga o aviso do Next em desenvolvimento. */
 export const instant = false
 
-/** Usuário e prazos vencidos, lidos uma vez por requisição: o menu (número em Projetos) e o topo (aviso vermelho) usam os dois. */
+/** Usuário, prazos vencidos e publicações sem revisão, lidos uma vez por requisição: o menu (números vermelhos) e o topo (aviso de vencidos) usam. */
 const dadosDaCasca = cache(async () => {
   const usuario = await exigirUsuario()
   if (usuario.papel === 'cliente') redirect('/portal')
-  const vencidos = pode(usuario.papel, 'prazos') ? await contarPrazosVencidos(await hoje()) : 0
-  return { usuario: { nome: usuario.nome, papel: usuario.papel }, vencidos }
+  const [vencidos, publicacoes] = pode(usuario.papel, 'prazos') ? await Promise.all([contarPrazosVencidos(await hoje()), contarPublicacoesNovas()]) : [0, 0]
+  return { usuario: { nome: usuario.nome, papel: usuario.papel }, contadores: { vencidos, publicacoes } }
 })
 
 async function MenuDoUsuario() {
-  return <MenuLateral {...await dadosDaCasca()} />
+  const { usuario, contadores } = await dadosDaCasca()
+  return <MenuLateral usuario={usuario} contadores={contadores} />
 }
 
 async function TopoDoUsuario() {
-  return <Topo {...await dadosDaCasca()} />
+  const { usuario, contadores } = await dadosDaCasca()
+  return <Topo usuario={usuario} vencidos={contadores.vencidos} />
 }
 
 /** Desenho 3a (10/11): menu verde-escuro à esquerda, barra branca no topo, fundo branco. */

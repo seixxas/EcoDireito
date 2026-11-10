@@ -1,6 +1,4 @@
-import { Icone } from '@/components/ui/icone'
 import { LinkRapido } from '@/components/ui/link-rapido'
-import { pode } from '@/lib/permissoes'
 import { BotaoNovo } from './botao-novo'
 import { BuscaGeral } from './busca-geral'
 import { MenuDaConta } from './menu-da-conta'
@@ -19,9 +17,7 @@ function AvisoDeVencidos({ quantidade }: { quantidade: number }) {
   )
 }
 
-const classeDoIcone = 'inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-painel hover:text-ink'
-
-/** Barra branca do topo (desenho 3a): busca, aviso de vencidos, Novo, Diário Oficial e a conta. Sem usuário, só a busca apagada. */
+/** Barra branca do topo (desenho 3a): busca, aviso de vencidos, Novo e (no celular) a conta. Sem usuário, só a busca apagada. */
 export function Topo({ usuario, vencidos = 0 }: { usuario?: UsuarioDoMenu; vencidos?: number }) {
   return (
     <header className="sticky top-0 z-30 flex h-[60px] items-center gap-3 border-b border-line bg-surface px-3 lg:px-8 print:hidden">
@@ -31,12 +27,10 @@ export function Topo({ usuario, vencidos = 0 }: { usuario?: UsuarioDoMenu; venci
       {usuario && (
         <>
           <BotaoNovo papel={usuario.papel} />
-          {pode(usuario.papel, 'prazos') && (
-            <LinkRapido href="/publicacoes" className={classeDoIcone} title="Diário Oficial" aria-label="Diário Oficial">
-              <Icone nome="notifications" />
-            </LinkRapido>
-          )}
-          <MenuDaConta usuario={usuario} />
+          {/* Na tela grande, conta, tema e sair ficam no pé do menu lateral. */}
+          <div className="lg:hidden">
+            <MenuDaConta usuario={usuario} />
+          </div>
         </>
       )}
     </header>

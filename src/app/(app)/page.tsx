@@ -4,6 +4,7 @@ import { hoje } from '@/data/hoje'
 import { exigirUsuario } from '@/data/sessao'
 import { diaDaSemana } from '@/lib/datas'
 import { inicioDoPapel, pode } from '@/lib/permissoes'
+import { CartaoDiario } from './_resumo/cartao-diario'
 import { CartaoFinanceiro } from './_resumo/cartao-financeiro'
 import { CartaoProjetos } from './_resumo/cartao-projetos'
 import { CartaoPropostas } from './_resumo/cartao-propostas'
@@ -29,7 +30,8 @@ export default async function Resumo() {
   const verPropostas = pode(usuario.papel, 'comercial')
 
   return (
-    <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-7 lg:px-4 lg:pt-2">
+    // Na tela grande, ocupa a largura toda e a altura da janela (menos topo e margens): as duas faixas crescem e os gráficos vão junto.
+    <div className="flex w-full flex-col gap-6 lg:min-h-[calc(100dvh-60px-5.5rem)]">
       <header>
         <h1 className="text-[1.875rem] font-semibold leading-tight tracking-[-0.02em] text-ink">Resumo</h1>
         <p className="mt-1 text-[0.9375rem] text-muted">
@@ -37,15 +39,16 @@ export default async function Resumo() {
         </p>
       </header>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.3fr]">
+      <div className="grid gap-5 lg:flex-[1.15] lg:grid-cols-[1fr_1.5fr]">
         <PrazosVencidos dia={dia} />
         <PrazosProximos dia={dia} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 lg:flex-1 2xl:grid-cols-4">
         {verFinanceiro && <CartaoFinanceiro dia={dia} />}
         <CartaoProjetos dia={dia} />
         {verPropostas && <CartaoPropostas dia={dia} />}
+        <CartaoDiario />
       </div>
     </div>
   )

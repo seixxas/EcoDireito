@@ -6,12 +6,12 @@ import { Icone } from '@/components/ui/icone'
 import { PAPEIS } from '@/lib/permissoes'
 import type { UsuarioDoMenu } from './menu-lateral'
 
-function iniciais(nome: string) {
+export function iniciais(nome: string) {
   const partes = nome.trim().split(/\s+/)
   return ((partes[0]?.[0] ?? '') + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase()
 }
 
-function trocarTema() {
+export function trocarTema() {
   const tema = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
   document.documentElement.setAttribute('data-theme', tema)
   try {

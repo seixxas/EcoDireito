@@ -8,8 +8,8 @@ import { CartaoResumo } from './cartao'
 
 const DIAS_ANTES = 6
 const DIAS_DEPOIS = 14
-/** Altura da barra mais alta. Com poucos prazos, a escala para em 3 para um prazo só não virar uma torre. */
-const ALTURA_MAXIMA = 90
+/** Altura da barra mais alta, em % da coluna (o gráfico cresce com o cartão). Com poucos prazos, a escala para em 3 para um prazo só não virar uma torre. */
+const ALTURA_MAXIMA = 80
 const ESCALA_MINIMA = 3
 
 function Contador({ icone, numero, rotulo, tom }: { icone: NomeIcone; numero: number; rotulo: string; tom: 'alerta' | 'semana' | 'mes' }) {
@@ -55,8 +55,8 @@ export async function PrazosProximos({ dia }: { dia: DataISO }) {
       </div>
 
       {/* No celular, as 21 colunas não cabem: o gráfico rola de lado dentro do cartão. */}
-      <div className="-mx-1 overflow-x-auto px-1">
-        <div className="flex h-[150px] min-w-[24rem] items-stretch gap-1">
+      <div className="-mx-1 flex flex-1 flex-col overflow-x-auto px-1">
+        <div className="flex min-h-[150px] min-w-[24rem] flex-1 items-stretch gap-1">
           {colunas.map(({ data, quantidade }) => {
             const ehHoje = data === dia
             const cor = data < dia ? 'danger' : data <= doisDias ? 'accent' : 'brand'
@@ -72,10 +72,12 @@ export async function PrazosProximos({ dia }: { dia: DataISO }) {
                 <div aria-hidden className="flex flex-1 flex-col items-center justify-end gap-[3px]">
                   {quantidade > 0 ? (
                     <>
+                      {/* Altura por flex-grow, não por %: a coluna cresce com o cartão e % não pega altura de pai flexível. */}
+                      <div style={{ flexGrow: 100 - Math.round((quantidade / escala) * ALTURA_MAXIMA), flexBasis: 0 }} />
                       <span className={cn('text-xs font-bold', cor === 'danger' ? 'text-danger' : cor === 'accent' ? 'text-accent' : 'text-brand-500')}>{quantidade}</span>
                       <div
-                        className={cn('w-[70%] rounded', cor === 'danger' ? 'bg-danger' : cor === 'accent' ? 'bg-accent' : 'bg-brand-500')}
-                        style={{ height: Math.round((quantidade / escala) * ALTURA_MAXIMA) }}
+                        className={cn('min-h-1 w-[70%] rounded', cor === 'danger' ? 'bg-danger' : cor === 'accent' ? 'bg-accent' : 'bg-brand-500')}
+                        style={{ flexGrow: Math.round((quantidade / escala) * ALTURA_MAXIMA), flexBasis: 0 }}
                       />
                     </>
                   ) : (

@@ -11,6 +11,16 @@ import { CartaoResumo, Destaque } from './cartao'
 const MESES_NO_GRAFICO = 6
 const ALTURA_DA_BARRA = 100
 
+/** Barra que cresce com o cartão: altura por flex-grow, porque % não pega a altura de um pai flexível. */
+function Barra({ percentual, className }: { percentual: number; className: string }) {
+  return (
+    <div className="flex w-2.5 flex-col">
+      <div style={{ flexGrow: 100 - percentual, flexBasis: 0 }} />
+      <div className={`rounded-t-[3px] ${className}`} style={{ flexGrow: percentual, flexBasis: 0 }} />
+    </div>
+  )
+}
+
 /** A receber (em dia × atrasado) e o faturado × recebido dos últimos 6 meses. */
 export async function CartaoFinanceiro({ dia }: { dia: DataISO }) {
   const { meses, notas } = await listarNotas()
@@ -57,7 +67,7 @@ export async function CartaoFinanceiro({ dia }: { dia: DataISO }) {
         </LinkRapido>
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-line pt-3">
+      <div className="flex flex-1 flex-col gap-2 border-t border-line pt-3">
         <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs text-muted">
           <span className="flex items-center gap-1.5">
             <Icone nome="bar_chart" className="text-[1.0625rem] text-brand-700" />
@@ -74,12 +84,12 @@ export async function CartaoFinanceiro({ dia }: { dia: DataISO }) {
             </span>
           </span>
         </div>
-        <div className="flex h-[120px] items-end gap-2.5">
+        <div className="flex min-h-[120px] flex-1 items-stretch gap-2.5">
           {grafico.map(({ mes, faturado, recebido }) => (
             <div key={mes} role="img" aria-label={`${mes}: faturado ${brl(faturado)}, recebido ${brl(recebido)}`} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
-              <div className="flex h-[100px] items-end gap-[3px]">
-                <div className="w-2.5 rounded-t-[3px] bg-brand-700" style={{ height: altura(faturado) }} />
-                <div className="w-2.5 rounded-t-[3px] bg-brand-claro" style={{ height: altura(recebido) }} />
+              <div className="flex flex-1 gap-[3px]">
+                <Barra percentual={altura(faturado)} className="bg-brand-700" />
+                <Barra percentual={altura(recebido)} className="bg-brand-claro" />
               </div>
               <span className="text-[0.71875rem] text-subtle">{mes}</span>
             </div>

@@ -5,14 +5,15 @@ Objetivo: uma ferramenta de trabalho, não um "dashboard". Quem usa são as sóc
 ## Redesenho 3a, "Urgência" (10/11): vale sobre o que estiver diferente abaixo
 
 Desenho aprovado em `Redesign Eco Direito/export/Eco Direito 3a - Urgencia.html`, fora do repositório. O usuário pediu menos texto, um número grande por bloco e um clique para o detalhe, sem aumentar a fonte.
-- **Fonte:** Instrument Sans. **Ícones:** Material Symbols Rounded (`Icone`, `src/components/ui/icone.tsx`), vindos do Google e recortados pela lista `ICONES`. Ícone novo precisa entrar na lista, senão aparece o nome escrito. O ícone acompanha o texto, nunca o substitui; a exceção é o sino do Diário Oficial no topo, que tem `aria-label`.
+- **Fonte:** Instrument Sans. **Ícones:** Material Symbols Rounded (`Icone`, `src/components/ui/icone.tsx`), vindos do Google e recortados pela lista `ICONES`. Ícone novo precisa entrar na lista, senão aparece o nome escrito. O ícone acompanha o texto, nunca o substitui.
 - **Casca:**
-  - Menu verde-escuro (`bg-menu`, 240 px), com ícone e nome, nesta ordem: Resumo, Projetos, Propostas, Financeiro e, separado, Usuários. Projetos mostra o número vermelho de prazos vencidos. Os fixados ficam embaixo dos itens.
-  - Topo branco de 60 px (`Topo`), com a busca, o aviso vermelho "N prazos vencidos" (leva a /prazos), "+ Novo", o sino (/publicacoes) e o avatar (`MenuDaConta`: nome, perfil, tema, sair). O fundo das telas é branco.
+  - Menu verde-escuro (`bg-menu`, 240 px), com ícone e nome: Resumo; grupo Processos (Projetos, Prazos, Diário Oficial); grupo Gestão (Propostas, Financeiro, Usuários). Número vermelho em Projetos (prazos vencidos) e no Diário Oficial (publicações sem revisão). Depois os fixados. No pé: iniciais, nome e perfil, "Tema escuro" e "Sair" (ajuste de 10/11: o Diário não era achado e o menu tinha um vazio grande).
+  - Topo branco de 60 px (`Topo`), com a busca, o aviso vermelho "N prazos vencidos" (leva a /prazos) e "+ Novo". O avatar (`MenuDaConta`) só aparece no celular, onde o menu lateral não existe. O fundo das telas é branco.
 - **Logo nova:** círculo aberto, folha em traço e sol dourado (`Simbolo`, `src/app/icon.svg`), com o nome Eco Direito.
 - **Resumo (`/`):**
-  - Primeira linha: "Prazos vencidos" em vermelho (lista com o botão Resolver) e "Prazos nas próximas duas semanas" (três contadores e um gráfico por dia, de −6 a +14).
-  - Segunda linha: os cartões Financeiro, Projetos e Propostas (`src/app/(app)/_resumo/`), cada um com o link "Abrir". Cada cartão lê os próprios dados. Financeiro só aparece para quem vê o financeiro; Propostas, só para quem vê o comercial.
+  - Ocupa a largura toda e, na tela grande, a altura da janela: as duas faixas crescem e os gráficos crescem junto (altura das barras por `flex-grow`, porque % não pega altura de pai flexível).
+  - Primeira linha: "Prazos vencidos" em vermelho (lista com o botão "Abrir projeto", que leva à fase do projeto atrasado) e "Prazos nas próximas duas semanas" (três contadores e um gráfico por dia, de −6 a +14).
+  - Segunda linha: os cartões Financeiro, Projetos, Propostas e Diário Oficial (publicações para revisar; `src/app/(app)/_resumo/`), quatro lado a lado na tela larga, cada um com o link "Abrir". Cada cartão lê os próprios dados. Financeiro só aparece para quem vê o financeiro; Propostas, só para quem vê o comercial.
 
 ## Princípios
 

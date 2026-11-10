@@ -39,7 +39,7 @@ export async function PrazosVencidos({ dia }: { dia: DataISO }) {
         <span className="text-[3.75rem] font-bold leading-none tracking-[-0.03em] text-danger">{vencidos.length}</span>
         <span className="text-[0.9375rem] text-danger-forte">{vencidos.length === 1 ? 'precisa de resposta hoje' : 'precisam de resposta hoje'}</span>
       </p>
-      <ul className="flex flex-col gap-2">
+      <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
         {vencidos.map((prazo) => (
           <li key={prazo.id} className="flex flex-wrap items-center gap-3 rounded-[10px] bg-surface px-3.5 py-3">
             <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-[9px] bg-danger-soft text-danger">
@@ -69,9 +69,10 @@ export async function PrazosVencidos({ dia }: { dia: DataISO }) {
               </span>
               <LinkRapido
                 href={`/projetos/${prazo.processo.id}?aba=etapas&fase=${EVENTOS[prazo.regra.cumpridoPor].fase}`}
-                className="inline-flex h-8 items-center whitespace-nowrap rounded-lg bg-brand-700 px-3 text-[0.84375rem] font-semibold text-on-brand hover:bg-brand-900"
+                className="inline-flex h-8 items-center gap-1 whitespace-nowrap rounded-lg bg-brand-700 px-3 text-[0.84375rem] font-semibold text-on-brand hover:bg-brand-900"
               >
-                Resolver
+                Abrir projeto
+                <Icone nome="arrow_forward" className="text-base" />
               </LinkRapido>
             </span>
           </li>
