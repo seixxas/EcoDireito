@@ -239,11 +239,12 @@ body {
   }
 
   .relevo {
-    background-color: #fbfdfb;
+    background-color: #f5faf5;
     background-image:
-      radial-gradient(60rem 34rem at 105% -10%, rgb(46 125 50 / 0.13), transparent 62%),
-      radial-gradient(42rem 28rem at 30% 115%, rgb(255 200 74 / 0.1), transparent 60%),
-      radial-gradient(30rem 22rem at -5% 40%, rgb(129 199 132 / 0.1), transparent 65%),
+      radial-gradient(62rem 36rem at 105% -12%, rgb(46 125 50 / 0.22), transparent 62%),
+      radial-gradient(46rem 30rem at 35% 118%, rgb(255 200 74 / 0.16), transparent 62%),
+      radial-gradient(34rem 26rem at -6% 45%, rgb(102 187 106 / 0.2), transparent 66%),
+      linear-gradient(160deg, #eef8ef 0%, #f7fbf6 45%, #eef7ee 100%),
       var(--curvas-de-nivel);
     background-attachment: fixed;
   }
@@ -258,8 +259,11 @@ body {
 
   /* Menu: folhagem, do verde mais forte em cima para o claro embaixo. */
   .menu-folhagem {
-    background-image: linear-gradient(180deg, #cfe7d3 0%, #e2f1e4 38%, #eaf5eb 70%, #d6ebd9 100%);
-    border-right: 1px solid #bcd8c1;
+    background-image:
+      radial-gradient(18rem 14rem at 0% 100%, rgb(255 200 74 / 0.22), transparent 70%),
+      radial-gradient(16rem 12rem at 100% 0%, rgb(255 255 255 / 0.45), transparent 70%),
+      linear-gradient(180deg, #9fd1a8 0%, #bfe2c4 22%, #d8eedb 50%, #c7e6cc 78%, #a8d6b0 100%);
+    border-right: 1px solid #9cc9a4;
     box-shadow: 1px 0 0 rgb(255 255 255 / 0.6) inset;
   }
   :root[data-theme='dark'] .menu-folhagem {
