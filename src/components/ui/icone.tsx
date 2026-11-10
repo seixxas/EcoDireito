@@ -46,6 +46,8 @@ export const ICONES = [
   'search',
   'send',
   'trending_up',
+  'visibility',
+  'visibility_off',
   'warning',
 ] as const
 
