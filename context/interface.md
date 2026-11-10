@@ -9,6 +9,7 @@ Desenho aprovado em `Redesign Eco Direito/export/Eco Direito 3a - Urgencia.html`
 - **Casca:**
   - Menu verde-escuro (`bg-menu`, 240 px), com ícone e nome: Resumo; grupo Processos (Projetos, Prazos, Diário Oficial); grupo Gestão (Propostas, Financeiro, Usuários). Número vermelho em Projetos (prazos vencidos) e no Diário Oficial (publicações sem revisão). Depois os fixados. No pé: iniciais, nome e perfil, "Tema escuro" e "Sair" (ajuste de 10/11: o Diário não era achado e o menu tinha um vazio grande).
   - Topo branco de 60 px (`Topo`), com a busca, o aviso vermelho "N prazos vencidos" (leva a /prazos) e "+ Novo". O avatar (`MenuDaConta`) só aparece no celular, onde o menu lateral não existe. O fundo das telas é branco.
+- **Login (10/11):** a partir da tela do Ecoamper. Dois painéis arredondados sobre verde bem escuro: à esquerda a marca, a frase "Do protocolo ao TCA, cada prazo em dia." e o fundo animado (`FundoDoLogin`: pontinhos, leque de linhas e uma linha dourada com brilho correndo até um sol que pulsa; parado com "reduzir movimento"). À direita, em branco, "Entrar", e-mail, senha com o olho para mostrar e o botão.
 - **Logo nova:** círculo aberto, folha em traço e sol dourado (`Simbolo`, `src/app/icon.svg`), com o nome Eco Direito.
 - **Resumo (`/`):**
   - Ocupa a largura toda e, na tela grande, a altura da janela: as duas faixas crescem e os gráficos crescem junto (altura das barras por `flex-grow`, porque % não pega altura de pai flexível).

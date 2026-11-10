@@ -187,6 +187,36 @@ body {
   }
 }
 
+/* Fundo do login (FundoDoLogin): o brilho corre pela linha dourada, o sol pulsa, o leque respira devagar. */
+@keyframes fundo-login-cometa {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fundo-login-pulso {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes fundo-login-leque {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-14px);
+  }
+}
+
 @keyframes barra-de-espera {
   from {
     transform: scaleX(0);
@@ -356,7 +386,23 @@ body {
     animation: folha-caindo var(--duracao, 18s) linear var(--atraso, 0s) infinite;
   }
 
+  .fundo-login-cometa {
+    stroke-dasharray: 140 860;
+    animation: fundo-login-cometa 7s cubic-bezier(0.45, 0, 0.3, 1) infinite;
+  }
+  .fundo-login-pulso {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: fundo-login-pulso 2.8s ease-out infinite;
+  }
+  .fundo-login-leque {
+    animation: fundo-login-leque 9s ease-in-out infinite alternate;
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    .fundo-login-cometa,
+    .fundo-login-pulso,
+    .fundo-login-leque,
     .surgir > *,
     .folha-caindo,
     .brilho:hover::after {

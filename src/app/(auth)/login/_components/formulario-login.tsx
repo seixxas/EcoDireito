@@ -15,7 +15,7 @@ export function FormularioLogin({ voltar }: { voltar?: string }) {
     <form action={acao} className="space-y-4">
       <input type="hidden" name="voltar" value={voltar ?? ''} />
       <Campo rotulo="E-mail" erro={estado.erros?.email}>
-        <Entrada name="email" type="email" autoComplete="email" defaultValue={estado.valores?.email} required autoFocus className={ALTO} />
+        <Entrada name="email" type="email" autoComplete="email" placeholder="seu@email.com.br" defaultValue={estado.valores?.email} required autoFocus className={ALTO} />
       </Campo>
       <Campo rotulo="Senha" erro={estado.erros?.senha}>
         {/* O olho fica dentro do campo, à direita; o nome do botão vai no aria-label e no title. */}
@@ -33,7 +33,10 @@ export function FormularioLogin({ voltar }: { voltar?: string }) {
         </span>
       </Campo>
       <MensagemFormulario estado={estado} />
-      <BotaoEnviar className="mt-1 min-h-11! w-full">Entrar</BotaoEnviar>
+      <BotaoEnviar className="mt-2 min-h-12! w-full gap-2 shadow-[0_10px_24px_-12px_rgb(23_58_34/0.7)]">
+        Entrar
+        <Icone nome="arrow_forward" className="text-lg" />
+      </BotaoEnviar>
     </form>
   )
 }
