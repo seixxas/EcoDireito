@@ -17,6 +17,7 @@ import { brl, contar, formatarPercentual } from '@/lib/formatar'
 import { paginar } from '@/lib/paginar'
 import { pode } from '@/lib/permissoes'
 import { NoCartao, TABELA_EMPILHADA } from '../_components/tabela-empilhada'
+import { BARRA_DA_COPA, LINHA_DA_COPA } from '../_components/identidade'
 
 export const metadata: Metadata = { title: 'Contratos' }
 
@@ -78,7 +79,7 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
         }
       />
 
-      <section aria-label="Totais dos contratos" className="grid items-center gap-x-6 gap-y-2 rounded-lg bg-painel px-4 py-2.5 lg:grid-cols-[13rem_minmax(0,1fr)]">
+      <section aria-label="Totais dos contratos" className={cn('grid items-center gap-x-6 gap-y-2 rounded-lg bg-painel px-4 py-2.5 lg:grid-cols-[13rem_minmax(0,1fr)]', LINHA_DA_COPA)}>
         <div>
           <p className="text-xs text-subtle">Contratado</p>
           <p className="text-xl font-semibold">{brl(contratado)}</p>
@@ -90,7 +91,7 @@ export default async function PaginaContratos({ searchParams }: { searchParams: 
             aria-label={`Do total contratado: ${formatarPercentual(parte(faturado))} faturado, ${formatarPercentual(parte(pronto))} pronto para faturar e ${formatarPercentual(parte(aguardando))} aguardando evento`}
             className="mb-1.5 flex h-2 gap-0.5 overflow-hidden rounded-full"
           >
-            <span className="bg-brand-700" style={{ width: `${parte(faturado) * 100}%` }} />
+            <span className={BARRA_DA_COPA} style={{ width: `${parte(faturado) * 100}%` }} />
             <span className="bg-brand-300" style={{ width: `${parte(pronto) * 100}%` }} />
             <span className="bg-line" style={{ width: `${parte(aguardando) * 100}%` }} />
           </div>

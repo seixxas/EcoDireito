@@ -7,6 +7,7 @@ import { classeBotao } from '@/components/ui/form'
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { cn } from '@/lib/cn'
 import { PAPEIS, pode, type Area, type Papel } from '@/lib/permissoes'
+import { Logo } from '@/components/marca/logo'
 import { BotaoNovo } from './botao-novo'
 import { BotaoTema } from './botao-tema'
 import { BuscaGeral } from './busca-geral'
@@ -30,9 +31,8 @@ function ativo(pathname: string, { href, tambem = [] }: Item) {
 
 function Marca() {
   return (
-    <LinkRapido href="/" className="block px-2 leading-tight">
-      <span className="block text-xl font-semibold text-brand-700">Eco Direito</span>
-      <span className="block text-2xs text-subtle">Consultoria ambiental</span>
+    <LinkRapido href="/" className="block px-1">
+      <Logo />
     </LinkRapido>
   )
 }
@@ -43,7 +43,11 @@ function ItemDoMenu({ item, pathname, className }: { item: Item; pathname: strin
     <LinkRapido
       href={item.href}
       aria-current={ligado ? 'page' : undefined}
-      className={cn('flex min-h-9 items-center rounded-md px-3 text-sm font-medium transition-colors pointer-coarse:min-h-10', ligado ? 'bg-brand-700 text-on-brand' : 'text-brand-700 hover:bg-brand-100', className)}
+      className={cn(
+        'flex min-h-9 items-center rounded-md px-3 text-sm font-medium transition-all duration-200 pointer-coarse:min-h-10',
+        ligado ? 'copa text-white shadow-[0_6px_16px_-8px_rgb(18_61_23_/_0.7)]' : 'text-brand-700 hover:translate-x-0.5 hover:bg-white/55 dark:hover:bg-white/5',
+        className,
+      )}
     >
       {item.rotulo}
     </LinkRapido>
@@ -77,7 +81,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
 
   return (
     <>
-      <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col gap-2 overflow-y-auto border-r border-line bg-rail px-3 py-4 lg:flex print:hidden">
+      <aside className="menu-folhagem sticky top-0 hidden h-screen w-56 shrink-0 flex-col gap-2 overflow-y-auto rounded-none! border-y-0! border-l-0! px-3 py-4 lg:flex print:hidden">
         <div className="mb-1">
           <Marca />
         </div>
@@ -108,7 +112,7 @@ function Menu({ pathname, usuario }: { pathname: string; usuario?: UsuarioDoMenu
         )}
       </aside>
 
-      <header className="border-b border-line bg-rail px-4 py-2.5 lg:hidden print:hidden">
+      <header className="menu-folhagem rounded-none! border-x-0! border-t-0! px-4 py-2.5 lg:hidden print:hidden">
         <div className="flex items-center justify-between gap-2">
           <Marca />
           <div className="flex items-center gap-1.5">

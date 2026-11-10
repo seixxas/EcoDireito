@@ -90,3 +90,21 @@ As cores, os blocos e o tudo escrito vêm do desenho "Parque + Semáforo" do Cla
 - Português do Brasil, frases curtas. Datas `dd/mm/aaaa` (ou `ter, 03/11` em listas), dinheiro `R$ 1.234,56`.
 - Contagem de prazo sempre explicável, mas recolhida.
 - O aviso "Dados fictícios" fica discreto, no pé do menu.
+
+## Identidade visual (09/11)
+
+A ideia: uma ferramenta de trabalho que lembra o propósito, o meio ambiente e o papel do processo. Tudo discreto; a escala compacta continua valendo.
+
+- **Marca:** `Simbolo` e `Logo` em `src/components/marca/logo.tsx`. Folha com nervura sobre quadrado verde, com o sol amarelo no canto: "folha" é planta e é página. O favicon é `src/app/icon.svg`, o mesmo desenho.
+- **Copa** (`.copa`): o gradiente verde da marca. Usado no item ativo do menu, na faixa acima do título (`PageHeader`) e no fundo do login. Não use em blocos grandes dentro das telas.
+- **Relevo** (`.relevo`): curvas de nível bem claras no fundo da área interna, com luz verde e amarela nos cantos.
+- **Vidro** (`.vidro`): painel translúcido com reflexo em cima, só sobre fundo com relevo ou copa.
+- **Folhagem** (`.menu-folhagem`): o menu, em degradê verde de cima para baixo (claro e escuro). O login é dividido: verde à esquerda, `.lado-claro` à direita com o cartão branco.
+- **Espelho** (`.reflexo`): o símbolo refletido embaixo, só no login.
+- **Brilho** (`.brilho`): faixa de luz bem fraca ao passar o mouse. Use pouco: em botão e menu ficou insistente e saiu.
+- **Surgir** (`.surgir`): os blocos da tela sobem de leve ao abrir. Está no `<main>` da área interna; não repita dentro das telas.
+- **Natureza** (`src/components/marca/natureza.tsx`): `CurvasDeNivel` (traço claro, para fundo verde) e `FolhasCaindo`.
+- **Trilha que cresce** (`TrilhaDeFases`, `FaseProgresso`): fase feita em copa; a atual pela metade, com um broto na ponta; a seguir em `line`. No escuro, a copa vira `brand-700` (feita) e `brand-500` (atual), que aparecem sobre o fundo escuro.
+- **Portal**: topo em copa com `CurvasDeNivel` e `Logo claro`, página em `relevo`.
+- **Hover**: cartão do funil de Propostas sobe 1 px com sombra leve; linha da lista de Projetos ganha um traço verde à esquerda (numa lista corrida, subir a linha a faria pular).
+- Todo movimento para com `prefers-reduced-motion`.

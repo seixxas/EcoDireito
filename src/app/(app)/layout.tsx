@@ -16,11 +16,11 @@ async function MenuDoUsuario() {
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="lg:flex">
+    <div className="relevo min-h-screen lg:flex">
       <Suspense fallback={<MenuLateral />}>
         <MenuDoUsuario />
       </Suspense>
-      <main className="mx-auto w-full max-w-[120rem] min-w-0 px-3 pb-10 pt-4 lg:px-8 lg:pb-16 lg:pt-5">
+      <main className="surgir mx-auto w-full max-w-[120rem] min-w-0 px-3 pb-10 pt-4 lg:px-8 lg:pb-16 lg:pt-5">
         {/*
           Fronteira única, de propósito. Acima das páginas, ela só aparece ao abrir o site ou no F5: ao trocar de tela, o React mantém
           a tela atual até a nova ficar pronta. Uma fronteira por rota (loading.tsx) mostraria o esqueleto a cada clique, e o React segura
