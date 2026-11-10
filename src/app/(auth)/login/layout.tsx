@@ -16,16 +16,16 @@ export default function LayoutDoLogin({ children }: { children: ReactNode }) {
         <span aria-hidden />
         <div className="relative max-w-[32rem]">
           <div className="mb-10 flex items-center gap-4">
-            <Simbolo className="reflexo size-20 drop-shadow-[0_10px_24px_rgb(0_0_0_/_0.25)]" />
+            <Simbolo claro className="size-20" />
             <p className="leading-tight">
               <span className="block text-4xl font-bold tracking-tight">
-                Eco <span className="text-[#bfe6c4]">Direito</span>
+                Eco <span className="text-brand-claro">Direito</span>
               </span>
               <span className="mt-1 block text-base font-medium text-white/80">Consultoria ambiental</span>
             </p>
           </div>
           <p className="text-4xl font-bold leading-tight tracking-tight">
-            O licenciamento ambiental dos seus clientes, <span className="text-[#bfe6c4]">em dia.</span>
+            O licenciamento ambiental dos seus clientes, <span className="text-brand-claro">em dia.</span>
           </p>
           <ul className="mt-6 flex flex-wrap gap-2">
             {PONTOS.map((ponto) => (

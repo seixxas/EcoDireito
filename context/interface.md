@@ -2,6 +2,18 @@
 
 Objetivo: uma ferramenta de trabalho, não um "dashboard". Quem usa são as sócias e a equipe da Eco Direito, todo dia, para saber **o que fazer agora**. O sistema tem de ser intuitivo e fácil, em tamanho normal: **não aumente letra, botão ou espaço para "facilitar"**. A primeira versão fez isso, com letra de 19 px e botão de 52 px, e as telas ficaram 2 a 2,5 vezes mais altas. Rolagem é defeito: mude a tela de lugar antes de aceitar uma tela longa.
 
+## Redesenho 3a, "Urgência" (10/11): vale sobre o que estiver diferente abaixo
+
+Desenho aprovado em `Redesign Eco Direito/export/Eco Direito 3a - Urgencia.html`, fora do repositório. O usuário pediu menos texto, um número grande por bloco e um clique para o detalhe, sem aumentar a fonte.
+- **Fonte:** Instrument Sans. **Ícones:** Material Symbols Rounded (`Icone`, `src/components/ui/icone.tsx`), vindos do Google e recortados pela lista `ICONES`. Ícone novo precisa entrar na lista, senão aparece o nome escrito. O ícone acompanha o texto, nunca o substitui; a exceção é o sino do Diário Oficial no topo, que tem `aria-label`.
+- **Casca:**
+  - Menu verde-escuro (`bg-menu`, 240 px), com ícone e nome, nesta ordem: Resumo, Projetos, Propostas, Financeiro e, separado, Usuários. Projetos mostra o número vermelho de prazos vencidos. Os fixados ficam embaixo dos itens.
+  - Topo branco de 60 px (`Topo`), com a busca, o aviso vermelho "N prazos vencidos" (leva a /prazos), "+ Novo", o sino (/publicacoes) e o avatar (`MenuDaConta`: nome, perfil, tema, sair). O fundo das telas é branco.
+- **Logo nova:** círculo aberto, folha em traço e sol dourado (`Simbolo`, `src/app/icon.svg`), com o nome Eco Direito.
+- **Resumo (`/`):**
+  - Primeira linha: "Prazos vencidos" em vermelho (lista com o botão Resolver) e "Prazos nas próximas duas semanas" (três contadores e um gráfico por dia, de −6 a +14).
+  - Segunda linha: os cartões Financeiro, Projetos e Propostas (`src/app/(app)/_resumo/`), cada um com o link "Abrir". Cada cartão lê os próprios dados. Financeiro só aparece para quem vê o financeiro; Propostas, só para quem vê o comercial.
+
 ## Princípios
 
 1. **Uma pergunta por tela.** O topo responde a pergunta da tela numa frase ("1 prazo vencido e 8 nesta semana").

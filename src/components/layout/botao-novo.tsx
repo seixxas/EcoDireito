@@ -3,6 +3,7 @@
 import { LinkRapido } from '@/components/ui/link-rapido'
 import { useRef } from 'react'
 import { classeBotao } from '@/components/ui/form'
+import { Icone } from '@/components/ui/icone'
 import { pode, type Area, type Papel } from '@/lib/permissoes'
 
 const OPCOES: { href: string; rotulo: string; area: Area }[] = [
@@ -27,8 +28,11 @@ export function BotaoNovo({ papel }: { papel: Papel }) {
         if (!evento.currentTarget.contains(evento.relatedTarget)) evento.currentTarget.open = false
       }}
     >
-      <summary className={classeBotao('primario', 'w-full list-none [&::-webkit-details-marker]:hidden')}>+ Novo</summary>
-      <ul className="absolute left-0 z-20 mt-1.5 min-w-full rounded-md border border-line bg-surface p-1 shadow-lg">
+      <summary className={classeBotao('primario', 'h-9 min-h-0 cursor-pointer list-none gap-1.5 pl-2.5 pr-3.5 [&::-webkit-details-marker]:hidden')}>
+        <Icone nome="add" className="text-lg" />
+        Novo
+      </summary>
+      <ul className="absolute right-0 z-40 mt-1.5 min-w-44 rounded-md border border-line bg-surface p-1 shadow-lg">
         {opcoes.map(({ href, rotulo }) => (
           <li key={href}>
             <LinkRapido
