@@ -40,8 +40,8 @@ export async function CartaoFinanceiro({ dia }: { dia: DataISO }) {
   const altura = (valor: number) => Math.round((valor / maior) * ALTURA_DA_BARRA)
 
   return (
-    <CartaoResumo icone="account_balance_wallet" titulo="Financeiro" href="/financeiro">
-      <Destaque icone="payments" rotulo="A receber" valor={brl(geral.aReceber)} />
+    <CartaoResumo icone="account_balance_wallet" titulo="Financeiro" href="/financeiro" tom="vermelho">
+      <Destaque icone="payments" rotulo="A receber" valor={brl(geral.aReceber)} tom="vermelho" />
 
       {geral.aReceber > 0 && (
         <div role="img" aria-label={`Do valor a receber, ${brl(emDia)} estão em dia e ${brl(geral.atrasado)} estão atrasados`} className="flex h-2.5 gap-0.5 overflow-hidden rounded-[5px]">
@@ -70,16 +70,16 @@ export async function CartaoFinanceiro({ dia }: { dia: DataISO }) {
       <div className="flex flex-1 flex-col gap-2 border-t border-line pt-3">
         <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs text-muted">
           <span className="flex items-center gap-1.5">
-            <Icone nome="bar_chart" className="text-[1.0625rem] text-brand-700" />
+            <Icone nome="bar_chart" className="text-[1.0625rem] text-danger" />
             Faturado × recebido, em mil R$
           </span>
           <span className="flex gap-2.5">
             <span className="flex items-center gap-1">
-              <span className="size-2 rounded-[2px] bg-brand-700" />
+              <span className="size-2 rounded-[2px] bg-danger" />
               Fat.
             </span>
             <span className="flex items-center gap-1">
-              <span className="size-2 rounded-[2px] bg-brand-claro" />
+              <span className="size-2 rounded-[2px] bg-danger-fio" />
               Rec.
             </span>
           </span>
@@ -88,8 +88,8 @@ export async function CartaoFinanceiro({ dia }: { dia: DataISO }) {
           {grafico.map(({ mes, faturado, recebido }) => (
             <div key={mes} role="img" aria-label={`${mes}: faturado ${brl(faturado)}, recebido ${brl(recebido)}`} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
               <div className="flex flex-1 gap-[3px]">
-                <Barra percentual={altura(faturado)} className="bg-brand-700" />
-                <Barra percentual={altura(recebido)} className="bg-brand-claro" />
+                <Barra percentual={altura(faturado)} className="bg-danger" />
+                <Barra percentual={altura(recebido)} className="bg-danger-fio" />
               </div>
               <span className="text-[0.71875rem] text-subtle">{mes}</span>
             </div>

@@ -18,8 +18,8 @@ export async function CartaoDiario() {
   const novas = itens.filter((item) => item.ato.status === 'nova')
 
   return (
-    <CartaoResumo icone="newspaper" titulo="Diário Oficial" href="/publicacoes">
-      <Destaque icone="notifications" rotulo="Para revisar" valor={contar(novas.length, 'publicação', 'publicações')} />
+    <CartaoResumo icone="newspaper" titulo="Diário Oficial" href="/publicacoes" tom="azul">
+      <Destaque icone="notifications" rotulo="Para revisar" valor={contar(novas.length, 'publicação', 'publicações')} tom="azul" />
       {novas.length === 0 ? (
         <p className="flex items-center gap-1.5 text-[0.84375rem] text-muted">
           <Icone nome="check_circle" cheio className="text-lg text-ok" />
@@ -29,8 +29,8 @@ export async function CartaoDiario() {
         <ul className="flex flex-col gap-1.5">
           {novas.slice(0, MOSTRAR).map(({ ato, cliente, processo }) => (
             <li key={ato.id}>
-              <LinkRapido href="/publicacoes" className="flex items-center gap-2.5 rounded-[10px] bg-painel px-3 py-2 hover:bg-brand-50">
-                <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#e8eefa] text-info">
+              <LinkRapido href="/publicacoes" className="flex items-center gap-2.5 rounded-[10px] bg-painel px-3 py-2 hover:bg-info-soft">
+                <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-info-tag text-info">
                   <Icone nome="description" cheio className="text-base" />
                 </span>
                 <span className="flex min-w-0 flex-col">
@@ -44,7 +44,7 @@ export async function CartaoDiario() {
         </ul>
       )}
       <p className="mt-auto flex items-center gap-1.5 border-t border-line pt-3 text-xs text-muted">
-        <Icone nome="event_available" className="text-base text-brand-700" />
+        <Icone nome="event_available" className="text-base text-info" />
         Edição de {formatarDataCurta(edicao.data)} · {contar(edicao.atosSvma, 'ato da SVMA lido', 'atos da SVMA lidos')}
       </p>
     </CartaoResumo>

@@ -58,10 +58,8 @@ export default async function PaginaClientes({ searchParams }: { searchParams: P
             <Linha key={cliente.id} className={cn('relative', COLUNAS, editar && 'hover:bg-brand-50')}>
               <div className="min-w-0 basis-full">
                 <p className="text-sm font-semibold leading-snug text-ink">{cliente.nome}</p>
-                <p className="mt-0.5 text-xs tabular-nums text-muted">
-                  {cliente.documento}
-                  {cliente.grupo && ` · ${cliente.grupo}`} · {contar(processos, 'projeto', 'projetos')}
-                </p>
+                {/* CNPJ e grupo ficam no cadastro do cliente; a busca continua achando por eles. */}
+                <p className="mt-0.5 text-xs text-muted">{contar(processos, 'projeto', 'projetos')}</p>
               </div>
               <ul className="min-w-0 basis-full space-y-2">
                 {projetos
