@@ -50,3 +50,6 @@ next-env.d.ts
 
 # permissões locais do Claude Code (de cada máquina)
 /.claude/settings.local.json
+
+# desenhos do redesenho (ficam fora do repositório)
+/Redesign Eco Direito/
