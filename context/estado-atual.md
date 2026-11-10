@@ -8,7 +8,7 @@ Sem `MONGODB_URI`, o app usa os dados em memória e entra direto como sócia de 
 | Rota | Tela | O que mostra |
 |---|---|---|
 | `/login` | Login | E-mail e senha; cada perfil cai na sua tela inicial |
-| `/` | Resumo | Desenho 3a (10/11): prazos vencidos com "Abrir projeto", gráfico das próximas duas semanas, cartões Financeiro, Projetos, Propostas e Diário Oficial com número grande e link para a área; ocupa a tela toda. Menu com Prazos, Diário Oficial, tema e sair |
+| `/` | Resumo | Desenho 3a (10/11): prazos vencidos com "Abrir projeto", gráfico das próximas duas semanas, cartões Financeiro, Projetos, Propostas e Diário Oficial com número grande e link para a área; ocupa a tela toda; cada cartão com a cor da área e Propostas em gráfico de rosca. Menu com Prazos, Diário Oficial, tema e sair |
 | `/prazos` | Prazos | Prazos em aberto por período (vencidos, esta semana, próximas semanas, mais adiante), cálculo recolhido; `?filtro=orgao` e `?filtro=cumpridos`; busca (`?q=`) e filtro por responsável; 10 por página |
 | `/projetos` | Processos | Lista com fase e próximo prazo; busca (`?q=`) e filtro por fase (`?fase=`); cadastrar processo (`/projetos/novo`) |
 | `/projetos/[id]` | Processo | Barra das 8 fases clicável (`?aba=etapas&fase=`) e abas: Proposta (documento para imprimir; enviada, aprovada, recusada), Etapas (checklist da fase, "Marcar como feita" com observação), Prazos, Linha do tempo (apagar evento) e Cobrança (parcelas, "Emitir nota"); editar em `/projetos/[id]/editar` |

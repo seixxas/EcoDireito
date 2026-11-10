@@ -15,6 +15,8 @@ Desenho aprovado em `Redesign Eco Direito/export/Eco Direito 3a - Urgencia.html`
   - Ocupa a largura toda e, na tela grande, a altura da janela: as duas faixas crescem e os gráficos crescem junto (altura das barras por `flex-grow`, porque % não pega altura de pai flexível).
   - Primeira linha: "Prazos vencidos" em vermelho (lista com o botão "Abrir projeto", que leva à fase do projeto atrasado) e "Prazos nas próximas duas semanas" (três contadores e um gráfico por dia, de −6 a +14).
   - Segunda linha: os cartões Financeiro, Projetos, Propostas e Diário Oficial (publicações para revisar; `src/app/(app)/_resumo/`), quatro lado a lado na tela larga, cada um com o link "Abrir". Cada cartão lê os próprios dados. Financeiro só aparece para quem vê o financeiro; Propostas, só para quem vê o comercial.
+  - Cada área tem uma cor (10/11, `TomDoCartao` em `_resumo/cartao.tsx`): Financeiro vermelho, Projetos amarelo, Propostas verde, Diário Oficial azul. A cor vai na faixa do topo, no ícone do título e nos gráficos; verde de "em dia" e vermelho de "atrasado" continuam valendo. Propostas usa um gráfico de rosca (uma fatia por etapa, "viram projeto" no meio).
+- **Listas enxutas (10/11):** nas telas principais só o essencial. Projetos mostra o cliente sem o nº SEI; Clientes mostra só quantos projetos, sem CNPJ e grupo. Esses dados ficam no cadastro e a busca continua achando por eles. Prazos e Diário Oficial não têm mais as abas Para fazer · Diário · Prazos, que repetiam o menu.
 
 ## Princípios
 
@@ -51,7 +53,7 @@ Modo escuro: `data-theme="dark"` no `<html>` troca as mesmas variáveis (`global
 ## Layout
 
 - Menu lateral claro (`rail`, 224 px), com os itens por extenso, na ordem do negócio: Hoje, Propostas, Projetos, Financeiro e Usuários. Em cima, a busca geral (`BuscaGeral`, Ctrl+K, resultado em `/busca`) e o botão "+ Novo" (`BotaoNovo`, só o que o perfil pode criar). Abaixo dos itens, os atalhos fixados (`BotaoFixar` no projeto, `ListaFixados` no menu), guardados no navegador de cada pessoa. No pé, quem está entrando, "Tema escuro", "Sair" e o aviso de dados fictícios. Em tela estreita, o menu vira um bloco no topo da página, que rola junto.
-- As telas de cada item ficam em abas no topo da página, acima do título, sempre com o componente `Abas`: Hoje tem Para fazer · Diário Oficial · Prazos (`AbasDoDia`, com a contagem do que espera alguém); Propostas tem Propostas · Prospecção (`AbasDoComercial`); Financeiro tem as abas no layout da área (`AbasDoFinanceiro`). As URLs antigas continuam valendo.
+- As telas de cada item ficam em abas no topo da página, acima do título, sempre com o componente `Abas`: Propostas tem Propostas · Prospecção (`AbasDoComercial`); Financeiro tem as abas no layout da área (`AbasDoFinanceiro`). As URLs antigas continuam valendo.
 - Na lista Para fazer, o que se resolve ali tem botão na linha (Lançar no projeto, Ignorar); o resto abre o lugar exato (o prazo abre a etapa dele, em `?aba=etapas&fase=`). Linha com botão não é link: o título é que leva à tela.
 - A área de conteúdo usa a largura toda (até 120rem, para monitor muito largo). A partir de 1600 px, a fonte da raiz sobe para 106,25% e tudo cresce junto. Formulário usa a largura em colunas (`sm:grid-cols-2 xl:grid-cols-4`, até 72rem), não campo esticado. A proposta é documento: em tela larga, a situação e as ações ficam ao lado dele.
 - `PageHeader`: título de 28 px + frase-resumo (`resumo`) + ações à direita. `voltar` põe "← Voltar para …" em cima.
