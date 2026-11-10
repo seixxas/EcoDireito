@@ -1,44 +1,49 @@
 @import "tailwindcss";
 
 @theme {
-  /* Fundos: página branca, blocos em verde bem claro e itens brancos dentro deles. */
+  /* Desenho 3a (10/11): página branca, cartões brancos com fio fino, menu verde escuro. */
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-painel: #f4f8f5;
-  --color-rail: #eef5ef;
-  --color-apagado: #f3f4f3;
-  --color-line: #dbe6de;
+  --color-painel: #f5f6f3;
+  --color-rail: #f1f5f0;
+  --color-apagado: #f5f6f3;
+  --color-line: #e4e7e2;
   /* Borda de campo de formulário. */
   --color-campo: #7d9a85;
-  --color-ink: #15211b;
-  --color-muted: #47564c;
-  --color-subtle: #5f6f64;
+  --color-ink: #18201b;
+  --color-muted: #5b655e;
+  --color-subtle: #6b756e;
 
-  --color-brand-50: #eef6ef;
-  --color-brand-100: #e3f0e5;
-  --color-brand-300: #9bb7a1;
-  --color-brand-500: #2e7d32;
-  --color-brand-700: #1b5e20;
-  --color-brand-900: #14451a;
+  --color-brand-50: #f1f5f0;
+  --color-brand-100: #e6f2e8;
+  --color-brand-300: #a8d5b1;
+  --color-brand-500: #2e7d3e;
+  --color-brand-700: #1d5c2c;
+  --color-brand-900: #164a23;
 
   /* Semáforo: vermelho atrasado, amarelo hoje, verde em dia, azul Diário Oficial. */
-  --color-accent: #ffc84a;
+  --color-accent: #e0a030;
   --color-on-accent: #2b1f00;
-  --color-ok: #1b5e20;
-  --color-ok-soft: #e3f0e5;
-  --color-warn: #6b4100;
-  --color-warn-soft: #fff6dd;
-  --color-danger: #a4161a;
-  --color-danger-forte: #7f1014;
-  --color-danger-soft: #fdedec;
+  --color-ok: #2e7d3e;
+  --color-ok-soft: #e6f2e8;
+  --color-warn: #8a5300;
+  --color-warn-soft: #fff4dc;
+  --color-danger: #b42318;
+  --color-danger-forte: #8f1d14;
+  --color-danger-soft: #fdecea;
   --color-on-danger: #ffffff;
-  --color-info: #0a2f66;
+  --color-info: #2a4d8f;
   --color-info-soft: #eef3fa;
   --color-info-tag: #dce8f7;
   --color-on-info: #ffffff;
 
   /* Texto sobre fundo de marca (botão principal). */
   --color-on-brand: #ffffff;
+
+  /* Menu lateral (igual nos dois temas), fio do alerta vermelho e verde claro das barras secundárias. */
+  --color-menu: #173a22;
+  --color-danger-fio: #f4c7c1;
+  --color-brand-claro: #a8d5b1;
 
   /* Linha forte da grade da DRE. */
   --color-grade: #9bb7a1;
@@ -65,7 +70,7 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-atkinson), Verdana, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Modo escuro: `data-theme="dark"` no <html>, posto pelo script do layout raiz e pelo BotaoTema.
@@ -108,6 +113,9 @@
 
   --color-on-brand: #0f2016;
   --color-grade: #4c7a5a;
+  --color-menu: #10251a;
+  --color-danger-fio: #5a2622;
+  --color-brand-claro: #3d6b4b;
 }
 
 /* Monitor grande: tudo cresce junto, porque as medidas estão em rem. */
@@ -189,6 +197,28 @@ body {
 }
 
 @layer components {
+  /* Ícone do Material Symbols (componente Icone). Largura fixa: enquanto a fonte não chega, o nome não empurra o texto. */
+  .icone {
+    font-family: 'Material Symbols Rounded';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.25rem;
+    line-height: 1;
+    width: 1em;
+    overflow: hidden;
+    display: inline-block;
+    flex-shrink: 0;
+    white-space: nowrap;
+    letter-spacing: normal;
+    text-transform: none;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0;
+  }
+  .icone-cheio {
+    font-variation-settings: 'FILL' 1;
+  }
+
   /* Link dentro de texto ou de tabela: sublinhado para ficar claro que abre outra tela. */
   .link {
     @apply font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 transition-colors hover:decoration-brand-700;
