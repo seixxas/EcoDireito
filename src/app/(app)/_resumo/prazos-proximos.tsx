@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn'
 import { contar, formatarDiaEData } from '@/lib/formatar'
 import { CartaoResumo } from './cartao'
 
-const DIAS_ANTES = 6
+const DIAS_ANTES = 3
 const DIAS_DEPOIS = 14
 /** Altura da barra mais alta, em % da coluna (o gráfico cresce com o cartão). Com poucos prazos, a escala para em 3 para um prazo só não virar uma torre. */
 const ALTURA_MAXIMA = 80
@@ -31,7 +31,7 @@ function Contador({ icone, numero, rotulo, tom }: { icone: NomeIcone; numero: nu
   )
 }
 
-/** Cartão do Resumo: quantos prazos vêm por aí e um gráfico de barras por dia, de uma semana atrás a duas semanas à frente. */
+/** Cartão do Resumo: quantos prazos vêm por aí e um gráfico de barras por dia, de três dias atrás a duas semanas à frente. */
 export async function PrazosProximos({ dia }: { dia: DataISO }) {
   const prazos = await listarPrazos()
   // Só as obrigações da Eco Direito, como no bloco de vencidos.

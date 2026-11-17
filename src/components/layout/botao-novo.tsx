@@ -4,26 +4,19 @@ import { LinkRapido } from '@/components/ui/link-rapido'
 import { useRef } from 'react'
 import { classeBotao } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
-import { pode, type Area, type Papel } from '@/lib/permissoes'
+import { pode, type Papel } from '@/lib/permissoes'
+import { CADASTROS } from './cadastros'
 
-const OPCOES: { href: string; rotulo: string; area: Area }[] = [
-  { href: '/comercial/nova', rotulo: 'Proposta', area: 'comercial' },
-  { href: '/projetos/novo', rotulo: 'Projeto', area: 'prazos' },
-  { href: '/projetos/clientes/novo', rotulo: 'Cliente', area: 'prazos' },
-  { href: '/financeiro/notas/nova', rotulo: 'Nota fiscal', area: 'financeiro' },
-  { href: '/financeiro/lancamentos?novo=1', rotulo: 'Lançamento', area: 'financeiro' },
-]
-
-/** "Novo" de qualquer tela: só o que o perfil pode criar. Fecha ao escolher ou ao clicar fora. */
+/** "Novo" do topo, só no celular (na tela grande, os cadastros ficam no menu lateral): só o que o perfil pode criar. Fecha ao escolher ou ao clicar fora. */
 export function BotaoNovo({ papel }: { papel: Papel }) {
   const menu = useRef<HTMLDetailsElement>(null)
-  const opcoes = OPCOES.filter((opcao) => pode(papel, opcao.area, 'editar'))
+  const opcoes = CADASTROS.filter((opcao) => pode(papel, opcao.area, 'editar'))
   if (opcoes.length === 0) return null
 
   return (
     <details
       ref={menu}
-      className="group relative"
+      className="group relative lg:hidden"
       onBlur={(evento) => {
         if (!evento.currentTarget.contains(evento.relatedTarget)) evento.currentTarget.open = false
       }}

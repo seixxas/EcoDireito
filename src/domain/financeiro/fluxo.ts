@@ -100,3 +100,55 @@ export function fluxoMensal(lancamentos: Lancamento[], meses: string[], saldoIni
     return { mes, entradas, saidas, saldo }
   })
 }
+
+export type MesFluxo = {
+  mes: string
+  /** Realizado: já passou. Em curso: o realizado até hoje mais o previsto até o fim do mês. Previsto: só projeção. */
+  tipo: 'realizado' | 'em-curso' | 'previsto'
+  entradas: Centavos
+  saidas: Centavos
+  saldoFinal: Centavos
+  /** Só o que ainda vai acontecer; o realizado está em Lançamentos. */
+  previstos: Movimento[]
+}
+
+/**
+ * Mês a mês, numa linha só: os meses fechados pelo extrato e, do mês de hoje em diante, a projeção.
+ * O mês de hoje soma o que já entrou e saiu com o que está previsto até o fim dele.
+ */
+export function fluxoMesAMes(entrada: {
+  hoje: DataISO
+  saldoHoje: Centavos
+  realizado: { mes: string; entradas: Centavos; saidas: Centavos; saldo: Centavos }[]
+  movimentos: Movimento[]
+  mesesPassados: number
+  mesesAFrente: number
+}): MesFluxo[] {
+  const { hoje, saldoHoje, realizado, movimentos, mesesPassados, mesesAFrente } = entrada
+  const atual = mesDe(hoje)
+  const fechados: MesFluxo[] = realizado
+    .filter((m) => m.mes < atual)
+    .slice(-mesesPassados)
+    .map((m) => ({ mes: m.mes, tipo: 'realizado', entradas: m.entradas, saidas: m.saidas, saldoFinal: m.saldo, previstos: [] }))
+
+  const jaFeito = realizado.find((m) => m.mes === atual)
+  let saldo = saldoHoje
+  const adiante: MesFluxo[] = []
+  for (let i = 0; i <= mesesAFrente; i++) {
+    const mes = mesDe(somarMeses(`${atual}-01`, i))
+    const previstos = movimentos.filter((m) => mesDe(m.data) === mes && m.data >= hoje)
+    const entradas = somar(previstos.filter((m) => m.valor > 0).map((m) => m.valor))
+    const saidas = somar(previstos.filter((m) => m.valor < 0).map((m) => m.valor))
+    saldo += entradas + saidas
+    const tipo = i === 0 ? 'em-curso' : 'previsto'
+    adiante.push({
+      mes,
+      tipo,
+      entradas: entradas + (i === 0 ? (jaFeito?.entradas ?? 0) : 0),
+      saidas: saidas + (i === 0 ? (jaFeito?.saidas ?? 0) : 0),
+      saldoFinal: saldo,
+      previstos,
+    })
+  }
+  return [...fechados, ...adiante]
+}

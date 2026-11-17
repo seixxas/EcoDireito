@@ -49,7 +49,7 @@ export function Abas({ abas, ativa, className }: { abas: Aba[]; ativa: string; c
 /** Quadros do ciclo, todos numa fileira quando cabem: nome e quantidade em cima, valor embaixo. */
 function AbasEmQuadros({ abas, ativa, className }: { abas: Aba[]; ativa: string; className?: string }) {
   return (
-    <nav className={cn('mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6 print:hidden', className)}>
+    <nav className={cn('mb-4 grid grid-cols-2 gap-2 lg:grid-cols-4 print:hidden', className)}>
       {abas.map((aba) => {
         const ligada = aba.valor === ativa
         return (

@@ -54,6 +54,19 @@ export const ESTADOS_PROPOSTA: Record<EstadoProposta, string> = {
   recusada: 'Recusada',
 }
 
+/**
+ * Arrastar no quadro de Propostas: a etapa que leva de uma coluna à outra. Só para a frente e um passo de cada vez,
+ * como os botões da proposta: em elaboração vai para enviada; enviada vai para aprovada ou recusada.
+ */
+const PASSOS: Partial<Record<EstadoProposta, Partial<Record<EstadoProposta, TipoEvento>>>> = {
+  elaboracao: { enviada: 'proposta_enviada' },
+  enviada: { aprovada: 'aceite_proposta', recusada: 'proposta_recusada' },
+}
+
+export function etapaParaMover(de: EstadoProposta, para: EstadoProposta): TipoEvento | undefined {
+  return PASSOS[de]?.[para]
+}
+
 /** Em que pé está a proposta, pelas etapas da fase 1. Vale a vez mais recente de cada etapa (proposta reenviada). */
 export function situacaoDaProposta(processo: Processo, hoje: DataISO) {
   const ultima = (tipo: TipoEvento) => processo.eventos.filter((e) => e.tipo === tipo && e.data <= hoje).at(-1)

@@ -3,8 +3,7 @@ import { LinkRapido } from '@/components/ui/link-rapido'
 import { classeBotao } from '@/components/ui/form'
 import { PageHeader } from '@/components/ui/page-header'
 import { ItemResumo, Resumo } from '@/components/ui/resumo'
-import { Situacao } from '@/components/ui/situacao'
-import { Zona, type TomZona } from '@/components/ui/zona'
+import type { TomZona } from '@/components/ui/zona'
 import { listarPropostas } from '@/data/processos'
 import { hoje } from '@/data/hoje'
 import { exigirArea } from '@/data/sessao'
@@ -13,6 +12,7 @@ import { somarDias } from '@/lib/datas'
 import { brl, contar, formatarData } from '@/lib/formatar'
 import { pode } from '@/lib/permissoes'
 import { AbasDoComercial } from './_components/abas-do-comercial'
+import { QuadroDePropostas, type ColunaDoQuadro } from './_components/quadro-de-propostas'
 
 export const metadata: Metadata = { title: 'Propostas' }
 
@@ -36,32 +36,6 @@ function quando(item: Item) {
   return `Recusada em ${formatarData(situacao.recusadaEm!)}`
 }
 
-function Cartao({ item }: { item: Item }) {
-  const { processo, cliente, valor, situacao } = item
-  return (
-    <li>
-      <LinkRapido
-        href={`/projetos/${processo.id}?aba=proposta`}
-        // Ao passar o mouse, o cartão sobe de leve (sem mexer em quem pediu menos movimento).
-        className="group flex h-full flex-col rounded-md bg-surface px-3 py-2 text-ink transition duration-200 hover:bg-brand-50 hover:shadow-md hover:shadow-brand-900/10 motion-safe:hover:-translate-y-px dark:hover:shadow-black/40"
-      >
-        <p className="text-sm font-semibold leading-snug">{processo.empreendimento}</p>
-        <p className="text-xs text-muted">{cliente.nome}</p>
-        <p className="mt-1 flex flex-wrap items-baseline justify-between gap-x-3 text-xs text-muted">
-          <span>{quando(item)}</span>
-          {valor !== undefined && <span className="text-sm font-semibold text-ink">{brl(valor)}</span>}
-        </p>
-        {situacao.pedeRetorno && (
-          <Situacao tom="warn" className="mt-1 self-start">
-            Sem resposta: ligar para o cliente
-          </Situacao>
-        )}
-        {situacao.estado === 'recusada' && situacao.motivo && <p className="mt-1 rounded-md bg-apagado px-2 py-1.5 text-xs">{situacao.motivo}</p>}
-      </LinkRapido>
-    </li>
-  )
-}
-
 /** O funil de propostas: cada proposta é a fase 1 de um processo, do texto em elaboração até aprovada (fase 2) ou recusada. */
 export default async function PaginaComercial() {
   const [usuario, itens, dia] = await Promise.all([exigirArea('comercial'), listarPropostas(), hoje()])
@@ -72,9 +46,26 @@ export default async function PaginaComercial() {
     dia,
   )
   const verValores = itens.some((i) => i.valor !== undefined)
-  const etapas = ETAPAS.map((etapa) => {
-    const daEtapa = noFunil.filter((i) => i.situacao.estado === etapa.estado)
-    return { ...etapa, itens: daEtapa, titulo: `${etapa.numero}${ESTADOS_PROPOSTA[etapa.estado]}`, soma: brl(daEtapa.reduce((soma, i) => soma + (i.valor ?? 0), 0)) }
+  const mover = pode(usuario.papel, 'prazos', 'editar')
+  const colunas: ColunaDoQuadro[] = ETAPAS.map(({ estado, numero, tom }) => {
+    const daEtapa = noFunil.filter((i) => i.situacao.estado === estado)
+    const quantas = contar(daEtapa.length, 'proposta', 'propostas')
+    return {
+      estado,
+      tom,
+      titulo: `${numero}${ESTADOS_PROPOSTA[estado]}`,
+      detalhe: verValores ? `${quantas} · ${brl(daEtapa.reduce((soma, i) => soma + (i.valor ?? 0), 0))}` : quantas,
+      cartoes: daEtapa.map((item) => ({
+        id: item.processo.id,
+        estado,
+        empreendimento: item.processo.empreendimento,
+        cliente: item.cliente.nome,
+        valor: item.valor !== undefined ? brl(item.valor) : undefined,
+        quando: quando(item),
+        pedeRetorno: item.situacao.pedeRetorno,
+        motivo: item.situacao.motivo,
+      })),
+    }
   })
 
   return (
@@ -104,26 +95,9 @@ export default async function PaginaComercial() {
         />
       </Resumo>
 
-      <div className="mt-3 grid items-start gap-2 md:grid-cols-2 xl:grid-cols-4">
-        {etapas.map(({ estado, titulo, tom, itens: daEtapa, soma }) => {
-          const quantas = contar(daEtapa.length, 'proposta', 'propostas')
-          return (
-            <Zona key={estado} tom={tom} titulo={titulo} detalhe={verValores ? `${quantas} · ${soma}` : quantas} className="mb-0!">
-              {daEtapa.length > 0 ? (
-                <ul className="grid gap-1">
-                  {daEtapa.map((item) => (
-                    <Cartao key={item.processo.id} item={item} />
-                  ))}
-                </ul>
-              ) : (
-                <p className="px-1 text-xs text-muted">Nenhuma.</p>
-              )}
-            </Zona>
-          )
-        })}
-      </div>
+      <QuadroDePropostas colunas={colunas} mover={mover} />
 
-      <p className="mt-2 text-xs text-muted">Aprovadas e recusadas aparecem aqui por {DIAS_NO_FUNIL} dias. Abra uma proposta para ver o texto e marcar o que aconteceu.</p>
+      <p className="mt-2 text-xs text-muted">Aprovadas e recusadas aparecem aqui por {DIAS_NO_FUNIL} dias. {mover ? 'Arraste o cartão para a coluna seguinte para marcar o que aconteceu, ou abra a proposta para ver o texto.' : 'Abra uma proposta para ver o texto.'}</p>
     </>
   )
 }

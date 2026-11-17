@@ -6,7 +6,7 @@ import { reais, somar, type Centavos } from '@/lib/dinheiro'
 import { palavrasDe, sugerirParaTodas, type Regra, type Sugestao } from '@/domain/financeiro/classificacao'
 import type { LinhaExtrato } from '@/domain/financeiro/extrato'
 import { gerarOfx, linhasDeExemplo } from '@/domain/financeiro/extrato-exemplo'
-import { fluxoMensal, movimentosPrevistos, projetarSemanas, type Recorrente } from '@/domain/financeiro/fluxo'
+import { fluxoMensal, fluxoMesAMes, movimentosPrevistos, projetarSemanas, type Recorrente } from '@/domain/financeiro/fluxo'
 import type { EdicaoLancamento, Lancamento } from '@/domain/financeiro/lancamentos'
 import { lucratividade } from '@/domain/financeiro/lucratividade'
 import { ALIQUOTA_ISS, resumoNotas, type NotaFiscal } from '@/domain/financeiro/notas'
@@ -59,15 +59,23 @@ function recorrentesPrevistas(lancamentos: Lancamento[], notas: NotaFiscal[], ho
   ]
 }
 
+/** Meses que o Fluxo de caixa mostra mês a mês: os fechados para trás e os previstos depois do mês de hoje. */
+// Dois meses à frente: mais longe que isso ainda não há nota prevista e só sobram as despesas fixas.
+const MESES_PASSADOS = 6
+const MESES_A_FRENTE = 2
+
 export async function projecaoDeCaixa(quantidadeSemanas = 8) {
   const { hoje, financeiro } = await carregar()
   const { notas, lancamentos, saldoInicial, meses, aplicado } = financeiro
   const saldoHoje = saldoInicial + somar(lancamentos.map((l) => l.valor))
   const parcelas = await listarParcelasLiberadas()
 
+  // A projeção vai até o que for mais longe: a última semana ou o último mês mostrado.
+  const fimDaSemana = somarDias(inicioDaSemana(hoje), quantidadeSemanas * 7 - 1)
+  const fimDoMes = somarDias(somarMeses(`${mesDe(hoje)}-01`, MESES_A_FRENTE + 1), -1)
   const movimentos = movimentosPrevistos({
     hoje,
-    ate: somarDias(inicioDaSemana(hoje), quantidadeSemanas * 7 - 1),
+    ate: fimDaSemana > fimDoMes ? fimDaSemana : fimDoMes,
     notas,
     parcelasLiberadas: parcelas.map(({ parcela, processo }) => ({
       descricao: `Faturar ${parcela.descricao.toLowerCase()} · ${processo.empreendimento}`,
@@ -76,12 +84,14 @@ export async function projecaoDeCaixa(quantidadeSemanas = 8) {
     recorrentes: recorrentesPrevistas(lancamentos, notas, hoje),
   })
 
+  const mensal = fluxoMensal(lancamentos, meses, saldoInicial)
+
   return {
     hoje,
     saldoHoje,
     aplicado,
     semanas: projetarSemanas(saldoHoje, hoje, movimentos, quantidadeSemanas),
-    mensal: fluxoMensal(lancamentos, meses, saldoInicial),
+    mesAMes: fluxoMesAMes({ hoje, saldoHoje, realizado: mensal, movimentos, mesesPassados: MESES_PASSADOS, mesesAFrente: MESES_A_FRENTE }),
     atrasado: resumoNotas(notas, hoje).atrasado,
   }
 }
