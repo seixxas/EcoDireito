@@ -9,7 +9,8 @@ import { cn } from '@/lib/cn'
  */
 
 /**
- * Cada área tem a sua cor (pedido de 10/11): financeiro vermelho, projetos amarelo, propostas verde e Diário Oficial azul.
+ * Cada área tem a sua cor (pedido de 10/11): financeiro e propostas verdes, projetos amarelo e Diário Oficial azul.
+ * Financeiro era vermelho até 17/11: parecia prejuízo. No financeiro, vermelho só para saída e atraso.
  * A cor fica no ícone do título, na faixa do topo e nos gráficos; verde/vermelho de situação (em dia, atrasado) não mudam.
  */
 export type TomDoCartao = 'verde' | 'vermelho' | 'amarelo' | 'azul'
