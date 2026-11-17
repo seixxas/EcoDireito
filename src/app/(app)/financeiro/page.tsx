@@ -51,6 +51,9 @@ const FUNDOS: Record<AbaDoCiclo, NonNullable<Aba['fundo']>> = {
   todas: 'neutro',
 }
 
+/** Os quadros do topo: só o que pede ação. Recebidas e Todas continuam abrindo pelo link "Todas as notas" e pela busca. */
+const QUADROS: AbaDoCiclo[] = ['a-faturar', 'a-vencer', 'hoje', 'atrasadas']
+
 const VAZIO: Record<AbaDoCiclo, string> = {
   'a-faturar': 'Nenhuma parcela para faturar',
   'a-vencer': 'Nenhuma nota a vencer',
@@ -135,7 +138,7 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
 
       <Abas
         ativa={aba}
-        abas={(Object.keys(ABAS_DO_CICLO) as AbaDoCiclo[]).map((id) => ({
+        abas={QUADROS.map((id) => ({
           valor: id,
           rotulo: ABAS_DO_CICLO[id],
           href: link({ aba: id }),
@@ -159,9 +162,16 @@ export default async function PaginaFaturamento({ searchParams }: { searchParams
           limpar={link({ q: undefined })}
           className="min-w-60"
         />
-        <LinkRapido href="/financeiro/faturado-recebido" className="link text-base">
-          Ver faturado × recebido
-        </LinkRapido>
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          {aba !== 'todas' && (
+            <LinkRapido href={link({ aba: 'todas', pagina: undefined })} className="link text-base">
+              Todas as notas
+            </LinkRapido>
+          )}
+          <LinkRapido href="/financeiro/faturado-recebido" className="link text-base">
+            Ver faturado × recebido
+          </LinkRapido>
+        </div>
       </div>
 
       {abaUsaMes(aba) && (

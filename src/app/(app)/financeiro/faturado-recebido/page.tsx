@@ -17,6 +17,8 @@ export default async function PaginaFaturadoRecebido() {
     faturado: somar(notas.filter(({ nota }) => !nota.cancelada && mesDe(nota.emissao) === m).map(({ nota }) => nota.valor)),
     recebido: somar(notas.filter(({ nota }) => nota.recebimento && mesDe(nota.recebimento.data) === m).map(({ nota }) => nota.recebimento!.valor)),
   }))
+  const totalFaturado = somar(dados.map((d) => d.faturado))
+  const totalRecebido = somar(dados.map((d) => d.recebido))
 
   return (
     <>
@@ -31,6 +33,20 @@ export default async function PaginaFaturadoRecebido() {
               { chave: 'recebido', nome: 'Recebido (caixa)', cor: 'var(--color-brand-300)' },
             ]}
           />
+        <dl className="mt-3 grid grid-cols-2 gap-2 border-t border-line pt-3">
+          <div className="rounded-lg bg-brand-50 px-3 py-2">
+            <dt className="flex items-center gap-1.5 text-xs font-semibold text-subtle">
+              <span aria-hidden="true" className="size-2.5 rounded-sm bg-brand-700" /> Total faturado
+            </dt>
+            <dd className="text-lg font-semibold text-ink">{brl(totalFaturado)}</dd>
+          </div>
+          <div className="rounded-lg bg-brand-50 px-3 py-2">
+            <dt className="flex items-center gap-1.5 text-xs font-semibold text-subtle">
+              <span aria-hidden="true" className="size-2.5 rounded-sm bg-brand-300" /> Total recebido
+            </dt>
+            <dd className="text-lg font-semibold text-ink">{brl(totalRecebido)}</dd>
+          </div>
+        </dl>
       </Card>
       <Card flush>
         <div className="overflow-x-auto">
@@ -51,6 +67,13 @@ export default async function PaginaFaturadoRecebido() {
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-line font-semibold text-ink">
+                <td>Total</td>
+                <td className="num">{brl(totalFaturado)}</td>
+                <td className="num">{brl(totalRecebido)}</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </Card>

@@ -19,11 +19,11 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 ## Telas (redesign de 03/11, guia em `interface.md`)
 
 - Lançamentos: a observação aparece embaixo da descrição. A competência não tem coluna: só aparece, embaixo da descrição e em destaque, quando não é o mês do pagamento ("Competência set/26 · mês anterior ao pagamento", `textoDaCompetencia`), com a explicação no pé da tabela. A mesma explicação vai na tela do lançamento e na dica do campo.
-- Lançamentos abre no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`) e "todos os meses" (`?mes=todos`, útil com a busca). O Faturamento usa o mesmo seletor só nas abas Recebidas e Todas (veja "Faturamento: abas do ciclo").
+- Lançamentos abre no mês atual, com ‹ mês › no topo (`?mes=AAAA-MM`) e "todos os meses" (`?mes=todos`, útil com a busca). O Faturamento usa o mesmo seletor só em Recebidas e Todas (veja "Faturamento: abas do ciclo").
 - Contratos: o contrato nasce com a proposta (as parcelas são o preço dela), mas a lista e os totais ("Contratado", "Aguardando evento" etc.) só contam processo com proposta aceita (`situacaoDoContrato`, que segue a `situacaoDaProposta` do Comercial: aceite até hoje e sem recusa). Propostas em aberto aparecem numa linha à parte, com link para o Comercial; recusadas (`proposta_recusada`) ficam de fora.
 - Tabelas e listas paginadas de 10 em 10 (`paginar` + `Paginacao`, `?pagina=`, mantendo mês, situação e aba): as abas do Faturamento, Lançamentos, Contratos e as três abas do Extrato. Linha que abre detalhe tem setinha no fim (`AbrirLinha`); link no meio do texto usa a classe `link`.
 - DRE: grade no modelo da planilha do Ecoamper (detalhes na seção DRE, abaixo). Abre só com os blocos e os resultados; contas abrem com um clique ou "Abrir todas as linhas". Cada valor de conta ou bloco (mês ou período) abre, abaixo da tabela e sem sair dela, o que o forma (`?linha=&mes=`, 10 por página). Subtotal não abre. Na competência, a receita abre as notas emitidas.
-- Fluxo: abas "Próximas 8 semanas" · "Realizado por mês" (`?aba=realizado`); movimentos da semana recolhidos. Clicar numa semana (barra do gráfico, data ou link da tabela) abre o zoom `?semana=AAAA-MM-DD` (segunda-feira): gráfico dia a dia só com entradas e saídas (sem a linha do saldo, que achataria as barras), ‹ › entre as semanas e, embaixo, os movimentos de cada dia com o saldo no fim do dia (`diasDaSemana`).
+- Fluxo (17/11, o Danilo achou as 8 semanas restritas e o do Ecoamper mais intuitivo): abas "Mês a mês" (padrão) · "Próximas 8 semanas" (`?aba=semanas`). Mês a mês junta numa linha só os 6 meses fechados (extrato, com "Ver lançamentos" do mês), o mês em curso (o que já entrou e saiu mais o que falta) e 2 meses previstos ("Ver N previstos"), com etiqueta Fechado, Em curso ou Previsto e `*` no gráfico (`fluxoMesAMes`). Mais de 2 meses à frente não há nota prevista e só sobrariam as despesas fixas. A conta do topo segue a aba. Nas 8 semanas, movimentos da semana recolhidos. Clicar numa semana (barra do gráfico, data ou link da tabela) abre o zoom `?semana=AAAA-MM-DD` (segunda-feira): gráfico dia a dia só com entradas e saídas (sem a linha do saldo, que achataria as barras), ‹ › entre as semanas e, embaixo, os movimentos de cada dia com o saldo no fim do dia (`diasDaSemana`).
 - Extrato: importação compacta e abas "A classificar" · "Regras" · "Ignoradas" (`?aba=`). A busca vale nas três abas (descrição, valor e o texto da sugestão: NF, cliente, conta); "Confirmar as sugestões" confirma só as que estavam na tela (com a busca, as encontradas).
 - Busca (`Busca`, `?q=`, sem acento nem maiúscula): Faturamento (cliente, grupo, NF, serviço, processo; na parcela, processo, nº SEI, cliente, grupo e parcela; frase, abas e contagens seguem a busca), Lançamentos, Contratos (processo, cliente, grupo, nº SEI) e Extrato. Busca e filtros se somam e a paginação conta o resultado.
 - Situação da nota é ponto + texto (`SituacaoDaNota`, em `components/financeiro/situacao-nota.tsx`).
@@ -37,7 +37,7 @@ Análise das planilhas reais: aba "Análise das planilhas" do escopo (https://cl
 
 ## Faturamento: abas do ciclo (`/financeiro`)
 
-Uma tela só, do faturar ao receber. Regras em `src/domain/financeiro/ciclo.ts` (com teste). Contas a receber saiu: `/financeiro/receber` redireciona para `?aba=atrasadas`, mantendo `q` e `faixa`.
+Uma tela só, do faturar ao receber. Regras em `src/domain/financeiro/ciclo.ts` (com teste). Desde 17/11 (feedback do Danilo: quadros demais) só as quatro primeiras viram quadro; Recebidas e Todas continuam valendo pela URL, pelo link "Todas as notas" ao lado de "Ver faturado × recebido" e pela busca. Contas a receber saiu: `/financeiro/receber` redireciona para `?aba=atrasadas`, mantendo `q` e `faixa`.
 
 | Aba (`?aba=`) | O que entra | Valor da aba | Colunas |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Painel da nota:
 
 ## Faturado × recebido (`/financeiro/faturado-recebido`)
 
-Gráfico por mês: faturado pela emissão, recebido pelo caixa. Link discreto no Faturamento.
+Gráfico por mês: faturado pela emissão, recebido pelo caixa. Embaixo do gráfico, o total de cada um; a tabela tem linha de total. Link discreto no Faturamento.
 
 ## Lucratividade por projeto (simulação)
 
@@ -134,7 +134,7 @@ Receita bruta → (−) Simples Nacional → Receita líquida → (−) Custos (
 ## Fluxo de caixa
 
 - Realizado: soma dos lançamentos por mês, com o saldo.
-- Projetado (8 semanas): notas a receber pela previsão, parcelas liberadas (emissão + 20 dias) e despesas recorrentes.
+- Projetado (8 semanas e mês a mês até 2 meses depois do atual): notas a receber pela previsão, parcelas liberadas (emissão + 20 dias) e despesas recorrentes.
 - Notas atrasadas ficam fora da projeção (conservador) e aparecem à parte.
 
 ## Fatos das planilhas reais (jan–set/2026) que guiam o produto

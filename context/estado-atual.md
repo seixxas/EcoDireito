@@ -1,6 +1,6 @@
 # Estado atual
 
-Atualizado em 2026-11-10 (redesenho 3a: menu verde-escuro, topo branco, logo nova, Resumo em cartões). Os dados ficam no MongoDB Atlas (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login. O Neon foi abandonado em 06/11, quando a cota dele estourou.
+Atualizado em 2026-11-17 (feedback do Danilo: grupo Cadastros no menu, filtros de Projetos, Faturamento com 4 quadros, Fluxo mês a mês, arrastar propostas). Os dados ficam no MongoDB Atlas (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login. O Neon foi abandonado em 06/11, quando a cota dele estourou.
 Sem `MONGODB_URI`, o app usa os dados em memória e entra direto como sócia de demonstração.
 
 ## Pronto
@@ -10,17 +10,17 @@ Sem `MONGODB_URI`, o app usa os dados em memória e entra direto como sócia de 
 | `/login` | Login | E-mail e senha; cada perfil cai na sua tela inicial |
 | `/` | Resumo | Desenho 3a (10/11): prazos vencidos com "Abrir projeto", gráfico das próximas duas semanas, cartões Financeiro, Projetos, Propostas e Diário Oficial com número grande e link para a área; ocupa a tela toda; cada cartão com a cor da área e Propostas em gráfico de rosca. Menu com Prazos, Diário Oficial, tema e sair |
 | `/prazos` | Prazos | Prazos em aberto por período (vencidos, esta semana, próximas semanas, mais adiante), cálculo recolhido; `?filtro=orgao` e `?filtro=cumpridos`; busca (`?q=`) e filtro por responsável; 10 por página |
-| `/projetos` | Processos | Lista com fase e próximo prazo; busca (`?q=`) e filtro por fase (`?fase=`); cadastrar processo (`/projetos/novo`) |
+| `/projetos` | Processos | Lista com fase e próximo prazo; busca (`?q=`) e filtros por fase (`?fase=`), responsável (`?responsavel=`) e próximo prazo (`?prazo=`); cadastrar processo (`/projetos/novo`) |
 | `/projetos/[id]` | Processo | Barra das 8 fases clicável (`?aba=etapas&fase=`) e abas: Proposta (documento para imprimir; enviada, aprovada, recusada), Etapas (checklist da fase, "Marcar como feita" com observação), Prazos, Linha do tempo (apagar evento) e Cobrança (parcelas, "Emitir nota"); editar em `/projetos/[id]/editar` |
-| `/comercial` | Comercial | Funil de propostas (em elaboração, enviadas, aprovadas, recusadas) com valor em aberto, conversão e quem pede retorno; "Nova proposta" em `/comercial/nova`, em 3 passos só na tela (um formulário só; "Cadastrar novo cliente" volta para a proposta com o cliente escolhido) |
+| `/comercial` | Comercial | Funil de propostas (em elaboração, enviadas, aprovadas, recusadas) com valor em aberto, conversão e quem pede retorno; arrastar o cartão para a coluna seguinte marca enviada, aprovada ou recusada (com confirmação); "Nova proposta" em `/comercial/nova`, em 3 passos só na tela (um formulário só; "Cadastrar novo cliente" volta para a proposta com o cliente escolhido) |
 | `/comercial/prospeccao` | Prospecção | Em desenvolvimento: prévia com oportunidades de exemplo (alvarás novos, SPEs de grupos clientes, terrenos com vegetação) |
 | `/projetos/clientes` | Clientes | Lista com busca por nome, CNPJ e grupo; cadastro e edição de clientes |
 | `/publicacoes` | Diário Oficial | Caixa de entrada: atos achados por nº SEI, nº SIMPROC ou CNPJ; busca no texto, empresa e nº SEI; separa atos de processos acompanhados e de clientes sem processo, diz por que cada ato está ali; "Lançar no processo" marca a etapa, "Cadastrar o processo e lançar" cria o processo e já lança, "Ignorar" pergunta antes e pede motivo; abas Para revisar, Lançados e Ignorados |
-| `/financeiro` | Faturamento | Abas do ciclo (`?aba=`): A faturar, A vencer, Vencem hoje, Atrasadas (faixas e ordem), Recebidas e Todas (com seletor de mês), cada uma com quantidade e valor; busca, botões na linha e painel lateral da nota (`?nota=`, `&acao=receber`, `&acao=cobrar`). `/financeiro/receber` redireciona para a aba Atrasadas |
+| `/financeiro` | Faturamento | Quatro quadros do ciclo (`?aba=`): A faturar, A vencer, Vencem hoje, Atrasadas (faixas e ordem), cada um com quantidade e valor; Recebidas e Todas (com seletor de mês) saíram dos quadros e abrem pelo link "Todas as notas" ou pela URL; busca, botões na linha e painel lateral da nota (`?nota=`, `&acao=receber`, `&acao=cobrar`). `/financeiro/receber` redireciona para a aba Atrasadas |
 | `/financeiro/lucratividade` | Lucratividade por projeto | Simulação com busca, filtro de margem e paginação; detalhe em `/[processoId]` |
-| `/financeiro/faturado-recebido` | Faturado × recebido | Gráfico por mês e tabela com os mesmos números, com link no Faturamento |
+| `/financeiro/faturado-recebido` | Faturado × recebido | Gráfico por mês com o total faturado e o total recebido embaixo, e tabela com os mesmos números e linha de total, com link no Faturamento |
 | `/financeiro/dre` | DRE | Grade no modelo da planilha: realizado por mês, contas e período (com % da receita líquida) travados; blocos que abrem, caixa ou competência, período (completo, meses fechados, trimestre), lançamentos abaixo da tabela e "Exportar para Excel" |
-| `/financeiro/fluxo` | Fluxo de caixa | Projeção de 8 semanas (clicar numa semana mostra dia a dia, `?semana=`) e realizado por mês |
+| `/financeiro/fluxo` | Fluxo de caixa | Mês a mês (padrão): 6 meses fechados, o mês em curso e 2 previstos numa linha só; aba Próximas 8 semanas (`?aba=semanas`; clicar numa semana mostra dia a dia, `?semana=`) |
 | `/financeiro/notas/nova` | Registrar nota | Nota avulsa ou a partir de parcela liberada (`?parcela=`) |
 | `/financeiro/notas/[id]` | Nota fiscal | Detalhe, registrar ou corrigir recebimento, cancelar |
 | `/financeiro/lancamentos` | Lançamentos | Lista por mês (ou todos) com busca e filtro de conta; lançamento manual; `/[id]` edita descrição, conta, competência, processo e observação |

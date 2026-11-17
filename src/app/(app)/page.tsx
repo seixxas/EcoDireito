@@ -39,7 +39,7 @@ export default async function Resumo() {
         </p>
       </header>
 
-      <div className="grid gap-5 lg:flex-[1.15] lg:grid-cols-[1fr_1.5fr]">
+      <div className="grid gap-5 lg:flex-[1.15] lg:grid-cols-[1fr_1.15fr]">
         <PrazosVencidos dia={dia} />
         <PrazosProximos dia={dia} />
       </div>

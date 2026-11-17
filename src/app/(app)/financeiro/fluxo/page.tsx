@@ -4,14 +4,16 @@ import { LinkRapido } from '@/components/ui/link-rapido'
 import { GraficoFluxo } from '@/components/charts/grafico-fluxo'
 import { GraficoSaldo } from '@/components/charts/grafico-saldo'
 import { Abas } from '@/components/ui/abas'
+import { Badge, type Tom } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Expansivel } from '@/components/ui/expansivel'
 import { classeBotao } from '@/components/ui/form'
 import { Linha, Lista } from '@/components/ui/lista'
 import { PageHeader } from '@/components/ui/page-header'
 import { projecaoDeCaixa } from '@/data/financeiro'
-import { diasDaSemana, type SemanaFluxo } from '@/domain/financeiro/fluxo'
+import { diasDaSemana, type MesFluxo, type SemanaFluxo } from '@/domain/financeiro/fluxo'
 import { cn } from '@/lib/cn'
+import { somarDias, somarMeses } from '@/lib/datas'
 import { somar } from '@/lib/dinheiro'
 import { brl, contar, formatarData, formatarDataCurta, formatarDataLonga, formatarDiaEData, formatarMes } from '@/lib/formatar'
 import { NoCartao, TABELA_EMPILHADA } from '../_components/tabela-empilhada'
@@ -19,7 +21,13 @@ import { LINHA_DA_COPA } from '../_components/identidade'
 
 export const metadata: Metadata = { title: 'Fluxo de caixa' }
 
-const linkDaSemana = (semana: SemanaFluxo) => `/financeiro/fluxo?semana=${semana.inicio}`
+const linkDaSemana = (semana: SemanaFluxo) => `/financeiro/fluxo?aba=semanas&semana=${semana.inicio}`
+
+const SITUACAO_DO_MES: Record<MesFluxo['tipo'], { rotulo: string; tom: Tom }> = {
+  realizado: { rotulo: 'Fechado', tom: 'neutral' },
+  'em-curso': { rotulo: 'Em curso', tom: 'warn' },
+  previsto: { rotulo: 'Previsto', tom: 'info' },
+}
 
 /** "+ R$ 10,00" e "− R$ 10,00": o sinal diz o lado sem depender da cor. */
 const comSinal = (valor: number) => (valor > 0 ? `+ ${brl(valor)}` : valor < 0 ? `− ${brl(-valor)}` : brl(0))
@@ -43,37 +51,44 @@ function Sinal({ children }: { children: ReactNode }) {
 }
 
 export default async function PaginaFluxo({ searchParams }: { searchParams: Promise<{ aba?: string; semana?: string }> }) {
-  const [filtros, { hoje: dia, saldoHoje, aplicado, semanas, mensal, atrasado }] = await Promise.all([searchParams, projecaoDeCaixa(8)])
-  const aba = filtros.aba === 'realizado' ? 'realizado' : 'projecao'
+  const [filtros, { hoje: dia, saldoHoje, aplicado, semanas, mesAMes, atrasado }] = await Promise.all([searchParams, projecaoDeCaixa(8)])
   const zoom = semanas.findIndex((s) => s.inicio === filtros.semana)
-  const entradas = somar(semanas.map((s) => s.entradas))
-  const saidas = somar(semanas.map((s) => s.saidas))
+  const aba = filtros.aba === 'semanas' || zoom >= 0 ? 'semanas' : 'meses'
   const ultima = semanas.at(-1)!
   const menor = semanas.reduce((a, b) => (b.saldoFinal < a.saldoFinal ? b : a))
+
+  // A conta do topo segue a aba: as 8 semanas ou até o fim do último mês previsto.
+  const ultimoMes = mesAMes.at(-1)!
+  const previstos = aba === 'semanas' ? semanas.flatMap((s) => s.movimentos) : mesAMes.flatMap((m) => m.previstos)
+  const entradas = somar(previstos.filter((m) => m.valor > 0).map((m) => m.valor))
+  const saidas = somar(previstos.filter((m) => m.valor < 0).map((m) => m.valor))
+  const fim = aba === 'semanas' ? ultima.fim : somarDias(somarMeses(`${ultimoMes.mes}-01`, 1), -1)
+  const saldoNoFim = aba === 'semanas' ? ultima.saldoFinal : ultimoMes.saldoFinal
+  const horizonte = aba === 'semanas' ? 'próximas 8 semanas' : `até o fim de ${formatarMes(ultimoMes.mes)}`
 
   return (
     <>
       <PageHeader
         titulo="Fluxo de caixa"
-        resumo={`${brl(saldoHoje)} na conta hoje; ${brl(ultima.saldoFinal)} em ${formatarDataCurta(ultima.fim)} se nada mudar.`}
+        resumo={`${brl(saldoHoje)} na conta hoje; ${brl(saldoNoFim)} em ${formatarDataCurta(fim)} se nada mudar.`}
       />
 
       <section
-        aria-label="Conta das próximas 8 semanas"
+        aria-label={`Conta ${horizonte}`}
         className={cn('grid items-center gap-2 rounded-xl bg-painel px-4 py-3.5 sm:grid-cols-2 xl:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]', LINHA_DA_COPA)}
       >
         <NaConta rotulo="Saldo hoje" valor={brl(saldoHoje)} detalhe={`mais ${brl(aplicado)} aplicados`} />
         <Sinal>+</Sinal>
-        <NaConta rotulo="Entradas previstas" valor={brl(entradas)} detalhe="próximas 8 semanas" cor="text-ok" />
+        <NaConta rotulo="Entradas previstas" valor={brl(entradas)} detalhe={horizonte} cor="text-ok" />
         <Sinal>−</Sinal>
-        <NaConta rotulo="Saídas previstas" valor={brl(-saidas)} detalhe="próximas 8 semanas" />
+        <NaConta rotulo="Saídas previstas" valor={brl(-saidas)} detalhe={horizonte} />
         <Sinal>=</Sinal>
         <NaConta
-          rotulo={`Saldo em ${formatarDataCurta(ultima.fim)}`}
-          valor={brl(ultima.saldoFinal)}
+          rotulo={`Saldo em ${formatarDataCurta(fim)}`}
+          valor={brl(saldoNoFim)}
           detalhe="se nada mudar"
-          cor={ultima.saldoFinal < 0 ? 'text-danger' : undefined}
-          fundo={ultima.saldoFinal < 0 ? 'bg-danger-soft' : 'bg-warn-soft'}
+          cor={saldoNoFim < 0 ? 'text-danger' : undefined}
+          fundo={saldoNoFim < 0 ? 'bg-danger-soft' : 'bg-warn-soft'}
         />
       </section>
 
@@ -93,16 +108,13 @@ export default async function PaginaFluxo({ searchParams }: { searchParams: Prom
         className="mb-4 mt-5 w-fit"
         ativa={aba}
         abas={[
-          { valor: 'projecao', rotulo: 'Próximas 8 semanas', href: '/financeiro/fluxo' },
-          { valor: 'realizado', rotulo: 'Realizado por mês', href: '/financeiro/fluxo?aba=realizado' },
+          { valor: 'meses', rotulo: 'Mês a mês', href: '/financeiro/fluxo' },
+          { valor: 'semanas', rotulo: 'Próximas 8 semanas', href: '/financeiro/fluxo?aba=semanas' },
         ]}
       />
 
-      {aba === 'realizado' ? (
-        <Card titulo="Entradas, saídas e saldo de cada mês">
-          <GraficoFluxo dados={mensal.map((m) => ({ rotulo: formatarMes(m.mes), entradas: m.entradas, saidas: m.saidas, saldo: m.saldo }))} />
-          <p className="mt-2 text-xs text-muted">Inclui aplicações e resgates, retiradas das sócias e mútuo entre empresas: é o extrato da conta.</p>
-        </Card>
+      {aba === 'meses' ? (
+        <MesAMes meses={mesAMes} atrasado={atrasado} />
       ) : zoom >= 0 ? (
         <ZoomDaSemana semana={semanas[zoom]} anterior={semanas[zoom - 1]} proxima={semanas[zoom + 1]} hoje={dia} />
       ) : (
@@ -191,7 +203,7 @@ function ZoomDaSemana({ semana, anterior, proxima, hoje }: { semana: SemanaFluxo
 
   return (
     <>
-      <LinkRapido href="/financeiro/fluxo" scroll={false} className="link text-sm">
+      <LinkRapido href="/financeiro/fluxo?aba=semanas" scroll={false} className="link text-sm">
         ← As 8 semanas
       </LinkRapido>
       <div className="mb-3 mt-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
@@ -244,6 +256,81 @@ function ZoomDaSemana({ semana, anterior, proxima, hoje }: { semana: SemanaFluxo
         {comMovimento.length === 0 && <p className="text-muted">Nada previsto nesta semana.</p>}
         {comMovimento.length > 0 && comMovimento.length < 7 && <p className="text-xs text-muted">Os outros dias não têm nada previsto.</p>}
       </div>
+    </>
+  )
+}
+
+/** Os meses fechados pelo extrato e, do mês de hoje em diante, a projeção: a mesma conta numa linha só. */
+function MesAMes({ meses, atrasado }: { meses: MesFluxo[]; atrasado: number }) {
+  return (
+    <>
+      <Card titulo="Entradas, saídas e saldo de cada mês">
+        <GraficoFluxo
+          dados={meses.map((m) => ({ rotulo: m.tipo === 'realizado' ? formatarMes(m.mes) : `${formatarMes(m.mes)}*`, entradas: m.entradas, saidas: m.saidas, saldo: m.saldoFinal }))}
+        />
+        <p className="mt-2 text-xs text-muted">* Mês em curso ou previsto. Os meses fechados vêm do extrato da conta, com aplicações, retiradas das sócias e mútuo.</p>
+      </Card>
+
+      <Card flush className="mt-4">
+        <table className={`${TABELA_EMPILHADA} max-[48rem]:[&_td:last-child]:w-full`}>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th className="num">Entradas</th>
+              <th className="num">Saídas</th>
+              <th className="num">Saldo no fim</th>
+              <th className="num">Detalhe</th>
+            </tr>
+          </thead>
+          <tbody>
+            {meses.map((mes) => (
+              <tr key={mes.mes}>
+                <td className="whitespace-nowrap">
+                  <span className="font-medium text-ink">{formatarMes(mes.mes)}</span> <Badge tom={SITUACAO_DO_MES[mes.tipo].tom}>{SITUACAO_DO_MES[mes.tipo].rotulo}</Badge>
+                </td>
+                <td className={cn('num', mes.entradas > 0 && 'text-ok')}>
+                  <NoCartao>Entradas</NoCartao>
+                  {comSinal(mes.entradas)}
+                </td>
+                <td className="num">
+                  <NoCartao>Saídas</NoCartao>
+                  {comSinal(mes.saidas)}
+                </td>
+                <td className={cn('num font-semibold', mes.saldoFinal < 0 && 'text-danger')}>
+                  <NoCartao>Saldo no fim</NoCartao>
+                  {brl(mes.saldoFinal)}
+                </td>
+                <td className="min-w-[16rem] text-right max-[48rem]:text-left">
+                  {mes.tipo === 'realizado' ? (
+                    <LinkRapido href={`/financeiro/lancamentos?mes=${mes.mes}`} className="link text-sm">
+                      Ver lançamentos
+                    </LinkRapido>
+                  ) : mes.previstos.length ? (
+                    <Expansivel resumo={`Ver ${contar(mes.previstos.length, 'previsto', 'previstos')}`}>
+                      <ul className="space-y-1.5 text-left text-xs">
+                        {mes.previstos.map((m, i) => (
+                          <li key={i} className="flex justify-between gap-3">
+                            <span className="text-muted">
+                              {formatarData(m.data)} · {m.descricao}
+                            </span>
+                            <span className={cn('whitespace-nowrap font-medium', m.valor > 0 && 'text-ok')}>{comSinal(m.valor)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </Expansivel>
+                  ) : (
+                    <span className="text-sm text-muted">Nada previsto</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+      <p className="mt-2 max-w-[110ch] text-xs text-muted">
+        Previsto: notas a receber pela previsão, parcelas liberadas e despesas fixas pela média dos últimos 3 meses. O mês em curso soma o que já entrou e saiu com o que falta até o fim
+        dele. Fora da projeção: {brl(atrasado)} em notas atrasadas.
+      </p>
     </>
   )
 }

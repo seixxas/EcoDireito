@@ -8,6 +8,7 @@ import { LinkRapido } from '@/components/ui/link-rapido'
 import { cn } from '@/lib/cn'
 import { sair } from '@/app/(auth)/actions'
 import { PAPEIS, pode, type Area, type Papel } from '@/lib/permissoes'
+import { CADASTROS } from './cadastros'
 import { ListaFixados } from './fixados'
 import { iniciais, trocarTema } from './menu-da-conta'
 
@@ -31,7 +32,11 @@ function contadorDo(href: string, { vencidos, publicacoes }: Contadores) {
   return href === '/projetos' ? vencidos : href === '/publicacoes' ? publicacoes : undefined
 }
 
+/** Telas de cadastro: acendem o item de Cadastros, não o da área (em /projetos/novo, Projetos fica apagado). */
+const TELAS_DE_CADASTRO = CADASTROS.map(({ href }) => href).filter((href) => !href.includes('?'))
+
 function ativo(pathname: string, { href, tambem = [] }: Item) {
+  if (TELAS_DE_CADASTRO.includes(pathname)) return pathname === href
   return [href, ...tambem].some((caminho) => pathname === caminho || (caminho !== '/' && pathname.startsWith(`${caminho}/`)))
 }
 
@@ -108,6 +113,7 @@ function MenuNaRota({ usuario, contadores = {} }: { usuario?: UsuarioDoMenu; con
 function Menu({ pathname, usuario, contadores }: { pathname: string; usuario?: UsuarioDoMenu; contadores: Contadores }) {
   // Enquanto o usuário carrega, nenhum link: ninguém vê, nem por um instante, o que o perfil não pode abrir.
   const itens = ITENS.filter((item) => usuario && pode(usuario.papel, item.area))
+  const cadastros: Item[] = CADASTROS.filter((item) => usuario && pode(usuario.papel, item.area, 'editar')).map((item, i) => ({ ...item, grupo: i === 0 ? 'Cadastros' : undefined }))
 
   return (
     <>
@@ -116,7 +122,7 @@ function Menu({ pathname, usuario, contadores }: { pathname: string; usuario?: U
           <Logo claro legenda={false} />
         </LinkRapido>
         <nav className="flex flex-col gap-1">
-          {itens.map((item) => (
+          {[...itens, ...cadastros].map((item) => (
             <div key={item.href} className="contents">
               {item.grupo && <p className="px-3 pb-1 pt-4 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-white/45">{item.grupo}</p>}
               <ItemDoMenu item={item} pathname={pathname} contadores={contadores} />
