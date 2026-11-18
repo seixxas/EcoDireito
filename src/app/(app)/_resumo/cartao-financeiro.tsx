@@ -86,13 +86,38 @@ export async function CartaoFinanceiro({ dia }: { dia: DataISO }) {
           </span>
         </div>
         <div className="flex min-h-[120px] flex-1 items-stretch gap-2.5">
-          {grafico.map(({ mes, entradas, saidas }) => (
-            <div key={mes} role="img" aria-label={`${mes}: entraram ${brl(entradas)}, saíram ${brl(saidas)}`} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
+          {grafico.map(({ mes, entradas, saidas }, i) => (
+            // Ao passar o mouse (ou focar com o Tab), a caixinha mostra os valores do mês. Nas pontas ela encosta na borda,
+            // porque o cartão corta o que passa dele.
+            <div
+              key={mes}
+              tabIndex={0}
+              role="img"
+              aria-label={`${mes}: entraram ${brl(entradas)}, saíram ${brl(saidas)}`}
+              className="group relative flex min-w-0 flex-1 cursor-default flex-col items-center gap-1.5 rounded-md outline-none hover:bg-painel focus-visible:bg-painel"
+            >
               <div className="flex flex-1 gap-[3px]">
                 <Barra percentual={altura(entradas)} className="bg-brand-500" />
                 <Barra percentual={altura(saidas)} className="bg-danger" />
               </div>
               <span className="text-[0.71875rem] text-subtle">{mes}</span>
+              <div
+                aria-hidden
+                className={cn(
+                  'pointer-events-none absolute top-0 z-10 hidden flex-col gap-0.5 whitespace-nowrap rounded-md bg-ink px-2.5 py-1.5 text-xs text-canvas shadow-md group-hover:flex group-focus-visible:flex',
+                  i < 2 ? 'left-0' : i >= grafico.length - 2 ? 'right-0' : 'left-1/2 -translate-x-1/2',
+                )}
+              >
+                <b className="font-semibold">{mes}</b>
+                <span className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-[2px] bg-brand-500" />
+                  Entradas {brl(entradas)}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-[2px] bg-danger" />
+                  Saídas {brl(saidas)}
+                </span>
+              </div>
             </div>
           ))}
         </div>

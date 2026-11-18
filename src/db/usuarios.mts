@@ -6,11 +6,12 @@ import { randomUUID } from 'node:crypto'
 import { hashPassword } from 'better-auth/crypto'
 import type { Papel } from '@/lib/permissoes'
 import { cliente, db } from '.'
+import { trocarNomes } from './nomes-reais'
 
 const senha = process.env.SENHA_DEMO
 if (!senha) throw new Error('Defina SENHA_DEMO no .env.local')
 
-const USUARIOS: { nome: string; email: string; papel: Papel; clienteId?: string }[] = [
+const USUARIOS: { nome: string; email: string; papel: Papel; clienteId?: string }[] = trocarNomes([
   { nome: 'Admin', email: 'admin@demo.ecodireito.com.br', papel: 'socia' },
   { nome: 'Elaine', email: 'elaine@demo.ecodireito.com.br', papel: 'socia' },
   { nome: 'Karim', email: 'karim@demo.ecodireito.com.br', papel: 'socia' },
@@ -18,7 +19,7 @@ const USUARIOS: { nome: string; email: string; papel: Papel; clienteId?: string 
   { nome: 'Juliana Prado', email: 'juliana@demo.ecodireito.com.br', papel: 'equipe' },
   { nome: 'Alexandre', email: 'contador@demo.ecodireito.com.br', papel: 'contador' },
   { nome: 'Altavista Pinheiros', email: 'cliente@demo.ecodireito.com.br', papel: 'cliente', clienteId: 'altavista-pinheiros' },
-]
+])
 
 const antigos = await db.user.find({ email: { $in: USUARIOS.map((u) => u.email) } }, { projection: { _id: 1 } }).toArray()
 const ids = antigos.map((u) => u._id)

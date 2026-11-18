@@ -2,13 +2,15 @@
  * Apaga os dados de negócio e grava a base fictícia gerada para hoje (ou DATA_DEMO).
  * Uso: npm run db:seed. Os usuários ficam; o login de cliente perde o vínculo se o cliente
  * não existir na base nova (clientes cadastrados à mão somem com o seed).
+ * Com dados-reais/nomes-dos-clientes.json na máquina, os clientes saem com o nome real (veja nomes-reais.ts).
  */
 import { gerarBase } from '@/data/seed'
 import { hojeEmSaoPaulo } from '@/lib/datas'
 import { cliente, db } from '.'
+import { trocarNomes, usaNomesReais } from './nomes-reais'
 
 const hoje = process.env.DATA_DEMO ?? hojeEmSaoPaulo()
-const base = gerarBase(hoje)
+const base = trocarNomes(gerarBase(hoje))
 const { financeiro } = base
 const criadoEm = new Date()
 
@@ -70,5 +72,5 @@ await db.contasBancarias.insertOne({ _id: 'principal', nome: 'Conta corrente', s
 
 await cliente.close()
 console.log(
-  `Seed de ${hoje}: ${base.clientes.length} clientes, ${base.processos.length} processos, ${financeiro.notas.length} notas, ${financeiro.lancamentos.length} lançamentos.`,
+  `Seed de ${hoje}${usaNomesReais ? ' (nomes reais dos clientes)' : ''}: ${base.clientes.length} clientes, ${base.processos.length} processos, ${financeiro.notas.length} notas, ${financeiro.lancamentos.length} lançamentos.`,
 )
