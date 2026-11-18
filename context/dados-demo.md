@@ -7,6 +7,7 @@ para a demonstração fazer sentido.
 
 - Nada real: nomes de clientes, CNPJs, valores e números de processo são inventados.
 - Exceção: os nomes das sócias (Elaine, Karim, Cissa), porque elas são as usuárias.
+- Nomes reais dos clientes só no banco, nunca no repositório (18/11, para a reunião: as sócias reconhecem as empresas). O mapa "nome fictício → nome real" fica em `dados-reais/nomes-dos-clientes.json`, ignorado pelo Git, e `src/db/nomes-reais.ts` aplica no `db:seed` e nos usuários de demonstração (também em maiúsculas, como no Diário). Sem o arquivo, a base sai toda fictícia. CNPJs, valores, endereços, processos e as duas pessoas físicas continuam inventados. Os exemplos fixos do código (Prospecção, textos de exemplo dos formulários) seguem fictícios.
 - Gerador determinístico (`src/data/seed/aleatorio.ts`): a mesma semente sempre gera os mesmos dados.
 - Datas relativas a hoje (`dias(-12)`), para a demonstração parecer viva em qualquer dia.
 - O histórico financeiro começa em janeiro do ano corrente.

@@ -1,6 +1,6 @@
 # Estado atual
 
-Atualizado em 2026-11-17 (feedback do Danilo: grupo Cadastros no menu, filtros de Projetos, Faturamento com 4 quadros, Fluxo mês a mês, arrastar propostas). Os dados ficam no MongoDB Atlas (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login. O Neon foi abandonado em 06/11, quando a cota dele estourou.
+Atualizado em 2026-11-18 (clientes com o nome real no banco da demo, pelo mapa local em `dados-reais/`; veja `dados-demo.md`). Os dados ficam no MongoDB Atlas (base fictícia gravada pelo `npm run db:seed`) e todo acesso exige login. O Neon foi abandonado em 06/11, quando a cota dele estourou.
 Sem `MONGODB_URI`, o app usa os dados em memória e entra direto como sócia de demonstração.
 
 ## Pronto
